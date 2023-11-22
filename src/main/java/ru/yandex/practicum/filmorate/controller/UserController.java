@@ -27,7 +27,7 @@ public class UserController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<User> updateUser(@RequestBody UserDto updatedUserDto, @RequestParam long userId) {
+    public ResponseEntity<User> updateUser(@PathVariable long userId, @RequestBody UserDto updatedUserDto) {
         User storedUser = users.get(userId);
         if (storedUser != null) {
             storedUser.setEmail(updatedUserDto.getEmail());
