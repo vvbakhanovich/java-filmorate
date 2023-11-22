@@ -9,7 +9,7 @@ import java.time.LocalDate;
 @Data
 @AllArgsConstructor(staticName = "build")
 public class Film {
-    private long filmId; //целочисленный идентификатор
+    private long id; //целочисленный идентификатор
     private String name; //название
     private String description; //описание
     private LocalDate releaseDate; //дата релиза
