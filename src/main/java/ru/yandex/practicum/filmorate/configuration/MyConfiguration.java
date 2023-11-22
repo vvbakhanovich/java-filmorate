@@ -9,7 +9,7 @@ import org.springframework.context.annotation.Configuration;
 import ru.yandex.practicum.filmorate.util.Constants;
 
 @Configuration
-public class JacksonConfiguration {
+public class MyConfiguration {
 
     @Bean
     public Jackson2ObjectMapperBuilderCustomizer jackson2ObjectMapperBuilderCustomizer() {
