@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.controller;
 
 import jakarta.validation.Valid;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -14,6 +15,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/films")
+@Slf4j
 public class FilmController {
     private long userId = 1;
     Map<Long, Film> films = new HashMap<>();
@@ -23,6 +25,7 @@ public class FilmController {
         Film film = Film.build(generateId(),filmDto.getName(), filmDto.getDescription(), filmDto.getReleaseDate(),
                 filmDto.getDuration());
         films.put(film.getFilmId(), film);
+        log.info("Добавление нового фильма: " + film);
         return new ResponseEntity<>(film, HttpStatus.CREATED);
     }
 
@@ -34,14 +37,17 @@ public class FilmController {
             storedFilm.setDescription(updatedFilmDto.getDescription());
             storedFilm.setReleaseDate(updatedFilmDto.getReleaseDate());
             storedFilm.setDuration(updatedFilmDto.getDuration());
+            log.info("Обновление фильма с id " + filmId + ": " + storedFilm);
             return ResponseEntity.ok(storedFilm);
         } else {
+            log.warn("Фильм с id " + filmId + " не был найден.");
             throw new FilmNotFoundException("Фильма с id " + filmId + " не найден.");
         }
     }
 
     @GetMapping
     public ResponseEntity<ArrayList<Film>> getAllFilms() {
+        log.info("Получение списка всех фильмов.");
         return ResponseEntity.ok(new ArrayList<>(films.values()));
     }
 
