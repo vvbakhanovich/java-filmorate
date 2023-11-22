@@ -16,7 +16,7 @@ public class FilmDto {
     private String name; //название
     @Size(max = 200, message = "Максимальная длина описания: 200 символов")
     private String description; //описание
-    @PastDate
+    @PastDate(date = "1895-12-28")
     private LocalDate releaseDate; //дата релиза
     @Positive(message = "Продолжительность должна быть больше нуля")
     private int duration; //продолжительность фильма
