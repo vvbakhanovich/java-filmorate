@@ -6,6 +6,7 @@ import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateSerializer;
 import org.springframework.boot.autoconfigure.jackson.Jackson2ObjectMapperBuilderCustomizer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import ru.yandex.practicum.filmorate.util.Constants;
 
 import java.time.format.DateTimeFormatter;
 
@@ -15,11 +16,10 @@ public class JacksonConfiguration {
     @Bean
     public Jackson2ObjectMapperBuilderCustomizer jackson2ObjectMapperBuilderCustomizer() {
         return builder -> {
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
-            builder.deserializers(new LocalDateDeserializer(formatter));
+            builder.deserializers(new LocalDateDeserializer(Constants.DATE_FORMATTER));
 
-            builder.serializers(new LocalDateSerializer(formatter));
+            builder.serializers(new LocalDateSerializer(Constants.DATE_FORMATTER));
         };
     }
 }
