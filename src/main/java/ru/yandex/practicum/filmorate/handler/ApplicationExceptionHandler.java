@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import ru.yandex.practicum.filmorate.exception.FilmNotFoundException;
+import ru.yandex.practicum.filmorate.exception.UserNotFoundException;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -16,6 +17,14 @@ public class ApplicationExceptionHandler {
     @ExceptionHandler(FilmNotFoundException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public Map<String, String> handleFilmNotFoundException(FilmNotFoundException e) {
+        Map<String, String> exceptions = new HashMap<>();
+        exceptions.put("errorMessage", e.getLocalizedMessage());
+        return exceptions;
+    }
+
+    @ExceptionHandler(UserNotFoundException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public Map<String, String> handleUserNotFoundException(UserNotFoundException e) {
         Map<String, String> exceptions = new HashMap<>();
         exceptions.put("errorMessage", e.getLocalizedMessage());
         return exceptions;
