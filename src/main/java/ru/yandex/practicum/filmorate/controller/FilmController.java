@@ -24,7 +24,7 @@ public class FilmController {
     public ResponseEntity<Film> addFilm(@Valid @RequestBody FilmDto filmDto) {
         Film film = Film.build(generateId(),filmDto.getName(), filmDto.getDescription(), filmDto.getReleaseDate(),
                 filmDto.getDuration());
-        films.put(film.getFilmId(), film);
+        films.put(film.getId(), film);
         log.info("Добавление нового фильма: " + film);
         return new ResponseEntity<>(film, HttpStatus.CREATED);
     }

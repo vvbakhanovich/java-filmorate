@@ -25,7 +25,7 @@ public class UserController {
     public ResponseEntity<User> addUser(@Valid @RequestBody UserDto userDto) {
         User user = User.build(generateId(), userDto.getEmail(), userDto.getLogin(), userDto.getName(),
                 userDto.getBirthday());
-        users.put(user.getUserId(), user);
+        users.put(user.getId(), user);
         log.info("Добавление нового пользователя: " + user);
         return new ResponseEntity<>(user, HttpStatus.CREATED);
     }
