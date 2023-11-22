@@ -11,7 +11,7 @@ import java.lang.annotation.*;
 @Constraint(validatedBy = LocalDateValidator.class)
 public @interface PastDate {
 
-    String date() default "1895-12-28";
+    String date();
 
     String message() default "Введите более позднюю дату.";
 
