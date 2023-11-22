@@ -12,5 +12,11 @@ import java.util.Map;
 @RestControllerAdvice
 public class ApplicationExceptionHandler {
 
-
+    @ExceptionHandler(FilmNotFoundException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public Map<String, String> handleFilmNotFoundException(FilmNotFoundException e) {
+        Map<String, String> exceptions = new HashMap<>();
+        exceptions.put("errorMessage", e.getMessage());
+        return exceptions;
+    }
 }
