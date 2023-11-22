@@ -8,8 +8,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import ru.yandex.practicum.filmorate.util.Constants;
 
-import java.time.format.DateTimeFormatter;
-
 @Configuration
 public class JacksonConfiguration {
 
