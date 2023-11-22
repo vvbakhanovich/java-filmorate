@@ -25,16 +25,16 @@ public class FilmController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Film> updateFilm(@RequestBody FilmDto updatedfilmDto, @RequestParam long filmId) {
+    public ResponseEntity<Film> updateFilm(@RequestBody FilmDto updatedFilmDto, @RequestParam long filmId) {
         Film storedFilm = films.get(filmId);
         if (storedFilm != null) {
-            storedFilm.setName(updatedfilmDto.getName());
-            storedFilm.setDescription(updatedfilmDto.getDescription());
-            storedFilm.setReleaseDate(updatedfilmDto.getReleaseDate());
-            storedFilm.setDuration(updatedfilmDto.getDuration());
+            storedFilm.setName(updatedFilmDto.getName());
+            storedFilm.setDescription(updatedFilmDto.getDescription());
+            storedFilm.setReleaseDate(updatedFilmDto.getReleaseDate());
+            storedFilm.setDuration(updatedFilmDto.getDuration());
             return ResponseEntity.ok(storedFilm);
         } else {
-            throw new FilmNotFoundException("Фильма с id " + filmId + " не существует.");
+            throw new FilmNotFoundException("Фильма с id " + filmId + " не найден.");
         }
     }
 
