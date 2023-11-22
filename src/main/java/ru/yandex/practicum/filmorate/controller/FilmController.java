@@ -12,6 +12,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 @RestController
+@RequestMapping("/films")
 public class FilmController {
     private long userId = 1;
     Map<Long, Film> films = new HashMap<>();
@@ -24,8 +25,8 @@ public class FilmController {
         return new ResponseEntity<>(film, HttpStatus.CREATED);
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<Film> updateFilm(@RequestBody FilmDto updatedFilmDto, @RequestParam long filmId) {
+    @PutMapping("/{filmId}")
+    public ResponseEntity<Film> updateFilm(@PathVariable long filmId, @RequestBody FilmDto updatedFilmDto) {
         Film storedFilm = films.get(filmId);
         if (storedFilm != null) {
             storedFilm.setName(updatedFilmDto.getName());
