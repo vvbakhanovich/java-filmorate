@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.controller;
 
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -19,7 +20,7 @@ public class UserController {
     Map<Long, User> users = new HashMap<>();
 
     @PostMapping
-    public ResponseEntity<User> addUser(@RequestBody UserDto userDto) {
+    public ResponseEntity<User> addUser(@Valid @RequestBody UserDto userDto) {
         User user = User.build(generateId(), userDto.getEmail(), userDto.getLogin(), userDto.getName(),
                 userDto.getBirthday());
         users.put(user.getUserId(), user);
@@ -27,7 +28,7 @@ public class UserController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<User> updateUser(@PathVariable long userId, @RequestBody UserDto updatedUserDto) {
+    public ResponseEntity<User> updateUser(@PathVariable long userId, @Valid @RequestBody UserDto updatedUserDto) {
         User storedUser = users.get(userId);
         if (storedUser != null) {
             storedUser.setEmail(updatedUserDto.getEmail());
