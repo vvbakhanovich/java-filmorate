@@ -29,6 +29,8 @@ public class FilmController {
         return new ResponseEntity<>(film, HttpStatus.CREATED);
     }
 
+    // Решил задавать id обновляемого фильма в uri, поэтому некоторые тесты для постман, которые были прикреплены к тз
+    // не проходят.
     @PutMapping("/{filmId}")
     public ResponseEntity<Film> updateFilm(@PathVariable long filmId, @Valid @RequestBody FilmDto updatedFilmDto) {
         Film storedFilm = films.get(filmId);

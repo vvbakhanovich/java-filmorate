@@ -30,6 +30,8 @@ public class UserController {
         return new ResponseEntity<>(user, HttpStatus.CREATED);
     }
 
+    // Решил задавать id обновляемого фильма в uri, поэтому некоторые тесты для постман, которые были прикреплены к тз
+    // не проходят.
     @PutMapping("/{userId}")
     public ResponseEntity<User> updateUser(@PathVariable long userId, @Valid @RequestBody UserDto updatedUserDto) {
         User storedUser = users.get(userId);
