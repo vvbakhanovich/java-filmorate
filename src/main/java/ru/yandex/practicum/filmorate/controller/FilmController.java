@@ -3,6 +3,7 @@ package ru.yandex.practicum.filmorate.controller;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.dto.FilmDto;
+import ru.yandex.practicum.filmorate.exception.FilmNotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 
 import java.util.HashMap;
@@ -31,7 +32,7 @@ public class FilmController {
             storedFilm.setDuration(updatedfilmDto.getDuration());
             return ResponseEntity.ok(storedFilm);
         } else {
-            throw FilmNotFoundException();
+            throw new FilmNotFoundException("Фильма с id " + filmId + " не существует.");
         }
     }
 
