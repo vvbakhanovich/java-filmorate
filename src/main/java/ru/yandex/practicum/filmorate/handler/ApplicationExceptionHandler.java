@@ -2,6 +2,7 @@ package ru.yandex.practicum.filmorate.handler;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
+import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -35,12 +36,11 @@ public class ApplicationExceptionHandler {
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public Map<String, String> handleInvalidException(MethodArgumentNotValidException e) {
         Map<String, String> exceptions = new HashMap<>();
-        e.getBindingResult().getFieldErrors().forEach(fieldError -> exceptions.put(fieldError.getField(),
-                fieldError.getDefaultMessage())
-        );
+        for (FieldError error : e.getBindingResult().getFieldErrors()) {
+            exceptions.put(error.getField(), error.getDefaultMessage());
+            log.warn("Поле " + error.getField() + " не прошло валидацию. Причина: " + error.getDefaultMessage());
+        }
 
-        exceptions.put("errorMessage", e.getMessage());
-        log.warn("Ошибка валидации: " + e.getMessage());
         return exceptions;
     }
 }
