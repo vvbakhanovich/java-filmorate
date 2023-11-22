@@ -23,7 +23,7 @@ public class UserController {
 
     @PostMapping
     public ResponseEntity<User> addUser(@Valid @RequestBody UserDto userDto) {
-        User user = User.build(generateId(), userDto.getEmail(), userDto.getLogin(), userDto.getName(),
+        User user = User.build(generateId(), userDto.getEmail(), userDto.getLogin(), checkIfNameIsEmpty(userDto),
                 userDto.getBirthday());
         users.put(user.getId(), user);
         log.info("Добавление нового пользователя: " + user);
@@ -38,7 +38,7 @@ public class UserController {
         if (storedUser != null) {
             storedUser.setEmail(updatedUserDto.getEmail());
             storedUser.setLogin(updatedUserDto.getLogin());
-            storedUser.setName(updatedUserDto.getName());
+            storedUser.setName(checkIfNameIsEmpty(updatedUserDto));
             storedUser.setBirthday(updatedUserDto.getBirthday());
             log.info("Обновление пользователя с id " + userId + ": " + storedUser);
             return ResponseEntity.ok(storedUser);
@@ -56,5 +56,9 @@ public class UserController {
 
     private long generateId() {
         return userId++;
+    }
+
+    private String checkIfNameIsEmpty(UserDto userDto) {
+        return userDto.getName().isBlank() ? userDto.getLogin() : userDto.getName();
     }
 }
