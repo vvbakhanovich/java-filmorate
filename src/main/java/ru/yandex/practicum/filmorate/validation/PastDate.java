@@ -13,7 +13,7 @@ import java.time.LocalDate;
 public @interface PastDate {
 
     String date() default "28/12/1895";
-    public String message() default "Дата релиза должна быть позже 28/12/1895";
+    String message() default "Введите более позднюю дату.";
 
     Class<?>[] groups() default {};
 
