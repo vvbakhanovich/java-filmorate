@@ -18,7 +18,7 @@ import java.util.Map;
 public class ApplicationExceptionHandler {
 
     @ExceptionHandler(FilmNotFoundException.class)
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
     public Map<String, String> handleFilmNotFoundException(FilmNotFoundException e) {
         Map<String, String> exceptions = new HashMap<>();
         exceptions.put("errorMessage", e.getLocalizedMessage());
@@ -26,7 +26,7 @@ public class ApplicationExceptionHandler {
     }
 
     @ExceptionHandler(UserNotFoundException.class)
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
     public Map<String, String> handleUserNotFoundException(UserNotFoundException e) {
         Map<String, String> exceptions = new HashMap<>();
         exceptions.put("errorMessage", e.getLocalizedMessage());
