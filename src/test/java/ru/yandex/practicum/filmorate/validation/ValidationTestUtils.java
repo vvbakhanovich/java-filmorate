@@ -8,7 +8,7 @@ import jakarta.validation.constraints.NotNull;
 import java.util.Set;
 
 public class ValidationTestUtils {
-    private static final Validator VALIDATOR = Validation.buildDefaultValidatorFactory().getValidator();
+    public static final Validator VALIDATOR = Validation.buildDefaultValidatorFactory().getValidator();
 
     private ValidationTestUtils() {
 
