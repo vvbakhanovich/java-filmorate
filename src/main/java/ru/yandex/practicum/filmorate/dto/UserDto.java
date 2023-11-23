@@ -10,11 +10,11 @@ import java.time.LocalDate;
 @AllArgsConstructor
 public class UserDto {
     @Email(message = "Некорректный формат электронной почты.", regexp = "^[\\w\\-\\.]+@([\\w-]+\\.)+[\\w-]{2,4}$")
-    @NotEmpty(message = "Адрес электронной почты не может быть пустым")
+    @NotEmpty(message = "Адрес электронной почты не может быть пустым.")
     private String email; //электронная почта
-    @NotBlank(message = "Логин не может быть пустым и содержать пробелы")
+    @NotBlank(message = "Логин не может быть пустым и содержать пробелы.")
     private String login; //логин пользователя
     private String name; //имя для отображения
-    @PastOrPresent(message = "Дата рождения не может быть в будущем")
+    @PastOrPresent(message = "Дата рождения не может быть в будущем.")
     private LocalDate birthday; //дата рождения
 }
