@@ -1,9 +1,6 @@
 package ru.yandex.practicum.filmorate.dto;
 
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Past;
-import jakarta.validation.constraints.PastOrPresent;
+import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
@@ -12,7 +9,8 @@ import java.time.LocalDate;
 @Data
 @AllArgsConstructor
 public class UserDto {
-    @Email(message = "Некорректный формат электронной почты.")
+    @Email(message = "Некорректный формат электронной почты.", regexp = "^[\\w\\-\\.]+@([\\w-]+\\.)+[\\w-]{2,4}$")
+    @NotEmpty(message = "Адрес электронной почты не может быть пустым")
     private String email; //электронная почта
     @NotBlank(message = "Логин не может быть пустым и содержать пробелы")
     private String login; //логин пользователя
