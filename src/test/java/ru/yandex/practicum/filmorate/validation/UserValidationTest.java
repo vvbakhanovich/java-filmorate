@@ -19,7 +19,7 @@ public class UserValidationTest {
     @ValueSource(strings = {" ", "test.ru", "   .com", "@test", "@.org", "test@"})
     @DisplayName("Проверка невозможности добавить пользователя с неправильно заданным email")
     public void createUserWithInvalidEmail(String email) {
-        UserDto userDto = new UserDto(email, "login", "name",
+        UserDto userDto = new UserDto(1, email, "login", "name",
                 LocalDate.of(1991, 12, 12));
 
         assertTrue(dtoHasErrorMessage(userDto, "Некорректный формат электронной почты."));
@@ -29,7 +29,7 @@ public class UserValidationTest {
     @ValueSource(strings = {""})
     @DisplayName("Проверка невозможности добавить пользователя с неправильно заданным email")
     public void createUserWithEmptyEmail(String email) {
-        UserDto userDto = new UserDto(email, "login", "name",
+        UserDto userDto = new UserDto(1, email, "login", "name",
                 LocalDate.of(1991, 12, 12));
 
         assertTrue(dtoHasErrorMessage(userDto, "Адрес электронной почты не может быть пустым."));
@@ -39,7 +39,7 @@ public class UserValidationTest {
     @ValueSource(strings = {"test@test.ru", "test1234@test1234.org", "test.test@test.com", "test-test@test.pom"})
     @DisplayName("Проверка добавления email с разрешенным значением")
     public void createUserWithValidEmail(String email) {
-        UserDto userDto = new UserDto(email, "login", "name",
+        UserDto userDto = new UserDto(1, email, "login", "name",
                 LocalDate.of(1991, 12, 12));
 
         assertTrue(VALIDATOR.validate(userDto).isEmpty());
@@ -49,7 +49,7 @@ public class UserValidationTest {
     @ValueSource(strings = {"", " ", "  ", "     "})
     @DisplayName("Проверка невозможности добавить пользователя с пустым или состоящим из пробелов логином")
     public void createUserWithInvalidLogin(String login) {
-        UserDto userDto = new UserDto("test@test.ru", login, "name",
+        UserDto userDto = new UserDto(1, "test@test.ru", login, "name",
                 LocalDate.of(1991, 12, 12));
 
         assertTrue(dtoHasErrorMessage(userDto, "Логин не может быть пустым и содержать пробелы."));
@@ -60,7 +60,7 @@ public class UserValidationTest {
     @DisplayName("Проверка невозможности добавления пользователя, дата рождения которого в будущем")
     public void createUserWithInvalidBirthday(String birthdayString) {
         LocalDate birthday = LocalDate.parse(birthdayString);
-        UserDto userDto = new UserDto("test@test.ru", "login", "name",
+        UserDto userDto = new UserDto(1, "test@test.ru", "login", "name",
                 birthday);
 
         assertTrue(dtoHasErrorMessage(userDto, "Дата рождения не может быть в будущем."));
@@ -71,7 +71,7 @@ public class UserValidationTest {
     @DisplayName("Проверка добавления пользователя с разрешенным значением даты рождения")
     public void createUserWithValidBirthday(String birthdayString) {
         LocalDate birthday = LocalDate.parse(birthdayString);
-        UserDto userDto = new UserDto("test@test.ru", "login", "name",
+        UserDto userDto = new UserDto(1, "test@test.ru", "login", "name",
                 birthday);
 
         assertTrue(VALIDATOR.validate(userDto).isEmpty());
@@ -80,7 +80,7 @@ public class UserValidationTest {
     @Test
     @DisplayName("Проверка добавления пользователя с неразрешенным email, логином и датой рождения")
     public void createUserWithInvalidEmailLoginAndBirthday() {
-        UserDto userDto = new UserDto("test", "", "name",
+        UserDto userDto = new UserDto(1, "test", "", "name",
                 LocalDate.of(2222, 10, 10));
 
         assertAll(
