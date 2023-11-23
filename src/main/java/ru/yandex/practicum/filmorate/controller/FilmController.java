@@ -17,7 +17,7 @@ import java.util.Map;
 @RequestMapping("/films")
 @Slf4j
 public class FilmController {
-    private long userId = 1;
+    private long filmId = 1;
     private final Map<Long, Film> films = new HashMap<>();
 
     @PostMapping
@@ -55,7 +55,7 @@ public class FilmController {
     }
 
     private long generateId() {
-        return userId++;
+        return filmId++;
     }
 }
 
