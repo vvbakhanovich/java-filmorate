@@ -18,7 +18,7 @@ import java.util.Map;
 @Slf4j
 public class FilmController {
     private long userId = 1;
-    Map<Long, Film> films = new HashMap<>();
+    private final Map<Long, Film> films = new HashMap<>();
 
     @PostMapping
     public ResponseEntity<Film> addFilm(@Valid @RequestBody FilmDto filmDto) {
