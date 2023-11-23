@@ -59,6 +59,6 @@ public class UserController {
     }
 
     private String checkIfNameIsEmpty(UserDto userDto) {
-        return userDto.getName().isBlank() ? userDto.getLogin() : userDto.getName();
+        return userDto.getName() == null || userDto.getName().isBlank()  ? userDto.getLogin() : userDto.getName();
     }
 }
