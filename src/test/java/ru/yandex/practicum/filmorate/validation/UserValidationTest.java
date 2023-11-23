@@ -16,14 +16,15 @@ import static ru.yandex.practicum.filmorate.validation.ValidationTestUtils.dtoHa
 public class UserValidationTest {
 
     @ParameterizedTest
-    @ValueSource(strings = {" ", "test.ru", "   .com", "@test" , "@.org", "test@"})
+    @ValueSource(strings = {" ", "test.ru", "   .com", "@test", "@.org", "test@"})
     @DisplayName("Проверка невозможности добавить пользователя с неправильно заданным email")
     public void createUserWithInvalidEmail(String email) {
         UserDto userDto = new UserDto(email, "login", "name",
                 LocalDate.of(1991, 12, 12));
 
-        assertTrue(dtoHasErrorMessage(userDto,"Некорректный формат электронной почты."));
+        assertTrue(dtoHasErrorMessage(userDto, "Некорректный формат электронной почты."));
     }
+
     @ParameterizedTest
     @ValueSource(strings = {""})
     @DisplayName("Проверка невозможности добавить пользователя с неправильно заданным email")
@@ -31,7 +32,7 @@ public class UserValidationTest {
         UserDto userDto = new UserDto(email, "login", "name",
                 LocalDate.of(1991, 12, 12));
 
-        assertTrue(dtoHasErrorMessage(userDto,"Адрес электронной почты не может быть пустым."));
+        assertTrue(dtoHasErrorMessage(userDto, "Адрес электронной почты не может быть пустым."));
     }
 
     @ParameterizedTest
@@ -51,7 +52,7 @@ public class UserValidationTest {
         UserDto userDto = new UserDto("test@test.ru", login, "name",
                 LocalDate.of(1991, 12, 12));
 
-        assertTrue(dtoHasErrorMessage(userDto,"Логин не может быть пустым и содержать пробелы."));
+        assertTrue(dtoHasErrorMessage(userDto, "Логин не может быть пустым и содержать пробелы."));
     }
 
     @ParameterizedTest
@@ -62,7 +63,7 @@ public class UserValidationTest {
         UserDto userDto = new UserDto("test@test.ru", "login", "name",
                 birthday);
 
-        assertTrue(dtoHasErrorMessage(userDto,"Дата рождения не может быть в будущем."));
+        assertTrue(dtoHasErrorMessage(userDto, "Дата рождения не может быть в будущем."));
     }
 
     @ParameterizedTest
@@ -83,9 +84,9 @@ public class UserValidationTest {
                 LocalDate.of(2222, 10, 10));
 
         assertAll(
-                () -> assertTrue(dtoHasErrorMessage(userDto,"Некорректный формат электронной почты.")),
-                () -> assertTrue(dtoHasErrorMessage(userDto,"Логин не может быть пустым и содержать пробелы.")),
-                () -> assertTrue(dtoHasErrorMessage(userDto,"Дата рождения не может быть в будущем."))
+                () -> assertTrue(dtoHasErrorMessage(userDto, "Некорректный формат электронной почты.")),
+                () -> assertTrue(dtoHasErrorMessage(userDto, "Логин не может быть пустым и содержать пробелы.")),
+                () -> assertTrue(dtoHasErrorMessage(userDto, "Дата рождения не может быть в будущем."))
         );
     }
 

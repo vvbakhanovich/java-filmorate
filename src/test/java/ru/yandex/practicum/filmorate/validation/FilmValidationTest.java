@@ -21,9 +21,9 @@ public class FilmValidationTest {
     @DisplayName("Проверка невозможности добавить фильм с пустым названием")
     public void createFilmWithoutName(String name) {
         FilmDto filmDto = new FilmDto(name, "Описание фильма",
-                LocalDate.of(2000, 2, 13),113);
+                LocalDate.of(2000, 2, 13), 113);
 
-       assertTrue(dtoHasErrorMessage(filmDto, "Название не может быть пустым."));
+        assertTrue(dtoHasErrorMessage(filmDto, "Название не может быть пустым."));
 
     }
 
