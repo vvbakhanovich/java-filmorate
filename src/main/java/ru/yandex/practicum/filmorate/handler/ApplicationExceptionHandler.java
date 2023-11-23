@@ -7,8 +7,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
-import ru.yandex.practicum.filmorate.exception.FilmNotFoundException;
-import ru.yandex.practicum.filmorate.exception.UserNotFoundException;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -17,17 +16,9 @@ import java.util.Map;
 @RestControllerAdvice
 public class ApplicationExceptionHandler {
 
-    @ExceptionHandler(FilmNotFoundException.class)
+    @ExceptionHandler(NotFoundException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
-    public Map<String, String> handleFilmNotFoundException(FilmNotFoundException e) {
-        Map<String, String> exceptions = new HashMap<>();
-        exceptions.put("errorMessage", e.getLocalizedMessage());
-        return exceptions;
-    }
-
-    @ExceptionHandler(UserNotFoundException.class)
-    @ResponseStatus(HttpStatus.NOT_FOUND)
-    public Map<String, String> handleUserNotFoundException(UserNotFoundException e) {
+    public Map<String, String> handleUserNotFoundException(NotFoundException e) {
         Map<String, String> exceptions = new HashMap<>();
         exceptions.put("errorMessage", e.getLocalizedMessage());
         return exceptions;
