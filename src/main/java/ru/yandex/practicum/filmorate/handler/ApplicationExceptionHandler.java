@@ -23,7 +23,6 @@ public class ApplicationExceptionHandler {
         exceptions.put("errorMessage", e.getLocalizedMessage());
         return exceptions;
     }
-
     @ExceptionHandler(MethodArgumentNotValidException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public Map<String, String> handleInvalidException(MethodArgumentNotValidException e) {
