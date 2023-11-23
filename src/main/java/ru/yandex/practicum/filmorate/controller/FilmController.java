@@ -1,6 +1,6 @@
 package ru.yandex.practicum.filmorate.controller;
 
-import jakarta.validation.Valid;
+
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -10,6 +10,7 @@ import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.mapper.FilmMapper;
 import ru.yandex.practicum.filmorate.model.Film;
 
+import javax.validation.Valid;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -24,7 +25,7 @@ public class FilmController {
 
     @PostMapping
     public ResponseEntity<FilmDto> addFilm(@Valid @RequestBody FilmDto filmDto) {
-        Film film = new Film(generateId(),filmDto.getName(), filmDto.getDescription(), filmDto.getReleaseDate(),
+        Film film = new Film(generateId(), filmDto.getName(), filmDto.getDescription(), filmDto.getReleaseDate(),
                 filmDto.getDuration());
         films.put(film.getId(), film);
         log.info("Добавление нового фильма: " + film);
@@ -52,7 +53,7 @@ public class FilmController {
     public ResponseEntity<ArrayList<FilmDto>> getAllFilms() {
         log.info("Получение списка всех фильмов.");
         return ResponseEntity.ok(new ArrayList<>(films.values().stream().map(FilmMapper::toDto)
-                                                                        .collect(Collectors.toList())));
+                .collect(Collectors.toList())));
     }
 
     private long generateId() {

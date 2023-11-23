@@ -1,9 +1,10 @@
 package ru.yandex.practicum.filmorate.validation;
 
-import jakarta.validation.ConstraintValidator;
-import jakarta.validation.ConstraintValidatorContext;
+
 import ru.yandex.practicum.filmorate.util.Constants;
 
+import javax.validation.ConstraintValidator;
+import javax.validation.ConstraintValidatorContext;
 import java.time.LocalDate;
 
 public class LocalDateValidator implements ConstraintValidator<PastDate, LocalDate> {

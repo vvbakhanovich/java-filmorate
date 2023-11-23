@@ -1,6 +1,6 @@
 package ru.yandex.practicum.filmorate.controller;
 
-import jakarta.validation.Valid;
+
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -10,6 +10,7 @@ import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.mapper.UserMapper;
 import ru.yandex.practicum.filmorate.model.User;
 
+import javax.validation.Valid;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -55,7 +56,7 @@ public class UserController {
     public ResponseEntity<ArrayList<UserDto>> getAllUser() {
         log.info("Получение списка всех пользователей.");
         return ResponseEntity.ok(new ArrayList<>(users.values().stream().map(UserMapper::toDto)
-                                                                        .collect(Collectors.toList())));
+                .collect(Collectors.toList())));
     }
 
     private long generateId() {
@@ -63,6 +64,6 @@ public class UserController {
     }
 
     private String checkIfNameIsEmpty(UserDto userDto) {
-        return userDto.getName() == null || userDto.getName().isBlank()  ? userDto.getLogin() : userDto.getName();
+        return userDto.getName() == null || userDto.getName().isBlank() ? userDto.getLogin() : userDto.getName();
     }
 }
