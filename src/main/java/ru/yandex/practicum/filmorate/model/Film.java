@@ -7,7 +7,7 @@ import lombok.Data;
 import java.time.LocalDate;
 
 @Data
-@AllArgsConstructor(staticName = "build")
+@AllArgsConstructor
 public class Film {
     private long id; //целочисленный идентификатор
     private String name; //название

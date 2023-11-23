@@ -6,7 +6,7 @@ import lombok.Data;
 import java.time.LocalDate;
 
 @Data
-@AllArgsConstructor(staticName = "build")
+@AllArgsConstructor
 public class User {
     private long id; //целочисленный идентификатор
     private String email; //электронная почта
