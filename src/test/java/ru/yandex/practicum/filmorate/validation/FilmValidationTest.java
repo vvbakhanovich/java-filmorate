@@ -9,6 +9,7 @@ import ru.yandex.practicum.filmorate.dto.FilmDto;
 
 import java.time.LocalDate;
 
+import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static ru.yandex.practicum.filmorate.validation.ValidationTestUtils.VALIDATOR;
 import static ru.yandex.practicum.filmorate.validation.ValidationTestUtils.dtoHasErrorMessage;
@@ -33,13 +34,12 @@ public class FilmValidationTest {
         FilmDto filmDto = new FilmDto("Фильм", longDescription,
                 LocalDate.of(2000, 2, 13), 113);
 
-        assertTrue(dtoHasErrorMessage(filmDto,
-                "Максимальная длина описания: 200 символов"));
+        assertTrue(dtoHasErrorMessage(filmDto,"Максимальная длина описания: 200 символов"));
     }
 
     @ParameterizedTest
     @ValueSource(ints = {0, 12, 50, 100, 200})
-    @DisplayName("Проверка добавления описания разрешимой длины")
+    @DisplayName("Проверка добавления описания разрешенной длины")
     public void createFilmWithDescription(int length) {
         String longDescription = StringUtils.repeat("*", length);
         FilmDto filmDto = new FilmDto("Фильм", longDescription,
@@ -87,5 +87,20 @@ public class FilmValidationTest {
                 LocalDate.of(2000, 2, 13),duration);
 
         assertTrue(VALIDATOR.validate(filmDto).isEmpty());
+    }
+
+    @Test
+    @DisplayName("Проверка добавления фильма с неразрешенным названием, описанием, датой релиза длительностью")
+    public void createFilmWithInvalidNameDescriptionReleaseDateAndDuration() {
+        String longDescription = StringUtils.repeat("*", 201);
+        FilmDto filmDto = new FilmDto("", longDescription,
+                LocalDate.of(1777, 2, 13),-13);
+
+        assertAll(
+                () -> assertTrue(dtoHasErrorMessage(filmDto,"Название не может быть пустым.")),
+                () -> assertTrue(dtoHasErrorMessage(filmDto,"Максимальная длина описания: 200 символов")),
+                () -> assertTrue(dtoHasErrorMessage(filmDto,"Введите более позднюю дату.")),
+                () -> assertTrue(dtoHasErrorMessage(filmDto,"Продолжительность должна быть больше нуля"))
+        );
     }
 }
