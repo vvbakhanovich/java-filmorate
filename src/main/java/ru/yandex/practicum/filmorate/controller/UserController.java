@@ -19,7 +19,7 @@ import java.util.Map;
 public class UserController {
 
     private long userId = 1;
-    Map<Long, User> users = new HashMap<>();
+    private final Map<Long, User> users = new HashMap<>();
 
     @PostMapping
     public ResponseEntity<User> addUser(@Valid @RequestBody UserDto userDto) {
