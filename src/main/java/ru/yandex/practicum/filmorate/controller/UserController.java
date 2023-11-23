@@ -32,8 +32,9 @@ public class UserController {
 
     // Решил задавать id обновляемого фильма в uri, поэтому некоторые тесты для постман, которые были прикреплены к тз
     // не проходят.
-    @PutMapping("/{userId}")
-    public ResponseEntity<User> updateUser(@PathVariable long userId, @Valid @RequestBody UserDto updatedUserDto) {
+    @PutMapping()
+    public ResponseEntity<User> updateUser(@Valid @RequestBody UserDto updatedUserDto) {
+        long userId = updatedUserDto.getId();
         User storedUser = users.get(userId);
         if (storedUser != null) {
             storedUser.setEmail(updatedUserDto.getEmail());
