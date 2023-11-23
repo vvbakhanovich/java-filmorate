@@ -9,6 +9,7 @@ import java.time.LocalDate;
 @Data
 @AllArgsConstructor
 public class UserDto {
+    private long id;
     @Email(message = "Некорректный формат электронной почты.", regexp = "^[\\w\\-\\.]+@([\\w-]+\\.)+[\\w-]{2,4}$")
     @NotEmpty(message = "Адрес электронной почты не может быть пустым.")
     private String email; //электронная почта
