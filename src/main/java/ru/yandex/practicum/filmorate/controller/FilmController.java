@@ -2,16 +2,18 @@ package ru.yandex.practicum.filmorate.controller;
 
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
+import mapper.FilmMapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.dto.FilmDto;
-import ru.yandex.practicum.filmorate.exception.FilmNotFoundException;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/films")
@@ -21,18 +23,16 @@ public class FilmController {
     private final Map<Long, Film> films = new HashMap<>();
 
     @PostMapping
-    public ResponseEntity<Film> addFilm(@Valid @RequestBody FilmDto filmDto) {
-        Film film = Film.build(generateId(),filmDto.getName(), filmDto.getDescription(), filmDto.getReleaseDate(),
+    public ResponseEntity<FilmDto> addFilm(@Valid @RequestBody FilmDto filmDto) {
+        Film film = new Film(generateId(),filmDto.getName(), filmDto.getDescription(), filmDto.getReleaseDate(),
                 filmDto.getDuration());
         films.put(film.getId(), film);
         log.info("Добавление нового фильма: " + film);
-        return new ResponseEntity<>(film, HttpStatus.CREATED);
+        return new ResponseEntity<>(FilmMapper.toDto(film), HttpStatus.CREATED);
     }
 
-    // Решил задавать id обновляемого фильма в uri, поэтому некоторые тесты для постман, которые были прикреплены к тз
-    // не проходят.
     @PutMapping
-    public ResponseEntity<Film> updateFilm(@Valid @RequestBody FilmDto updatedFilmDto) {
+    public ResponseEntity<FilmDto> updateFilm(@Valid @RequestBody FilmDto updatedFilmDto) {
         long filmId = updatedFilmDto.getId();
         Film storedFilm = films.get(filmId);
         if (storedFilm != null) {
@@ -41,17 +41,18 @@ public class FilmController {
             storedFilm.setReleaseDate(updatedFilmDto.getReleaseDate());
             storedFilm.setDuration(updatedFilmDto.getDuration());
             log.info("Обновление фильма с id " + filmId + ": " + storedFilm);
-            return ResponseEntity.ok(storedFilm);
+            return ResponseEntity.ok(FilmMapper.toDto(storedFilm));
         } else {
             log.warn("Фильм с id " + filmId + " не был найден.");
-            throw new FilmNotFoundException("Фильма с id " + filmId + " не найден.");
+            throw new NotFoundException("Фильма с id " + filmId + " не найден.");
         }
     }
 
     @GetMapping
-    public ResponseEntity<ArrayList<Film>> getAllFilms() {
+    public ResponseEntity<ArrayList<FilmDto>> getAllFilms() {
         log.info("Получение списка всех фильмов.");
-        return ResponseEntity.ok(new ArrayList<>(films.values()));
+        return ResponseEntity.ok(new ArrayList<>(films.values().stream().map(FilmMapper::toDto)
+                                                                        .collect(Collectors.toList())));
     }
 
     private long generateId() {
