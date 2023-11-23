@@ -1,10 +1,10 @@
 package ru.yandex.practicum.filmorate.validation;
 
-import jakarta.validation.ConstraintViolation;
-import jakarta.validation.Validation;
-import jakarta.validation.Validator;
-import jakarta.validation.constraints.NotNull;
 
+import javax.validation.ConstraintViolation;
+import javax.validation.Validation;
+import javax.validation.Validator;
+import javax.validation.constraints.NotNull;
 import java.util.Set;
 
 public class ValidationTestUtils {
