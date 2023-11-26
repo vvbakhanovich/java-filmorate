@@ -25,8 +25,8 @@ public class FilmController {
 
     @PostMapping
     public ResponseEntity<FilmDto> addFilm(@Valid @RequestBody FilmDto filmDto) {
-        Film film = new Film(generateId(), filmDto.getName(), filmDto.getDescription(), filmDto.getReleaseDate(),
-                filmDto.getDuration());
+        Film film = FilmMapper.toModel(filmDto);
+        film.setId(generateId());
         films.put(film.getId(), film);
         log.info("Добавление нового фильма: " + film);
         return new ResponseEntity<>(FilmMapper.toDto(film), HttpStatus.CREATED);
