@@ -46,7 +46,7 @@ public class UserController {
             return ResponseEntity.ok(UserMapper.toDto(storedUser));
         } else {
             log.error("Пользователь с id {} не был найден.", userId);
-            throw new NotFoundException("Пользователь с id " + userId + " не найден.");
+            throw new NotFoundException("Пользователь с id '" + userId + "' не найден.");
         }
     }
 
