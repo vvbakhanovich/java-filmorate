@@ -29,7 +29,7 @@ public class UserController {
         User user = UserMapper.toModel(userDto);
         user.setId(generateId());
         users.put(user.getId(), user);
-        log.info("Добавление нового пользователя: " + user);
+        log.info("Добавление нового пользователя: {}", user);
         return new ResponseEntity<>(UserMapper.toDto(user), HttpStatus.CREATED);
     }
 
@@ -42,10 +42,10 @@ public class UserController {
             storedUser.setLogin(updatedUserDto.getLogin());
             storedUser.setName(checkIfNameIsEmpty(updatedUserDto));
             storedUser.setBirthday(updatedUserDto.getBirthday());
-            log.info("Обновление пользователя с id " + userId + ": " + storedUser);
+            log.info("Обновление пользователя с id '{}': {}", userId, storedUser);
             return ResponseEntity.ok(UserMapper.toDto(storedUser));
         } else {
-            log.warn("Пользователь с id " + userId + " не был найден.");
+            log.error("Пользователь с id {} не был найден.", userId);
             throw new NotFoundException("Пользователь с id " + userId + " не найден.");
         }
     }
