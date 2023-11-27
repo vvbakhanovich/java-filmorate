@@ -28,7 +28,7 @@ public class FilmController {
         Film film = FilmMapper.toModel(filmDto);
         film.setId(generateId());
         films.put(film.getId(), film);
-        log.info("Добавление нового фильма: " + film);
+        log.info("Добавление нового фильма: {}", film);
         return new ResponseEntity<>(FilmMapper.toDto(film), HttpStatus.CREATED);
     }
 
@@ -44,7 +44,7 @@ public class FilmController {
             log.info("Обновление фильма с id " + filmId + ": " + storedFilm);
             return ResponseEntity.ok(FilmMapper.toDto(storedFilm));
         } else {
-            log.warn("Фильм с id " + filmId + " не был найден.");
+            log.error("Фильм с id {} не был найден.", filmId);
             throw new NotFoundException("Фильма с id " + filmId + " не найден.");
         }
     }
