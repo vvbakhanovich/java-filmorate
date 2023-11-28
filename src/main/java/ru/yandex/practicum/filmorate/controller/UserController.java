@@ -26,7 +26,8 @@ public class UserController {
 
     @PostMapping
     public ResponseEntity<UserDto> addUser(@Valid @RequestBody UserDto userDto) {
-        User user = UserMapper.toModel(userDto);
+        User user = new User(generateId(), userDto.getEmail(), userDto.getLogin(), checkIfNameIsEmpty(userDto),
+                userDto.getBirthday());
         user.setId(generateId());
         users.put(user.getId(), user);
         log.info("Добавление нового пользователя: {}", user);
