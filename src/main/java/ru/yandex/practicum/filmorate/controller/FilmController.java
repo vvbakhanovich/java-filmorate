@@ -41,7 +41,7 @@ public class FilmController {
             storedFilm.setDescription(updatedFilmDto.getDescription());
             storedFilm.setReleaseDate(updatedFilmDto.getReleaseDate());
             storedFilm.setDuration(updatedFilmDto.getDuration());
-            log.info("Обновление фильма с id '{}': {}" , filmId, storedFilm);
+            log.info("Обновление фильма с id '{}': {}", filmId, storedFilm);
             return ResponseEntity.ok(FilmMapper.toDto(storedFilm));
         } else {
             log.error("Фильм с id {} не был найден.", filmId);
