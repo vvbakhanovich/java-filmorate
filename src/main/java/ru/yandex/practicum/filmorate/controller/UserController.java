@@ -25,18 +25,18 @@ public class UserController {
     private final Map<Long, User> users = new HashMap<>();
 
     @PostMapping
-    public ResponseEntity<UserDto> addUser(@Valid @RequestBody UserDto userDto) {
+    @ResponseStatus(HttpStatus.CREATED)
+    public UserDto addUser(@Valid @RequestBody UserDto userDto) {
         User user = new User(generateId(), userDto.getEmail(), userDto.getLogin(), checkIfNameIsEmpty(userDto),
                 userDto.getBirthday());
         users.put(user.getId(), user);
         log.info("Добавление нового пользователя: " + user);
-        return new ResponseEntity<>(UserMapper.toDto(user), HttpStatus.CREATED);
+        return UserMapper.toDto(user);
     }
 
-    // Решил задавать id обновляемого фильма в uri, поэтому некоторые тесты для постман, которые были прикреплены к тз
-    // не проходят.
-    @PutMapping()
-    public ResponseEntity<UserDto> updateUser(@Valid @RequestBody UserDto updatedUserDto) {
+    @PutMapping
+    @ResponseStatus(HttpStatus.OK)
+    public UserDto updateUser(@Valid @RequestBody UserDto updatedUserDto) {
         long userId = updatedUserDto.getId();
         User storedUser = users.get(userId);
         if (storedUser != null) {
@@ -45,7 +45,7 @@ public class UserController {
             storedUser.setName(checkIfNameIsEmpty(updatedUserDto));
             storedUser.setBirthday(updatedUserDto.getBirthday());
             log.info("Обновление пользователя с id " + userId + ": " + storedUser);
-            return ResponseEntity.ok(UserMapper.toDto(storedUser));
+            return UserMapper.toDto(storedUser);
         } else {
             log.error("Пользователь с id " + userId + " не был найден.");
             throw new NotFoundException("Пользователь с id " + userId + " не найден.");
@@ -53,10 +53,10 @@ public class UserController {
     }
 
     @GetMapping
-    public ResponseEntity<ArrayList<UserDto>> getAllUser() {
+    @ResponseStatus(HttpStatus.OK)
+    public ArrayList<UserDto> getAllUser() {
         log.info("Получение списка всех пользователей.");
-        return ResponseEntity.ok(new ArrayList<>(users.values().stream().map(UserMapper::toDto)
-                .collect(Collectors.toList())));
+        return users.values().stream().map(UserMapper::toDto).collect(Collectors.toCollection(ArrayList::new));
     }
 
     private long generateId() {
