@@ -24,16 +24,18 @@ public class FilmController {
     private final Map<Long, Film> films = new HashMap<>();
 
     @PostMapping
-    public ResponseEntity<FilmDto> addFilm(@Valid @RequestBody FilmDto filmDto) {
+    @ResponseStatus(HttpStatus.CREATED)
+    public FilmDto addFilm(@Valid @RequestBody FilmDto filmDto) {
         Film film = new Film(generateId(), filmDto.getName(), filmDto.getDescription(), filmDto.getReleaseDate(),
                 filmDto.getDuration());
         films.put(film.getId(), film);
         log.info("Добавление нового фильма: " + film);
-        return new ResponseEntity<>(FilmMapper.toDto(film), HttpStatus.CREATED);
+        return FilmMapper.toDto(film);
     }
 
     @PutMapping
-    public ResponseEntity<FilmDto> updateFilm(@Valid @RequestBody FilmDto updatedFilmDto) {
+    @ResponseStatus(HttpStatus.OK)
+    public FilmDto updateFilm(@Valid @RequestBody FilmDto updatedFilmDto) {
         long filmId = updatedFilmDto.getId();
         Film storedFilm = films.get(filmId);
         if (storedFilm != null) {
@@ -42,7 +44,7 @@ public class FilmController {
             storedFilm.setReleaseDate(updatedFilmDto.getReleaseDate());
             storedFilm.setDuration(updatedFilmDto.getDuration());
             log.info("Обновление фильма с id " + filmId + ": " + storedFilm);
-            return ResponseEntity.ok(FilmMapper.toDto(storedFilm));
+            return FilmMapper.toDto(storedFilm);
         } else {
             log.error("Фильм с id " + filmId + " не был найден.");
             throw new NotFoundException("Фильма с id " + filmId + " не найден.");
@@ -50,10 +52,10 @@ public class FilmController {
     }
 
     @GetMapping
-    public ResponseEntity<ArrayList<FilmDto>> getAllFilms() {
+    @ResponseStatus(HttpStatus.OK)
+    public ArrayList<FilmDto> getAllFilms() {
         log.info("Получение списка всех фильмов.");
-        return ResponseEntity.ok(new ArrayList<>(films.values().stream().map(FilmMapper::toDto)
-                .collect(Collectors.toList())));
+        return films.values().stream().map(FilmMapper::toDto).collect(Collectors.toCollection(ArrayList::new));
     }
 
     private long generateId() {
