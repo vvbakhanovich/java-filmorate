@@ -47,7 +47,7 @@ public class UserController {
             log.info("Обновление пользователя с id " + userId + ": " + storedUser);
             return ResponseEntity.ok(UserMapper.toDto(storedUser));
         } else {
-            log.warn("Пользователь с id " + userId + " не был найден.");
+            log.error("Пользователь с id " + userId + " не был найден.");
             throw new NotFoundException("Пользователь с id " + userId + " не найден.");
         }
     }
