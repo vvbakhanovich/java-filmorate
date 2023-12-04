@@ -15,7 +15,7 @@ public class InMemoryUserStorage implements UserStorage {
     }
 
     @Override
-    public boolean removeUser(long user) {
+    public boolean removeUser(final long user) {
         return users.remove(user) != null;
     }
 
