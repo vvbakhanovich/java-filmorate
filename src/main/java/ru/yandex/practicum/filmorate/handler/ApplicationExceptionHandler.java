@@ -21,6 +21,7 @@ public class ApplicationExceptionHandler {
     public Map<String, String> handleUserNotFoundException(NotFoundException e) {
         Map<String, String> exceptions = new HashMap<>();
         exceptions.put("errorMessage", e.getLocalizedMessage());
+        log.error(e.getLocalizedMessage());
         return exceptions;
     }
 
@@ -30,7 +31,7 @@ public class ApplicationExceptionHandler {
         Map<String, String> exceptions = new HashMap<>();
         for (FieldError error : e.getBindingResult().getFieldErrors()) {
             exceptions.put(error.getField(), error.getDefaultMessage());
-            log.warn("Поле " + error.getField() + " не прошло валидацию. Причина: " + error.getDefaultMessage());
+            log.error("Поле " + error.getField() + " не прошло валидацию. Причина: " + error.getDefaultMessage());
         }
 
         return exceptions;
