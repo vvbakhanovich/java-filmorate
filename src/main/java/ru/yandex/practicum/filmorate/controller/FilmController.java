@@ -44,7 +44,7 @@ public class FilmController {
             log.info("Обновление фильма с id " + filmId + ": " + storedFilm);
             return ResponseEntity.ok(FilmMapper.toDto(storedFilm));
         } else {
-            log.warn("Фильм с id " + filmId + " не был найден.");
+            log.error("Фильм с id " + filmId + " не был найден.");
             throw new NotFoundException("Фильма с id " + filmId + " не найден.");
         }
     }
