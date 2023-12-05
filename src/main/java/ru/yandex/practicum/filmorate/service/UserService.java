@@ -56,9 +56,7 @@ public class UserService {
         if (user != null) {
             if (friend != null) {
                 user.getFriends().add(friendId);
-                userStorage.update(user);
                 friend.getFriends().add(userId);
-                userStorage.update(friend);
                 log.info("Пользователи с id {} и id {} стали друзьями.", friendId, userId);
                 return UserMapper.toDto(user);
             } else {
@@ -87,14 +85,59 @@ public class UserService {
         }
     }
 
-    public UserDto findUserById(long id) {
-        User user = userStorage.findById(id);
+    public Collection<UserDto> findCommonFriends(long userId, long otherUserId) {
+        User user = userStorage.findById(userId);
+        User otherUser = userStorage.findById(otherUserId);
         if (user != null) {
-            log.info("Пользователь с id {} найден.", id);
+            if (otherUser != null) {
+                Set<Long> userFriendsId = user.getFriends();
+                Set<Long> otherUserFriendsId = otherUser.getFriends();
+                Set<Long> commonIds = userFriendsId.stream().filter(otherUserFriendsId::contains).collect(Collectors.toSet());
+                List<User> result = new ArrayList<>();
+                log.info("Cписок id общих друзей пользователей с id {} и {}: {}", userId, otherUser, result);
+                for (Long id : commonIds) {
+                    result.add(userStorage.findById(id));
+                }
+                return result.stream().map(UserMapper::toDto).collect(Collectors.toList());
+            } else {
+                log.error("Пользователь с id {} не был найден.", otherUser);
+                throw new NotFoundException("Пользователь id " + otherUser + " не найден");
+            }
+        } else {
+            log.error("Пользователь с id {} не был найден.", userId);
+            throw new NotFoundException("Пользователь id " + userId + " не найден.");
+        }
+    }
+
+    public UserDto findUserById(long userId) {
+        User user = userStorage.findById(userId);
+        if (user != null) {
+            log.info("Пользователь с id {} найден.", userId);
             return UserMapper.toDto(user);
         } else {
-            log.error("Пользователь с id {} не был найден.", id);
-            throw new NotFoundException("Пользователь id " + id + " не найден.");
+            log.error("Пользователь с id {} не был найден.", userId);
+            throw new NotFoundException("Пользователь id " + userId + " не найден.");
+        }
+    }
+
+    public UserDto removeFriend(long userId, long friendId) {
+        User user = userStorage.findById(userId);
+        User friend = userStorage.findById(friendId);
+        if (user != null) {
+            if (friend != null) {
+                Set<Long> userFriendsId = user.getFriends();
+                Set<Long> otherUserFriendsId = friend.getFriends();
+                userFriendsId.remove(friendId);
+                otherUserFriendsId.remove(userId);
+                log.info("Пользователи с id {} и {} перестали быть друзьями", userId, friend);
+                return UserMapper.toDto(user);
+            } else {
+                log.error("Пользователь с id {} не был найден.", friendId);
+                throw new NotFoundException("Пользователь id " + friendId + " не найден");
+            }
+        } else {
+            log.error("Пользователь с id {} не был найден.", userId);
+            throw new NotFoundException("Пользователь id " + userId + " не найден.");
         }
     }
 

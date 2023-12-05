@@ -62,4 +62,16 @@ public class UserController {
         return userService.showFriendList(id);
     }
 
+    @GetMapping("/{id}/friends/common/{otherId}")
+    @ResponseStatus(HttpStatus.OK)
+    public Collection<UserDto> findCommonFriends(@PathVariable @Positive long id, @PathVariable @Positive long otherId) {
+        return userService.findCommonFriends(id, otherId);
+    }
+
+    @DeleteMapping("/{id}/friends/{friendId}")
+    @ResponseStatus(HttpStatus.OK)
+    public UserDto removeFriend(@PathVariable @Positive long id, @PathVariable @Positive long friendId) {
+        return userService.removeFriend(id, friendId);
+    }
+
 }
