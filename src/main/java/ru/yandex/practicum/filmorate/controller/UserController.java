@@ -44,6 +44,12 @@ public class UserController {
         return userService.getAllUser();
     }
 
+    @GetMapping("/{id}")
+    @ResponseStatus(HttpStatus.OK)
+    public UserDto getUserById(@PathVariable @Positive long id) {
+        return userService.getUserById(id);
+    }
+
     @PutMapping("/{id}/friends/{friendId}")
     public UserDto addFriend(@PathVariable @Positive long id, @PathVariable @Positive long friendId) {
         return userService.addFriend(id, friendId);

@@ -65,7 +65,7 @@ public class UserService {
             }
         } else {
             log.error("Пользователь с id {} не был найден.", userId);
-            throw new NotFoundException("Пользователь id " + userId + " не найден");
+            throw new NotFoundException("Пользователь id " + userId + " не найден.");
         }
     }
 
@@ -75,5 +75,17 @@ public class UserService {
                 userDto.getLogin() : userDto.getName();
         userDto.setName(validatedName);
         return userDto;
+    }
+
+    public UserDto getUserById(long id) {
+        log.info("Поиск пользователся с id {}", id);
+        User user = userStorage.findById(id);
+        if (user != null) {
+            log.info("Пользователь с id {} найден.", id);
+            return UserMapper.toDto(user);
+        } else {
+            log.error("Пользователь с id {} не был найден.", id);
+            throw new NotFoundException("Пользователь id " + id + " не найден.");
+        }
     }
 }
