@@ -27,17 +27,18 @@ public class UserService {
     }
 
     public UserDto addUser(@Valid @RequestBody UserDto userDto) {
-        User user = userStorage.add(UserMapper.toModel(userDto));
-        log.info("Добавление нового пользователя: {}", user);
-        return UserMapper.toDto(user);
+        User user = UserMapper.toModel(validateUserName(userDto));
+        User addedUser = userStorage.add(user);
+        log.info("Добавление нового пользователя: {}", addedUser);
+        return UserMapper.toDto(addedUser);
     }
 
     public UserDto updateUser(@Valid @RequestBody UserDto updatedUserDto) {
-        User storedUser = UserMapper.toModel(updatedUserDto);
-        long userId = storedUser.getId();
-        if (userStorage.update(storedUser)) {
-            log.info("Обновление пользователя с id {} : {}", userId, storedUser);
-            return UserMapper.toDto(storedUser);
+        User updatedUser = UserMapper.toModel(validateUserName(updatedUserDto));
+        long userId = updatedUser.getId();
+        if (userStorage.update(updatedUser)) {
+            log.info("Обновление пользователя с id {} : {}", userId, updatedUser);
+            return UserMapper.toDto(updatedUser);
         } else {
             log.error("Пользователь с id {} не был найден.", userId);
             throw new NotFoundException("Пользователь с id " + userId + " не найден.");
@@ -50,8 +51,11 @@ public class UserService {
         return userStorage.findAl().stream().map(UserMapper::toDto).collect(Collectors.toCollection(ArrayList::new));
     }
 
-    private String checkIfNameIsEmpty(UserDto userDto) {
-        return userDto.getName() == null || userDto.getName().isBlank() ? userDto.getLogin() : userDto.getName();
+    private UserDto validateUserName(UserDto userDto) {
+        String validatedName = userDto.getName() == null || userDto.getName().isBlank() ?
+                userDto.getLogin() : userDto.getName();
+        userDto.setName(validatedName);
+        return userDto;
     }
 
 }
