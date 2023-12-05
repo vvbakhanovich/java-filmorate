@@ -47,11 +47,19 @@ public class UserController {
     @GetMapping("/{id}")
     @ResponseStatus(HttpStatus.OK)
     public UserDto getUserById(@PathVariable @Positive long id) {
-        return userService.getUserById(id);
+        return userService.findUserById(id);
     }
 
     @PutMapping("/{id}/friends/{friendId}")
+    @ResponseStatus(HttpStatus.OK)
     public UserDto addFriend(@PathVariable @Positive long id, @PathVariable @Positive long friendId) {
         return userService.addFriend(id, friendId);
     }
+
+    @GetMapping("/{id}/friends")
+    @ResponseStatus(HttpStatus.OK)
+    public Collection<UserDto> showFriendList(@PathVariable @Positive long id) {
+        return userService.showFriendList(id);
+    }
+
 }

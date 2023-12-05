@@ -11,6 +11,8 @@ import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -69,16 +71,23 @@ public class UserService {
         }
     }
 
-
-    private UserDto validateUserName(final UserDto userDto) {
-        String validatedName = userDto.getName() == null || userDto.getName().isBlank() ?
-                userDto.getLogin() : userDto.getName();
-        userDto.setName(validatedName);
-        return userDto;
+    public Collection<UserDto> showFriendList(long userId) {
+        User user = userStorage.findById(userId);
+        if (user != null) {
+            Set<Long> friendIds = user.getFriends();
+            List<User> result = new ArrayList<>();
+            for (Long friendId : friendIds) {
+                result.add(userStorage.findById(friendId));
+            }
+            log.info("Список друзей пользователся с id {}: {}", userId, result);
+            return result.stream().map(UserMapper::toDto).collect(Collectors.toList());
+        } else {
+            log.error("Пользователь с id {} не был найден.", userId);
+            throw new NotFoundException("Пользователь id " + userId + " не найден.");
+        }
     }
 
-    public UserDto getUserById(long id) {
-        log.info("Поиск пользователся с id {}", id);
+    public UserDto findUserById(long id) {
         User user = userStorage.findById(id);
         if (user != null) {
             log.info("Пользователь с id {} найден.", id);
@@ -87,5 +96,12 @@ public class UserService {
             log.error("Пользователь с id {} не был найден.", id);
             throw new NotFoundException("Пользователь id " + id + " не найден.");
         }
+    }
+
+    private UserDto validateUserName(final UserDto userDto) {
+        String validatedName = userDto.getName() == null || userDto.getName().isBlank() ?
+                userDto.getLogin() : userDto.getName();
+        userDto.setName(validatedName);
+        return userDto;
     }
 }
