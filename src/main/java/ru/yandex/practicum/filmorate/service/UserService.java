@@ -3,14 +3,12 @@ package ru.yandex.practicum.filmorate.service;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.RequestBody;
 import ru.yandex.practicum.filmorate.dto.UserDto;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.mapper.UserMapper;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
-import javax.validation.Valid;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.stream.Collectors;
@@ -26,14 +24,14 @@ public class UserService {
         this.userStorage = userStorage;
     }
 
-    public UserDto addUser(@Valid @RequestBody UserDto userDto) {
+    public UserDto addUser(UserDto userDto) {
         User user = UserMapper.toModel(validateUserName(userDto));
         User addedUser = userStorage.add(user);
         log.info("Добавление нового пользователя: {}", addedUser);
         return UserMapper.toDto(addedUser);
     }
 
-    public UserDto updateUser(@Valid @RequestBody UserDto updatedUserDto) {
+    public UserDto updateUser(UserDto updatedUserDto) {
         User updatedUser = UserMapper.toModel(validateUserName(updatedUserDto));
         long userId = updatedUser.getId();
         if (userStorage.update(updatedUser)) {
@@ -48,7 +46,7 @@ public class UserService {
     //TODO заменить на Collection??
     public Collection<UserDto> getAllUser() {
         log.info("Получение списка всех пользователей.");
-        return userStorage.findAl().stream().map(UserMapper::toDto).collect(Collectors.toCollection(ArrayList::new));
+        return userStorage.findAll().stream().map(UserMapper::toDto).collect(Collectors.toCollection(ArrayList::new));
     }
 
     private UserDto validateUserName(UserDto userDto) {
