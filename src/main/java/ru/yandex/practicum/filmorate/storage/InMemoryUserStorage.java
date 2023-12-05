@@ -1,26 +1,37 @@
 package ru.yandex.practicum.filmorate.storage;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.util.HashMap;
 import java.util.Map;
 
-public class InMemoryUserStorage implements UserStorage {
+@Repository
+public class InMemoryUserStorage implements Storage<User> {
+
+    IdGenerator<Long> idGenerator;
+
+    @Autowired
+    public InMemoryUserStorage(IdGenerator<Long> idGenerator) {
+        this.idGenerator = idGenerator;
+    }
+
     private final Map<Long, User> users = new HashMap<>();
 
     @Override
-    public long addUser(final User user) {
-        users.put(user.getId(), user);
+    public long add(final User user) {
+        users.put(idGenerator.generateId(), user);
         return user.getId();
     }
 
     @Override
-    public boolean removeUser(final long user) {
+    public boolean remove(final long user) {
         return users.remove(user) != null;
     }
 
     @Override
-    public boolean updateUser(final User updateUser) {
+    public boolean update(final User updateUser) {
         if (users.containsKey(updateUser.getId())) {
             users.put(updateUser.getId(), updateUser);
             return true;
