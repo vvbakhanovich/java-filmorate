@@ -10,4 +10,6 @@ public interface Storage<T> {
     boolean update(T t);
 
     Collection<T> findAll();
+
+    T findById(long id);
 }
