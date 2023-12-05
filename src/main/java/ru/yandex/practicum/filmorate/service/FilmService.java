@@ -39,7 +39,7 @@ public class FilmService {
             return FilmMapper.toDto(updatedFilm);
         } else {
             log.error("Фильм с id {} не был найден.", filmId);
-            throw new NotFoundException("Фильма с id " + filmId + " не найден.");
+            throw new NotFoundException("Фильм с id " + filmId + " не найден.");
         }
     }
 
