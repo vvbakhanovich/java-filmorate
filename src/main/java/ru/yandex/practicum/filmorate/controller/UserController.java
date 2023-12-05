@@ -32,12 +32,12 @@ public class UserController {
     @PutMapping
     @ResponseStatus(HttpStatus.OK)
     public UserDto updateUser(@Valid @RequestBody UserDto updatedUserDto) {
-        return updateUser(updatedUserDto);
+        return userService.updateUser(updatedUserDto);
     }
 
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
     public Collection<UserDto> getAllUser() {
-        return getAllUser();
+        return userService.getAllUser();
     }
 }
