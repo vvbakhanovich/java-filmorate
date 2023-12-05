@@ -1,6 +1,6 @@
 package ru.yandex.practicum.filmorate.storage;
 
-import java.util.List;
+import java.util.Collection;
 
 public interface Storage<T> {
     T add(T t);
@@ -9,5 +9,5 @@ public interface Storage<T> {
 
     boolean update(T t);
 
-    List<T> findAl();
+    Collection<T> findAll();
 }
