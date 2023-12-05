@@ -46,31 +46,31 @@ public class UserController {
 
     @GetMapping("/{id}")
     @ResponseStatus(HttpStatus.OK)
-    public UserDto getUserById(@PathVariable @Positive long id) {
+    public UserDto getUserById(@PathVariable long id) {
         return userService.findUserById(id);
     }
 
     @PutMapping("/{id}/friends/{friendId}")
     @ResponseStatus(HttpStatus.OK)
-    public UserDto addFriend(@PathVariable @Positive long id, @PathVariable @Positive long friendId) {
+    public UserDto addFriend(@PathVariable long id, @PathVariable long friendId) {
         return userService.addFriend(id, friendId);
     }
 
     @GetMapping("/{id}/friends")
     @ResponseStatus(HttpStatus.OK)
-    public Collection<UserDto> showFriendList(@PathVariable @Positive long id) {
+    public Collection<UserDto> showFriendList(@PathVariable long id) {
         return userService.showFriendList(id);
     }
 
     @GetMapping("/{id}/friends/common/{otherId}")
     @ResponseStatus(HttpStatus.OK)
-    public Collection<UserDto> findCommonFriends(@PathVariable @Positive long id, @PathVariable @Positive long otherId) {
+    public Collection<UserDto> findCommonFriends(@PathVariable long id, @PathVariable long otherId) {
         return userService.findCommonFriends(id, otherId);
     }
 
     @DeleteMapping("/{id}/friends/{friendId}")
     @ResponseStatus(HttpStatus.OK)
-    public UserDto removeFriend(@PathVariable @Positive long id, @PathVariable @Positive long friendId) {
+    public UserDto removeFriend(@PathVariable long id, @PathVariable long friendId) {
         return userService.removeFriend(id, friendId);
     }
 

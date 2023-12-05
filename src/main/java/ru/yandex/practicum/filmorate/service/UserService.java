@@ -2,7 +2,9 @@ package ru.yandex.practicum.filmorate.service;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 import ru.yandex.practicum.filmorate.dto.UserDto;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.mapper.UserMapper;
@@ -53,6 +55,7 @@ public class UserService {
     public UserDto addFriend(final Long userId, long friendId) {
         User user = userStorage.findById(userId);
         User friend = userStorage.findById(friendId);
+        checkIdsArePositive(userId, friendId);
         if (user != null) {
             if (friend != null) {
                 user.getFriends().add(friendId);
@@ -88,6 +91,7 @@ public class UserService {
     public Collection<UserDto> findCommonFriends(long userId, long otherUserId) {
         User user = userStorage.findById(userId);
         User otherUser = userStorage.findById(otherUserId);
+        checkIdsArePositive(userId, otherUserId);
         if (user != null) {
             if (otherUser != null) {
                 Set<Long> userFriendsId = user.getFriends();
@@ -123,6 +127,7 @@ public class UserService {
     public UserDto removeFriend(long userId, long friendId) {
         User user = userStorage.findById(userId);
         User friend = userStorage.findById(friendId);
+        checkIdsArePositive(userId, friendId);
         if (user != null) {
             if (friend != null) {
                 Set<Long> userFriendsId = user.getFriends();
@@ -146,5 +151,11 @@ public class UserService {
                 userDto.getLogin() : userDto.getName();
         userDto.setName(validatedName);
         return userDto;
+    }
+
+    private void checkIdsArePositive(Long userId, long friendId) {
+        if (userId < 0 || friendId < 0) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 }
