@@ -24,18 +24,21 @@ public class InMemoryUserStorage implements Storage<User> {
     @Override
     public long add(final User user) {
         users.put(idGenerator.generateId(), user);
+        log.info("Сохранен пользователь: {}", user);
         return user.getId();
     }
 
     @Override
-    public boolean remove(final long user) {
-        return users.remove(user) != null;
+    public boolean remove(final long userId) {
+        log.info("Удален пользователь с id {}", userId);
+        return users.remove(userId) != null;
     }
 
     @Override
-    public boolean update(final User updateUser) {
-        if (users.containsKey(updateUser.getId())) {
-            users.put(updateUser.getId(), updateUser);
+    public boolean update(final User updatedUser) {
+        if (users.containsKey(updatedUser.getId())) {
+            users.put(updatedUser.getId(), updatedUser);
+            log.info("Обновлен пользователь {}", updatedUser);
             return true;
         }
         return false;

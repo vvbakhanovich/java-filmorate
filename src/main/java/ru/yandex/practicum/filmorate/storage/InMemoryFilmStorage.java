@@ -24,13 +24,13 @@ public class InMemoryFilmStorage implements Storage<Film> {
     @Override
     public long add(final Film film) {
         films.put(idGenerator.generateId(), film);
-        log.info("Сохранен фильм: " + film);
+        log.info("Сохранен фильм: {}", film);
         return film.getId();
     }
 
     @Override
     public boolean remove(final long filmId) {
-        log.info("Удален фильм с id " + filmId);
+        log.info("Удален фильм с id {}", filmId);
         return films.remove(filmId) != null;
     }
 
@@ -38,7 +38,7 @@ public class InMemoryFilmStorage implements Storage<Film> {
     public boolean update(final Film updatedFilm) {
         if (films.containsKey(updatedFilm.getId())) {
             films.put(updatedFilm.getId(), updatedFilm);
-            log.info(String.format("Обновлен фильм {}", updatedFilm));
+            log.info("Обновлен фильм {}", updatedFilm);
             return true;
         }
         return false;
