@@ -2,63 +2,43 @@ package ru.yandex.practicum.filmorate.controller;
 
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.dto.FilmDto;
-import ru.yandex.practicum.filmorate.exception.NotFoundException;
-import ru.yandex.practicum.filmorate.mapper.FilmMapper;
-import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.service.FilmService;
 
 import javax.validation.Valid;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.stream.Collectors;
+import java.util.Collection;
 
 @RestController
 @RequestMapping("/films")
 @Slf4j
 public class FilmController {
-    private long filmId = 1;
-    private final Map<Long, Film> films = new HashMap<>();
+
+    FilmService filmService;
+
+    @Autowired
+    public FilmController(FilmService filmService) {
+        this.filmService = filmService;
+    }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public FilmDto addFilm(@Valid @RequestBody FilmDto filmDto) {
-        Film film = new Film(generateId(), filmDto.getName(), filmDto.getDescription(), filmDto.getReleaseDate(),
-                filmDto.getDuration());
-        films.put(film.getId(), film);
-        log.info("Добавление нового фильма: " + film);
-        return FilmMapper.toDto(film);
+        return filmService.addFilm(filmDto);
     }
 
     @PutMapping
     @ResponseStatus(HttpStatus.OK)
     public FilmDto updateFilm(@Valid @RequestBody FilmDto updatedFilmDto) {
-        long filmId = updatedFilmDto.getId();
-        Film storedFilm = films.get(filmId);
-        if (storedFilm != null) {
-            storedFilm.setName(updatedFilmDto.getName());
-            storedFilm.setDescription(updatedFilmDto.getDescription());
-            storedFilm.setReleaseDate(updatedFilmDto.getReleaseDate());
-            storedFilm.setDuration(updatedFilmDto.getDuration());
-            log.info("Обновление фильма с id " + filmId + ": " + storedFilm);
-            return FilmMapper.toDto(storedFilm);
-        } else {
-            log.error("Фильм с id " + filmId + " не был найден.");
-            throw new NotFoundException("Фильма с id " + filmId + " не найден.");
-        }
+        return filmService.updateFilm(updatedFilmDto);
     }
 
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
-    public ArrayList<FilmDto> getAllFilms() {
-        log.info("Получение списка всех фильмов.");
-        return films.values().stream().map(FilmMapper::toDto).collect(Collectors.toCollection(ArrayList::new));
-    }
-
-    private long generateId() {
-        return filmId++;
+    public Collection<FilmDto> getAllFilms() {
+        return filmService.getAllFilms();
     }
 }
 
