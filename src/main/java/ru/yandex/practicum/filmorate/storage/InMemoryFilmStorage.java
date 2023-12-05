@@ -5,12 +5,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.model.Film;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Repository
 @Slf4j
-public class InMemoryFilmStorage implements Storage<Film> {
+public class InMemoryFilmStorage implements FilmStorage {
 
     IdGenerator<Long> idGenerator;
 
@@ -22,10 +24,11 @@ public class InMemoryFilmStorage implements Storage<Film> {
     private final Map<Long, Film> films = new HashMap<>();
 
     @Override
-    public long add(final Film film) {
-        films.put(idGenerator.generateId(), film);
+    public Film add(final Film film) {
+        film.setId(idGenerator.generateId());
+        films.put(film.getId(), film);
         log.info("Сохранен фильм: {}", film);
-        return film.getId();
+        return film;
     }
 
     @Override
@@ -42,5 +45,10 @@ public class InMemoryFilmStorage implements Storage<Film> {
             return true;
         }
         return false;
+    }
+
+    @Override
+    public List<Film> findAl() {
+        return new ArrayList<>(films.values());
     }
 }
