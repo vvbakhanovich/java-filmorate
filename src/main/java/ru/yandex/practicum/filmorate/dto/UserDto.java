@@ -9,6 +9,8 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.PastOrPresent;
 import java.time.LocalDate;
+import java.util.HashSet;
+import java.util.Set;
 
 @Data
 @AllArgsConstructor
@@ -22,4 +24,5 @@ public class UserDto {
     private String name; //имя для отображения
     @PastOrPresent(message = "Дата рождения не может быть в будущем.")
     private LocalDate birthday; //дата рождения
+    private final Set<Long> friends = new HashSet<>(); //список друзей
 }
