@@ -5,12 +5,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.model.User;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Repository
 @Slf4j
-public class InMemoryUserStorage implements Storage<User> {
+public class InMemoryUserStorage implements UserStorage {
 
     IdGenerator<Long> idGenerator;
 
@@ -22,10 +24,11 @@ public class InMemoryUserStorage implements Storage<User> {
     private final Map<Long, User> users = new HashMap<>();
 
     @Override
-    public long add(final User user) {
-        users.put(idGenerator.generateId(), user);
+    public User add(final User user) {
+        user.setId(idGenerator.generateId());
+        users.put(user.getId(), user);
         log.info("Сохранен пользователь: {}", user);
-        return user.getId();
+        return user;
     }
 
     @Override
@@ -42,5 +45,10 @@ public class InMemoryUserStorage implements Storage<User> {
             return true;
         }
         return false;
+    }
+
+    @Override
+    public List<User> findAl() {
+        return new ArrayList<>(users.values());
     }
 }
