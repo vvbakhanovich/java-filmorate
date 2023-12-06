@@ -1,8 +1,9 @@
 package ru.yandex.practicum.filmorate.storage;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 
 import java.util.ArrayList;
@@ -12,14 +13,10 @@ import java.util.Map;
 
 @Repository
 @Slf4j
+@RequiredArgsConstructor
 public class InMemoryFilmStorage implements FilmStorage {
 
-    IdGenerator<Long> idGenerator;
-
-    @Autowired
-    public InMemoryFilmStorage(IdGenerator<Long> idGenerator) {
-        this.idGenerator = idGenerator;
-    }
+    private final IdGenerator<Long> idGenerator;
 
     private final Map<Long, Film> films = new HashMap<>();
 
@@ -32,19 +29,26 @@ public class InMemoryFilmStorage implements FilmStorage {
     }
 
     @Override
-    public boolean remove(final long filmId) {
-        log.info("Удален фильм с id {}", filmId);
-        return films.remove(filmId) != null;
+    public void remove(final long filmId) {
+        if (films.containsKey(filmId)) {
+            films.remove(filmId);
+            log.info("Удален фильм с id {}", filmId);
+        } else {
+            log.error("Фильм с id {} не был найден.", filmId);
+            throw new NotFoundException("Фильм с id " + filmId + " не найден.");
+        }
     }
 
     @Override
-    public boolean update(final Film updatedFilm) {
-        if (films.containsKey(updatedFilm.getId())) {
-            films.put(updatedFilm.getId(), updatedFilm);
+    public void update(final Film updatedFilm) {
+        long filmId = updatedFilm.getId();
+        if (films.containsKey(filmId)) {
+            films.put(filmId, updatedFilm);
             log.info("Обновлен фильм {}", updatedFilm);
-            return true;
+        } else {
+            log.error("Фильм с id {} не был найден.", filmId);
+            throw new NotFoundException("Фильм с id " + filmId + " не найден.");
         }
-        return false;
     }
 
     @Override
@@ -53,7 +57,12 @@ public class InMemoryFilmStorage implements FilmStorage {
     }
 
     @Override
-    public Film findById(long id) {
-        return films.get(id);
+    public Film findById(long filmId) {
+        if (films.containsKey(filmId)) {
+            return films.get(filmId);
+        } else {
+            log.error("Фильм с id {} не был найден.", filmId);
+            throw new NotFoundException("Фильм с id " + filmId + " не найден.");
+        }
     }
 }
