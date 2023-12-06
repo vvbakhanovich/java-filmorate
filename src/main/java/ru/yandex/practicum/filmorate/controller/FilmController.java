@@ -1,8 +1,7 @@
 package ru.yandex.practicum.filmorate.controller;
 
 
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.dto.FilmDto;
@@ -13,15 +12,10 @@ import java.util.Collection;
 
 @RestController
 @RequestMapping("/films")
-@Slf4j
+@RequiredArgsConstructor
 public class FilmController {
 
-    FilmService filmService;
-
-    @Autowired
-    public FilmController(FilmService filmService) {
-        this.filmService = filmService;
-    }
+    private final FilmService filmService;
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
@@ -30,37 +24,31 @@ public class FilmController {
     }
 
     @PutMapping
-    @ResponseStatus(HttpStatus.OK)
     public FilmDto updateFilm(@Valid @RequestBody FilmDto updatedFilmDto) {
         return filmService.updateFilm(updatedFilmDto);
     }
 
     @GetMapping
-    @ResponseStatus(HttpStatus.OK)
     public Collection<FilmDto> getAllFilms() {
         return filmService.getAllFilms();
     }
 
     @GetMapping("/{id}")
-    @ResponseStatus(HttpStatus.OK)
     public FilmDto getFilmById(@PathVariable long id) {
         return filmService.getFilmById(id);
     }
 
     @PutMapping("/{id}/like/{userId}")
-    @ResponseStatus(HttpStatus.OK)
     public FilmDto likeFilm(@PathVariable long id, @PathVariable long userId) {
         return filmService.likeFilm(id, userId);
     }
 
     @DeleteMapping("/{id}/like/{userId}")
-    @ResponseStatus(HttpStatus.OK)
     public FilmDto removeLike(@PathVariable long id, @PathVariable long userId) {
         return filmService.removeLike(id, userId);
     }
 
     @GetMapping("/popular")
-    @ResponseStatus(HttpStatus.OK)
     public Collection<FilmDto> getMostPopularFilms(@RequestParam(required = false, defaultValue = "10") int count) {
         return filmService.getMostPopularFilms(count);
     }
