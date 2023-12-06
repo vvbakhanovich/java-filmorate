@@ -1,8 +1,7 @@
 package ru.yandex.practicum.filmorate.controller;
 
 
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.dto.UserDto;
@@ -13,15 +12,10 @@ import java.util.Collection;
 
 @RestController
 @RequestMapping("/users")
-@Slf4j
+@RequiredArgsConstructor
 public class UserController {
 
-    UserService userService;
-
-    @Autowired
-    public UserController(UserService userService) {
-        this.userService = userService;
-    }
+    private final UserService userService;
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
@@ -30,43 +24,36 @@ public class UserController {
     }
 
     @PutMapping
-    @ResponseStatus(HttpStatus.OK)
     public UserDto updateUser(@Valid @RequestBody UserDto updatedUserDto) {
         return userService.updateUser(updatedUserDto);
     }
 
     @GetMapping
-    @ResponseStatus(HttpStatus.OK)
     public Collection<UserDto> getAllUser() {
         return userService.getAllUser();
     }
 
     @GetMapping("/{id}")
-    @ResponseStatus(HttpStatus.OK)
     public UserDto getUserById(@PathVariable long id) {
         return userService.getUserById(id);
     }
 
     @PutMapping("/{id}/friends/{friendId}")
-    @ResponseStatus(HttpStatus.OK)
     public UserDto addFriend(@PathVariable long id, @PathVariable long friendId) {
         return userService.addFriend(id, friendId);
     }
 
     @GetMapping("/{id}/friends")
-    @ResponseStatus(HttpStatus.OK)
     public Collection<UserDto> showFriendList(@PathVariable long id) {
         return userService.showFriendList(id);
     }
 
     @GetMapping("/{id}/friends/common/{otherId}")
-    @ResponseStatus(HttpStatus.OK)
     public Collection<UserDto> findCommonFriends(@PathVariable long id, @PathVariable long otherId) {
         return userService.findCommonFriends(id, otherId);
     }
 
     @DeleteMapping("/{id}/friends/{friendId}")
-    @ResponseStatus(HttpStatus.OK)
     public UserDto removeFriend(@PathVariable long id, @PathVariable long friendId) {
         return userService.removeFriend(id, friendId);
     }
