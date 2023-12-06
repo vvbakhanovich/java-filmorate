@@ -31,7 +31,7 @@ public class ApplicationExceptionHandler {
         Map<String, String> exceptions = errorResponse.getErrors();
         for (FieldError error : e.getBindingResult().getFieldErrors()) {
             exceptions.put(error.getField(), error.getDefaultMessage());
-            log.error("Поле " + error.getField() + " не прошло валидацию. Причина: " + error.getDefaultMessage());
+            log.error("Поле {} не прошло валидацию. Причина: {}.", error.getField(), error.getDefaultMessage());
         }
 
         return errorResponse;
