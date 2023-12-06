@@ -40,5 +40,11 @@ public class FilmController {
     public Collection<FilmDto> getAllFilms() {
         return filmService.getAllFilms();
     }
+
+    @GetMapping("/{id}")
+    @ResponseStatus(HttpStatus.OK)
+    public FilmDto getFilmById(@PathVariable long id) {
+        return filmService.getFilmById(id);
+    }
 }
 
