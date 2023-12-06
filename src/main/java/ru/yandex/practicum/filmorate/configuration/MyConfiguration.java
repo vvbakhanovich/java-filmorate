@@ -6,9 +6,6 @@ import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateSerializer;
 import org.springframework.boot.autoconfigure.jackson.Jackson2ObjectMapperBuilderCustomizer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Scope;
-import ru.yandex.practicum.filmorate.storage.IdGenerator;
-import ru.yandex.practicum.filmorate.storage.LongIdGenerator;
 import ru.yandex.practicum.filmorate.util.Constants;
 
 @Configuration
