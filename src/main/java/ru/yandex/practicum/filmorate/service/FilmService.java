@@ -13,6 +13,7 @@ import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.stream.Collectors;
 
 import static ru.yandex.practicum.filmorate.mapper.FilmMapper.toDto;
@@ -83,5 +84,31 @@ public class FilmService {
             log.error("Фильм с id {} не был найден.", filmId);
             throw new NotFoundException("Пользователь id " + userId + " не найден.");
         }
+    }
+
+    public FilmDto removeLike(long filmId, long userId) {
+        Film film = filmStorage.findById(filmId);
+        User user = userStorage.findById(userId);
+        if (film != null) {
+            if (user != null) {
+                film.getLikes().remove(userId);
+                log.info("Пользователь с id {} удалил лайк фильма с id {}", userId, filmId);
+                return toDto(film);
+            } else {
+                log.error("Пользователь с id {} не был найден.", userId);
+                throw new NotFoundException("Пользователь id " + userId + " не найден");
+            }
+        } else {
+            log.error("Фильм с id {} не был найден.", filmId);
+            throw new NotFoundException("Пользователь id " + userId + " не найден.");
+        }
+    }
+
+    public Collection<FilmDto> getMostPopularFilms(int count) {
+        return filmStorage.findAll().stream()
+                .sorted(Comparator.comparingInt((Film o) -> o.getLikes().size()).reversed())
+                .limit(count)
+                .map(FilmMapper::toDto)
+                .collect(Collectors.toList());
     }
 }
