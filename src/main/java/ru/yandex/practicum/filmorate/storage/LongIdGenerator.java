@@ -7,7 +7,7 @@ import org.springframework.stereotype.Component;
 @Scope("prototype")
 public class LongIdGenerator implements IdGenerator<Long> {
 
-    long id = 1;
+    private long id = 1;
 
     @Override
     public Long generateId() {
