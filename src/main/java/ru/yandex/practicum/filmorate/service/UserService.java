@@ -52,6 +52,17 @@ public class UserService {
         return userStorage.findAll().stream().map(UserMapper::toDto).collect(Collectors.toCollection(ArrayList::new));
     }
 
+    public UserDto getUserById(long userId) {
+        User user = userStorage.findById(userId);
+        if (user != null) {
+            log.info("Пользователь с id {} найден.", userId);
+            return UserMapper.toDto(user);
+        } else {
+            log.error("Пользователь с id {} не был найден.", userId);
+            throw new NotFoundException("Пользователь id " + userId + " не найден.");
+        }
+    }
+
     public UserDto addFriend(final Long userId, long friendId) {
         User user = userStorage.findById(userId);
         User friend = userStorage.findById(friendId);
@@ -107,17 +118,6 @@ public class UserService {
                 log.error("Пользователь с id {} не был найден.", otherUser);
                 throw new NotFoundException("Пользователь id " + otherUser + " не найден");
             }
-        } else {
-            log.error("Пользователь с id {} не был найден.", userId);
-            throw new NotFoundException("Пользователь id " + userId + " не найден.");
-        }
-    }
-
-    public UserDto findUserById(long userId) {
-        User user = userStorage.findById(userId);
-        if (user != null) {
-            log.info("Пользователь с id {} найден.", userId);
-            return UserMapper.toDto(user);
         } else {
             log.error("Пользователь с id {} не был найден.", userId);
             throw new NotFoundException("Пользователь id " + userId + " не найден.");
