@@ -9,12 +9,16 @@ public final class FilmMapper {
     }
 
     public static FilmDto toDto(Film film) {
-        return new FilmDto(film.getId(), film.getName(), film.getDescription(), film.getReleaseDate(),
+        FilmDto filmDto = new FilmDto(film.getId(), film.getName(), film.getDescription(), film.getReleaseDate(),
                 film.getDuration());
+        filmDto.getLikes().addAll(film.getLikes());
+        return filmDto;
     }
 
     public static Film toModel(FilmDto filmDto) {
-        return new Film(filmDto.getId(), filmDto.getName(), filmDto.getDescription(), filmDto.getReleaseDate(),
+        Film film = new Film(filmDto.getId(), filmDto.getName(), filmDto.getDescription(), filmDto.getReleaseDate(),
                 filmDto.getDuration());
+        film.getLikes().addAll(filmDto.getLikes());
+        return film;
     }
 }
