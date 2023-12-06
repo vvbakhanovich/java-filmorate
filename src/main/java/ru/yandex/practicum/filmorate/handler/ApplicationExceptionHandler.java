@@ -9,7 +9,6 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 
-import java.util.HashMap;
 import java.util.Map;
 
 @Slf4j
@@ -18,22 +17,23 @@ public class ApplicationExceptionHandler {
 
     @ExceptionHandler(NotFoundException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
-    public Map<String, String> handleUserNotFoundException(NotFoundException e) {
-        Map<String, String> exceptions = new HashMap<>();
-        exceptions.put("errorMessage", e.getLocalizedMessage());
+    public ErrorResponse handleUserNotFoundException(NotFoundException e) {
         log.error(e.getLocalizedMessage());
-        return exceptions;
+        ErrorResponse errorResponse = new ErrorResponse();
+        errorResponse.getErrors().put("errorMessage", e.getLocalizedMessage());
+        return errorResponse;
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public Map<String, String> handleInvalidException(MethodArgumentNotValidException e) {
-        Map<String, String> exceptions = new HashMap<>();
+    public ErrorResponse handleInvalidException(MethodArgumentNotValidException e) {
+        ErrorResponse errorResponse = new ErrorResponse();
+        Map<String, String> exceptions = errorResponse.getErrors();
         for (FieldError error : e.getBindingResult().getFieldErrors()) {
             exceptions.put(error.getField(), error.getDefaultMessage());
             log.error("Поле " + error.getField() + " не прошло валидацию. Причина: " + error.getDefaultMessage());
         }
 
-        return exceptions;
+        return errorResponse;
     }
 }
