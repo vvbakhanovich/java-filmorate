@@ -1,12 +1,11 @@
 package ru.yandex.practicum.filmorate.mapper;
 
+import lombok.experimental.UtilityClass;
 import ru.yandex.practicum.filmorate.dto.FilmDto;
 import ru.yandex.practicum.filmorate.model.Film;
 
-public final class FilmMapper {
-    private FilmMapper() {
-
-    }
+@UtilityClass
+public class FilmMapper {
 
     public static FilmDto toDto(Film film) {
         FilmDto filmDto = new FilmDto(film.getId(), film.getName(), film.getDescription(), film.getReleaseDate(),

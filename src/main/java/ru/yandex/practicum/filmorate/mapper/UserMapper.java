@@ -1,12 +1,11 @@
 package ru.yandex.practicum.filmorate.mapper;
 
+import lombok.experimental.UtilityClass;
 import ru.yandex.practicum.filmorate.dto.UserDto;
 import ru.yandex.practicum.filmorate.model.User;
 
-public final class UserMapper {
-    private UserMapper() {
-
-    }
+@UtilityClass
+public class UserMapper {
 
     public static UserDto toDto(User user) {
         UserDto userDto = new UserDto(user.getId(), user.getEmail(), user.getLogin(), user.getName(), user.getBirthday());
