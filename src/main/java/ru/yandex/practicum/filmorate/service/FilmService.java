@@ -26,14 +26,14 @@ public class FilmService {
 
     private final UserStorage userStorage;
 
-    public FilmDto addFilm(FilmDto filmDto) {
+    public FilmDto addFilm(final FilmDto filmDto) {
         Film film = toModel(filmDto);
         Film addedFilm = filmStorage.add(film);
         log.info("Добавление нового фильма: {}", addedFilm);
         return toDto(addedFilm);
     }
 
-    public FilmDto updateFilm(FilmDto updatedFilmDto) {
+    public FilmDto updateFilm(final FilmDto updatedFilmDto) {
         Film updatedFilm = toModel(updatedFilmDto);
         long filmId = updatedFilmDto.getId();
         filmStorage.update(updatedFilm);
@@ -46,13 +46,13 @@ public class FilmService {
         return filmStorage.findAll().stream().map(FilmMapper::toDto).collect(Collectors.toCollection(ArrayList::new));
     }
 
-    public FilmDto getFilmById(long filmId) {
+    public FilmDto getFilmById(final long filmId) {
         Film film = filmStorage.findById(filmId);
         log.info("Фильм с id {} найден.", filmId);
         return toDto(film);
     }
 
-    public FilmDto likeFilm(long filmId, long userId) {
+    public FilmDto likeFilm(final long filmId, final long userId) {
         Film film = filmStorage.findById(filmId);
         userStorage.findById(userId);
         film.getLikes().add(userId);
@@ -60,7 +60,7 @@ public class FilmService {
         return toDto(film);
     }
 
-    public FilmDto removeLike(long filmId, long userId) {
+    public FilmDto removeLike(final long filmId, final long userId) {
         Film film = filmStorage.findById(filmId);
         userStorage.findById(userId);
         film.getLikes().remove(userId);
@@ -68,7 +68,7 @@ public class FilmService {
         return toDto(film);
     }
 
-    public Collection<FilmDto> getMostPopularFilms(int count) {
+    public Collection<FilmDto> getMostPopularFilms(final int count) {
         return filmStorage.findAll().stream()
                 .sorted(Comparator.comparingInt((Film o) -> o.getLikes().size()).reversed())
                 .limit(count)

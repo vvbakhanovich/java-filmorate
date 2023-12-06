@@ -41,13 +41,13 @@ public class UserService {
         return userStorage.findAll().stream().map(UserMapper::toDto).collect(Collectors.toCollection(ArrayList::new));
     }
 
-    public UserDto getUserById(long userId) {
+    public UserDto getUserById(final long userId) {
         User user = userStorage.findById(userId);
         log.info("Пользователь с id {} найден.", userId);
         return UserMapper.toDto(user);
     }
 
-    public UserDto addFriend(final Long userId, long friendId) {
+    public UserDto addFriend(final Long userId, final long friendId) {
         User user = userStorage.findById(userId);
         User friend = userStorage.findById(friendId);
         user.getFriends().add(friendId);
@@ -57,7 +57,7 @@ public class UserService {
 
     }
 
-    public Collection<UserDto> showFriendList(long userId) {
+    public Collection<UserDto> showFriendList(final long userId) {
         User user = userStorage.findById(userId);
         Set<Long> friendIds = user.getFriends();
         List<User> result = new ArrayList<>();
@@ -68,7 +68,7 @@ public class UserService {
         return result.stream().map(UserMapper::toDto).collect(Collectors.toList());
     }
 
-    public Collection<UserDto> findCommonFriends(long userId, long otherUserId) {
+    public Collection<UserDto> findCommonFriends(final long userId, final long otherUserId) {
         User user = userStorage.findById(userId);
         User otherUser = userStorage.findById(otherUserId);
 
@@ -83,7 +83,7 @@ public class UserService {
         return result.stream().map(UserMapper::toDto).collect(Collectors.toList());
     }
 
-    public UserDto removeFriend(long userId, long friendId) {
+    public UserDto removeFriend(final long userId, final long friendId) {
         User user = userStorage.findById(userId);
         User friend = userStorage.findById(friendId);
         Set<Long> userFriendsId = user.getFriends();
