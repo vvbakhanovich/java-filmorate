@@ -71,7 +71,6 @@ public class UserService {
     public Collection<UserDto> findCommonFriends(final long userId, final long otherUserId) {
         User user = userStorage.findById(userId);
         User otherUser = userStorage.findById(otherUserId);
-
         Set<Long> userFriendsId = user.getFriends();
         Set<Long> otherUserFriendsId = otherUser.getFriends();
         Set<Long> commonIds = userFriendsId.stream().filter(otherUserFriendsId::contains).collect(Collectors.toSet());
