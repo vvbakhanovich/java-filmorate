@@ -46,5 +46,11 @@ public class FilmController {
     public FilmDto getFilmById(@PathVariable long id) {
         return filmService.getFilmById(id);
     }
+
+    @PutMapping("/{id}/like/{userId}")
+    @ResponseStatus(HttpStatus.OK)
+    public FilmDto likeFilm(@PathVariable long id, @PathVariable long userId) {
+        return filmService.likeFilm(id, userId);
+    }
 }
 

@@ -6,16 +6,17 @@ import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.dto.FilmDto;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.mapper.FilmMapper;
-import ru.yandex.practicum.filmorate.mapper.UserMapper;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
+import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.stream.Collectors;
 
-import static ru.yandex.practicum.filmorate.mapper.FilmMapper.*;
+import static ru.yandex.practicum.filmorate.mapper.FilmMapper.toDto;
+import static ru.yandex.practicum.filmorate.mapper.FilmMapper.toModel;
 
 @Service
 @Slf4j
@@ -23,9 +24,12 @@ public class FilmService {
 
     FilmStorage filmStorage;
 
+    UserStorage userStorage;
+
     @Autowired
-    public FilmService(FilmStorage filmStorage) {
+    public FilmService(FilmStorage filmStorage, UserStorage userStorage) {
         this.filmStorage = filmStorage;
+        this.userStorage = userStorage;
     }
 
     public FilmDto addFilm(FilmDto filmDto) {
@@ -60,6 +64,24 @@ public class FilmService {
         } else {
             log.error("Фильм с id {} не был найден.", filmId);
             throw new NotFoundException("Фильм id " + filmId + " не найден.");
+        }
+    }
+
+    public FilmDto likeFilm(long filmId, long userId) {
+        Film film = filmStorage.findById(filmId);
+        User user = userStorage.findById(userId);
+        if (film != null) {
+            if (user != null) {
+                film.getLikes().add(userId);
+                log.info("Пользователь с id {} поставил лайк фильму с id {}", userId, filmId);
+                return toDto(film);
+            } else {
+                log.error("Пользователь с id {} не был найден.", userId);
+                throw new NotFoundException("Пользователь id " + userId + " не найден");
+            }
+        } else {
+            log.error("Фильм с id {} не был найден.", filmId);
+            throw new NotFoundException("Пользователь id " + userId + " не найден.");
         }
     }
 }
