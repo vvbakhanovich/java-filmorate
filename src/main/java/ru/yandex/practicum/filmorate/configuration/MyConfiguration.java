@@ -23,10 +23,4 @@ public class MyConfiguration {
             builder.serializers(new LocalDateSerializer(Constants.DATE_FORMATTER));
         };
     }
-
-    @Bean
-    @Scope(value = "prototype")
-    public IdGenerator<Long> longIdGenerator() {
-        return new LongIdGenerator();
-    }
 }
