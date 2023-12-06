@@ -15,16 +15,16 @@ import java.util.Map;
 @RestControllerAdvice
 public class ApplicationExceptionHandler {
 
-    @ExceptionHandler(NotFoundException.class)
+    @ExceptionHandler
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public ErrorResponse handleUserNotFoundException(NotFoundException e) {
-        log.error(e.getLocalizedMessage());
         ErrorResponse errorResponse = new ErrorResponse();
         errorResponse.getErrors().put("errorMessage", e.getLocalizedMessage());
+        log.error(e.getLocalizedMessage());
         return errorResponse;
     }
 
-    @ExceptionHandler(MethodArgumentNotValidException.class)
+    @ExceptionHandler
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ErrorResponse handleInvalidException(MethodArgumentNotValidException e) {
         ErrorResponse errorResponse = new ErrorResponse();
@@ -34,6 +34,15 @@ public class ApplicationExceptionHandler {
             log.error("Поле {} не прошло валидацию. Причина: {}.", error.getField(), error.getDefaultMessage());
         }
 
+        return errorResponse;
+    }
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    public ErrorResponse handleAllException(Exception e) {
+        ErrorResponse errorResponse = new ErrorResponse();
+        errorResponse.getErrors().put("errorMessage", e.getLocalizedMessage());
+        log.error(e.getLocalizedMessage());
         return errorResponse;
     }
 }
