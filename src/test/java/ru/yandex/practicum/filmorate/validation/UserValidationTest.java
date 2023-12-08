@@ -56,7 +56,7 @@ public class UserValidationTest {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"2023-11-24", "2077-12-12"})
+    @ValueSource(strings = {"2024-11-24", "2077-12-12"})
     @DisplayName("Проверка невозможности добавления пользователя, дата рождения которого в будущем")
     public void createUserWithInvalidBirthday(String birthdayString) {
         LocalDate birthday = LocalDate.parse(birthdayString);
