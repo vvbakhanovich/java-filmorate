@@ -1,78 +1,21 @@
 package ru.yandex.practicum.filmorate.service;
 
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.dto.FilmDto;
-import ru.yandex.practicum.filmorate.mapper.FilmMapper;
-import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.storage.FilmStorage;
-import ru.yandex.practicum.filmorate.storage.UserStorage;
 
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Comparator;
-import java.util.stream.Collectors;
 
-import static ru.yandex.practicum.filmorate.mapper.FilmMapper.toDto;
-import static ru.yandex.practicum.filmorate.mapper.FilmMapper.toModel;
+public interface FilmService {
+    FilmDto addFilm(FilmDto filmDto);
 
-@Service
-@RequiredArgsConstructor
-@Slf4j
-public class FilmService {
+    FilmDto updateFilm(FilmDto filmDto);
 
-    private final FilmStorage filmStorage;
+    Collection<FilmDto> getAllFilms();
 
-    private final UserStorage userStorage;
+    FilmDto getFilmById(long filmId);
 
-    public FilmDto addFilm(final FilmDto filmDto) {
-        Film film = toModel(filmDto);
-        Film addedFilm = filmStorage.add(film);
-        log.info("Добавление нового фильма: {}", addedFilm);
-        return toDto(addedFilm);
-    }
+    FilmDto likeFilm(long filmId, long userId);
 
-    public FilmDto updateFilm(final FilmDto updatedFilmDto) {
-        Film updatedFilm = toModel(updatedFilmDto);
-        long filmId = updatedFilmDto.getId();
-        filmStorage.update(updatedFilm);
-        log.info("Обновление фильма с id {}: {}", filmId, updatedFilm);
-        return toDto(updatedFilm);
-    }
+    FilmDto removeLike(long filmId, long userId);
 
-    public Collection<FilmDto> getAllFilms() {
-        log.info("Получение списка всех фильмов.");
-        return filmStorage.findAll().stream().map(FilmMapper::toDto).collect(Collectors.toCollection(ArrayList::new));
-    }
-
-    public FilmDto getFilmById(final long filmId) {
-        Film film = filmStorage.findById(filmId);
-        log.info("Фильм с id {} найден.", filmId);
-        return toDto(film);
-    }
-
-    public FilmDto likeFilm(final long filmId, final long userId) {
-        Film film = filmStorage.findById(filmId);
-        userStorage.findById(userId);
-        film.getLikes().add(userId);
-        log.info("Пользователь с id {} поставил лайк фильму с id {}", userId, filmId);
-        return toDto(film);
-    }
-
-    public FilmDto removeLike(final long filmId, final long userId) {
-        Film film = filmStorage.findById(filmId);
-        userStorage.findById(userId);
-        film.getLikes().remove(userId);
-        log.info("Пользователь с id {} удалил лайк фильма с id {}", userId, filmId);
-        return toDto(film);
-    }
-
-    public Collection<FilmDto> getMostPopularFilms(final int count) {
-        return filmStorage.findAll().stream()
-                .sorted(Comparator.comparingInt((Film o) -> o.getLikes().size()).reversed())
-                .limit(count)
-                .map(FilmMapper::toDto)
-                .collect(Collectors.toList());
-    }
+    Collection<FilmDto> getMostPopularFilms(final int count);
 }
