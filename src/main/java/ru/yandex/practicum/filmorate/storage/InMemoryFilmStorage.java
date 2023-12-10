@@ -14,7 +14,7 @@ import java.util.Map;
 @Repository
 @Slf4j
 @RequiredArgsConstructor
-public class InMemoryFilmStorage implements FilmStorage {
+public class InMemoryFilmStorage implements Storage<Film> {
 
     private final IdGenerator<Long> idGenerator;
 

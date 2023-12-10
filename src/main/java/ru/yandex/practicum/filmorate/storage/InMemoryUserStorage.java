@@ -14,7 +14,7 @@ import java.util.Map;
 @Repository
 @Slf4j
 @RequiredArgsConstructor
-public class InMemoryUserStorage implements UserStorage {
+public class InMemoryUserStorage implements Storage<User> {
 
     private final IdGenerator<Long> idGenerator;
 
