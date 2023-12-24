@@ -103,9 +103,9 @@ public class UserServiceImpl implements UserService {
     }
 
     private UserDto validateUserName(final UserDto userDto) {
-        String validatedName = userDto.getName() == null || userDto.getName().isBlank() ?
-                userDto.getLogin() : userDto.getName();
-        userDto.setName(validatedName);
+        String validatedName = userDto.getNickname() == null || userDto.getNickname().isBlank() ?
+                userDto.getLogin() : userDto.getNickname();
+        userDto.setNickname(validatedName);
         return userDto;
     }
 }

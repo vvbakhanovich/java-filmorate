@@ -21,7 +21,7 @@ public class UserDto {
     private String email; //электронная почта
     @NotBlank(message = "Логин не может быть пустым и содержать пробелы.")
     private String login; //логин пользователя
-    private String name; //имя для отображения
+    private String nickname; //имя для отображения
     @PastOrPresent(message = "Дата рождения не может быть в будущем.")
     private LocalDate birthday; //дата рождения
     private final Set<Long> friends = new HashSet<>(); //список друзей

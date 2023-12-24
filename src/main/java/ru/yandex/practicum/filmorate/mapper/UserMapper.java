@@ -14,7 +14,7 @@ public class UserMapper {
     }
 
     public static User toModel(UserDto userDto) {
-        User user = new User(userDto.getId(), userDto.getEmail(), userDto.getLogin(), userDto.getName(),
+        User user = new User(userDto.getId(), userDto.getEmail(), userDto.getLogin(), userDto.getNickname(),
                 userDto.getBirthday());
         user.getFriends().addAll(userDto.getFriends());
         return user;
