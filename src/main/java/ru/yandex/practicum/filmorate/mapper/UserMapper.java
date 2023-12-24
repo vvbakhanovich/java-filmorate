@@ -9,14 +9,14 @@ public class UserMapper {
 
     public static UserDto toDto(User user) {
         UserDto userDto = new UserDto(user.getId(), user.getEmail(), user.getLogin(), user.getName(), user.getBirthday());
-        userDto.getFriends().addAll(user.getFriends());
+        userDto.getFriends().putAll(user.getFriends());
         return userDto;
     }
 
     public static User toModel(UserDto userDto) {
         User user = new User(userDto.getId(), userDto.getEmail(), userDto.getLogin(), userDto.getNickname(),
                 userDto.getBirthday());
-        user.getFriends().addAll(userDto.getFriends());
+        user.getFriends().putAll(userDto.getFriends());
         return user;
     }
 }
