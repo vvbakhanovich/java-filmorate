@@ -3,9 +3,12 @@ package ru.yandex.practicum.filmorate.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import ru.yandex.practicum.filmorate.model.Genre;
+import ru.yandex.practicum.filmorate.model.Mpa;
 import ru.yandex.practicum.filmorate.validation.PastDate;
 
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Positive;
 import javax.validation.constraints.Size;
 import java.time.LocalDate;
@@ -24,5 +27,8 @@ public class FilmDto {
     private LocalDate releaseDate; //дата релиза
     @Positive(message = "Продолжительность должна быть больше нуля")
     private int duration; //продолжительность фильма
+    @NotNull
+    private Mpa mpaRating;
+    private final Set<Genre> genres = new HashSet<>();
     private final Set<Long> likes = new HashSet<>(); //список лайков от пользователей
 }
