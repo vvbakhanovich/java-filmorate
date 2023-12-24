@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 
 import java.time.LocalDate;
+import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -16,5 +17,7 @@ public class Film {
     private String description; //описание
     private LocalDate releaseDate; //дата релиза
     private int duration; //продолжительность фильма
+    private Mpa mpaRating;
+    private Set<Genre> genres;
     private final Set<Long> likes = new HashSet<>(); //список лайков от пользователей
 }
