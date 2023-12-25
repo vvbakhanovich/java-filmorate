@@ -3,6 +3,7 @@ package ru.yandex.practicum.filmorate.dao.impl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
@@ -12,8 +13,9 @@ import ru.yandex.practicum.filmorate.model.User;
 
 import java.sql.Date;
 import java.sql.PreparedStatement;
-import java.util.Collection;
-import java.util.Objects;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.*;
 
 @Repository
 @Qualifier("UserDbStorage")
@@ -52,11 +54,46 @@ public class UserDbStorage implements UserDao {
 
     @Override
     public Collection<User> findAll() {
-        return null;
+        final String allUserSql = "SELECT id, email, login, nickname, birthday FROM filmorate_user";
+
+        List<User> users = jdbcTemplate.query(allUserSql, this::mapRowToUser);
+
+        final String friendsSql = "SELECT f.friend_id, fs.status_name FROM friendship f LEFT JOIN friendship_status fs " +
+                "ON f.friendship_status_id = fs.id WHERE f.user_id = ?";
+
+        for (User user : users) {
+            long userId = user.getId();
+            Map<Long, String> friends = jdbcTemplate.query(friendsSql, this::extractToFriendStatusMap, userId);
+            if (friends == null) {
+                friends = Collections.emptyMap();
+            }
+            user.getFriends().putAll(friends);
+        }
+        return users;
     }
 
     @Override
     public User findById(final long id) {
         return null;
+    }
+
+    private User mapRowToUser(ResultSet rs, int rowNum) throws SQLException {
+        return new User(
+                rs.getLong("id"),
+                rs.getString("email"),
+                rs.getString("login"),
+                rs.getString("nickname"),
+                rs.getDate("birthday").toLocalDate()
+        );
+    }
+
+    private Map<Long, String> extractToFriendStatusMap(ResultSet rs) throws SQLException, DataAccessException {
+        Map<Long, String> result = new LinkedHashMap<>();
+        while (rs.next()) {
+            Long friendId = rs.getLong("friend_id");
+            String friendshipStatus = rs.getString("status_name");
+            result.put(friendId, friendshipStatus);
+        }
+        return result;
     }
 }
