@@ -57,9 +57,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserDto addFriend(final long userId, final long friendId) {
         User user = userStorage.findById(userId);
-        User friend = userStorage.findById(friendId);
-        user.getFriends().put(friendId, null);
-        friend.getFriends().put(userId, null);
+        user.getFriends().put(friendId, "Не подтверждено.");
         log.info("Пользователи с id {} и id {} стали друзьями.", friendId, userId);
         return UserMapper.toDto(user);
 
