@@ -9,6 +9,7 @@ import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.dao.UserDao;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.sql.Date;
@@ -49,7 +50,21 @@ public class UserDbStorage implements UserDao {
 
     @Override
     public void update(final User user) {
+        final String userUpdateSql = "UPDATE filmorate_user SET email = ?, login = ?, nickname = ?, birthday = ? " +
+                "WHERE id = ?";
+        int update = jdbcTemplate.update(userUpdateSql,
+                user.getEmail(),
+                user.getLogin(),
+                user.getName(),
+                user.getBirthday(),
+                user.getId());
 
+        if (update == 1) {
+            log.info("Обновлен пользователь с id '{}'", user.getId());
+        } else {
+            log.error("Пользователь с id '{}' не найден.", user.getId());
+            throw new NotFoundException("Пользователь с id '" + user.getId() + "' не найден.");
+        }
     }
 
     @Override
@@ -67,7 +82,15 @@ public class UserDbStorage implements UserDao {
 
     @Override
     public User findById(final long id) {
-        return null;
+        final String userSql = "SELECT id, email, login, nickname, birthday FROM filmorate_user WHERE id = ?";
+        try {
+            final User user = jdbcTemplate.queryForObject(userSql, this::mapRowToUser, id);
+            Map<Long, String> friends = getFriendList(user.getId());
+            user.getFriends().putAll(friends);
+            return user;
+        } catch (DataAccessException e) {
+            throw new NotFoundException("Пользователь с id '" + id + "' не найден.");
+        }
     }
 
     private User mapRowToUser(ResultSet rs, int rowNum) throws SQLException {
