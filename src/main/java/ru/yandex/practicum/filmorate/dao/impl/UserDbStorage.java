@@ -58,15 +58,8 @@ public class UserDbStorage implements UserDao {
 
         List<User> users = jdbcTemplate.query(allUserSql, this::mapRowToUser);
 
-        final String friendsSql = "SELECT f.friend_id, fs.status_name FROM friendship f LEFT JOIN friendship_status fs " +
-                "ON f.friendship_status_id = fs.id WHERE f.user_id = ?";
-
         for (User user : users) {
-            long userId = user.getId();
-            Map<Long, String> friends = jdbcTemplate.query(friendsSql, this::extractToFriendStatusMap, userId);
-            if (friends == null) {
-                friends = Collections.emptyMap();
-            }
+            Map<Long, String> friends = getFriendList(user.getId());
             user.getFriends().putAll(friends);
         }
         return users;
@@ -95,5 +88,15 @@ public class UserDbStorage implements UserDao {
             result.put(friendId, friendshipStatus);
         }
         return result;
+    }
+
+    private Map<Long, String> getFriendList(final long userId) {
+        final String friendsSql = "SELECT f.friend_id, fs.status_name FROM friendship f LEFT JOIN friendship_status fs " +
+                "ON f.friendship_status_id = fs.id WHERE f.user_id = ?";
+        Map<Long, String> friends = jdbcTemplate.query(friendsSql, this::extractToFriendStatusMap, userId);
+        if (friends == null) {
+            friends = Collections.emptyMap();
+        }
+        return friends;
     }
 }
