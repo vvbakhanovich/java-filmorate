@@ -2,6 +2,7 @@ package ru.yandex.practicum.filmorate.service.impl;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.dto.FilmDto;
 import ru.yandex.practicum.filmorate.mapper.FilmMapper;
@@ -23,8 +24,10 @@ import static ru.yandex.practicum.filmorate.mapper.FilmMapper.toModel;
 @Slf4j
 public class FilmServiceImpl implements FilmService {
 
+    @Qualifier("FilmDbStorage")
     private final FilmDao filmStorage;
 
+    @Qualifier("UserDbStorage")
     private final UserDao userStorage;
 
     @Override
