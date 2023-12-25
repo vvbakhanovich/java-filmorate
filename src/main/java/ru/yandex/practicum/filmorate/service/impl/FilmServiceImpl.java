@@ -6,11 +6,9 @@ import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.dto.FilmDto;
 import ru.yandex.practicum.filmorate.mapper.FilmMapper;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.FilmService;
-import ru.yandex.practicum.filmorate.storage.FilmStorage;
-import ru.yandex.practicum.filmorate.storage.Storage;
-import ru.yandex.practicum.filmorate.storage.UserStorage;
+import ru.yandex.practicum.filmorate.dao.FilmDao;
+import ru.yandex.practicum.filmorate.dao.UserDao;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -25,9 +23,9 @@ import static ru.yandex.practicum.filmorate.mapper.FilmMapper.toModel;
 @Slf4j
 public class FilmServiceImpl implements FilmService {
 
-    private final FilmStorage filmStorage;
+    private final FilmDao filmStorage;
 
-    private final UserStorage userStorage;
+    private final UserDao userStorage;
 
     @Override
     public FilmDto addFilm(final FilmDto filmDto) {

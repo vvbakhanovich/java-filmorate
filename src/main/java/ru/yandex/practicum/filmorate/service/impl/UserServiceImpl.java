@@ -7,8 +7,7 @@ import ru.yandex.practicum.filmorate.dto.UserDto;
 import ru.yandex.practicum.filmorate.mapper.UserMapper;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.UserService;
-import ru.yandex.practicum.filmorate.storage.Storage;
-import ru.yandex.practicum.filmorate.storage.UserStorage;
+import ru.yandex.practicum.filmorate.dao.UserDao;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -22,7 +21,7 @@ import java.util.stream.Collectors;
 public class UserServiceImpl implements UserService {
 
 
-    private final UserStorage userStorage;
+    private final UserDao userStorage;
 
     @Override
     public UserDto addUser(final UserDto userDto) {
@@ -58,8 +57,8 @@ public class UserServiceImpl implements UserService {
     public UserDto addFriend(final long userId, final long friendId) {
         User user = userStorage.findById(userId);
         User friend = userStorage.findById(friendId);
-        user.getFriends().add(friendId);
-        friend.getFriends().add(userId);
+        user.getFriends().put(friendId, null);
+        friend.getFriends().put(userId, null);
         log.info("Пользователи с id {} и id {} стали друзьями.", friendId, userId);
         return UserMapper.toDto(user);
 
@@ -68,7 +67,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public Collection<UserDto> showFriendList(final long userId) {
         User user = userStorage.findById(userId);
-        Set<Long> friendIds = user.getFriends();
+        Set<Long> friendIds = user.getFriends().keySet();
         List<User> result = new ArrayList<>();
         for (Long friendId : friendIds) {
             result.add(userStorage.findById(friendId));
@@ -81,8 +80,8 @@ public class UserServiceImpl implements UserService {
     public Collection<UserDto> findCommonFriends(final long userId, final long otherUserId) {
         User user = userStorage.findById(userId);
         User otherUser = userStorage.findById(otherUserId);
-        Set<Long> userFriendsId = user.getFriends();
-        Set<Long> otherUserFriendsId = otherUser.getFriends();
+        Set<Long> userFriendsId = user.getFriends().keySet();
+        Set<Long> otherUserFriendsId = otherUser.getFriends().keySet();
         Set<Long> commonIds = userFriendsId.stream().filter(otherUserFriendsId::contains).collect(Collectors.toSet());
         List<User> result = new ArrayList<>();
         log.info("Cписок id общих друзей пользователей с id {} и {}: {}", userId, otherUser, result);
@@ -96,8 +95,8 @@ public class UserServiceImpl implements UserService {
     public UserDto removeFriend(final long userId, final long friendId) {
         User user = userStorage.findById(userId);
         User friend = userStorage.findById(friendId);
-        Set<Long> userFriendsId = user.getFriends();
-        Set<Long> otherUserFriendsId = friend.getFriends();
+        Set<Long> userFriendsId = user.getFriends().keySet();
+        Set<Long> otherUserFriendsId = friend.getFriends().keySet();
         userFriendsId.remove(friendId);
         otherUserFriendsId.remove(userId);
         log.info("Пользователи с id {} и {} перестали быть друзьями", userId, friend);

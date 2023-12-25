@@ -1,10 +1,12 @@
-package ru.yandex.practicum.filmorate.storage;
+package ru.yandex.practicum.filmorate.dao.impl;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.dao.FilmDao;
+import ru.yandex.practicum.filmorate.dao.IdGenerator;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -14,7 +16,7 @@ import java.util.Map;
 @Repository
 @Slf4j
 @RequiredArgsConstructor
-public class InMemoryFilmStorage implements FilmStorage {
+public class InMemoryFilmStorage implements FilmDao {
 
     private final IdGenerator<Long> idGenerator;
 
