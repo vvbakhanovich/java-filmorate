@@ -1,6 +1,6 @@
 ## Entity relations table for filmorate database
 
-![er table](filmorate_er_diagram.jpg)
+![er table](filmorate_er.jpg)
 
 ---
 ### База данных состоит из следующих таблиц:
