@@ -8,8 +8,11 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
+import ru.yandex.practicum.filmorate.dao.FriendshipDao;
 import ru.yandex.practicum.filmorate.dao.UserDao;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.model.Friendship;
+import ru.yandex.practicum.filmorate.model.FriendshipStatus;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.sql.Date;
@@ -25,6 +28,7 @@ import java.util.*;
 public class UserDbStorage implements UserDao {
 
     private final JdbcTemplate jdbcTemplate;
+    private final FriendshipDao friendshipDao;
 
     @Override
     public User add(final User user) {
@@ -52,12 +56,17 @@ public class UserDbStorage implements UserDao {
     public void update(final User user) {
         final String userUpdateSql = "UPDATE filmorate_user SET email = ?, login = ?, nickname = ?, birthday = ? " +
                 "WHERE id = ?";
-        int update = jdbcTemplate.update(userUpdateSql,
+        final int update = jdbcTemplate.update(userUpdateSql,
                 user.getEmail(),
                 user.getLogin(),
                 user.getName(),
                 user.getBirthday(),
                 user.getId());
+
+        final Map<Long, String> friends = user.getFriends();
+        for (Long friendId : friends.keySet()) {
+            friendshipDao.merge(new Friendship(user.getId(), friendId, FriendshipStatus.fromString(friends.get(friendId))));
+        }
 
         if (update == 1) {
             log.info("Обновлен пользователь с id '{}'", user.getId());
@@ -74,7 +83,7 @@ public class UserDbStorage implements UserDao {
         List<User> users = jdbcTemplate.query(allUserSql, this::mapRowToUser);
 
         for (User user : users) {
-            Map<Long, String> friends = getFriendList(user.getId());
+            Map<Long, String> friends = friendshipDao.findFriendsById(user.getId());
             user.getFriends().putAll(friends);
         }
         return users;
@@ -85,7 +94,7 @@ public class UserDbStorage implements UserDao {
         final String userSql = "SELECT id, email, login, nickname, birthday FROM filmorate_user WHERE id = ?";
         try {
             final User user = jdbcTemplate.queryForObject(userSql, this::mapRowToUser, id);
-            Map<Long, String> friends = getFriendList(user.getId());
+            Map<Long, String> friends = friendshipDao.findFriendsById(user.getId());
             user.getFriends().putAll(friends);
             return user;
         } catch (DataAccessException e) {
@@ -101,25 +110,5 @@ public class UserDbStorage implements UserDao {
                 rs.getString("nickname"),
                 rs.getDate("birthday").toLocalDate()
         );
-    }
-
-    private Map<Long, String> extractToFriendStatusMap(ResultSet rs) throws SQLException, DataAccessException {
-        Map<Long, String> result = new LinkedHashMap<>();
-        while (rs.next()) {
-            Long friendId = rs.getLong("friend_id");
-            String friendshipStatus = rs.getString("status_name");
-            result.put(friendId, friendshipStatus);
-        }
-        return result;
-    }
-
-    private Map<Long, String> getFriendList(final long userId) {
-        final String friendsSql = "SELECT f.friend_id, fs.status_name FROM friendship f LEFT JOIN friendship_status fs " +
-                "ON f.friendship_status_id = fs.id WHERE f.user_id = ?";
-        Map<Long, String> friends = jdbcTemplate.query(friendsSql, this::extractToFriendStatusMap, userId);
-        if (friends == null) {
-            friends = Collections.emptyMap();
-        }
-        return friends;
     }
 }
