@@ -71,7 +71,7 @@ public class UserServiceImpl implements UserService {
         for (Long friendId : friendIds) {
             result.add(userStorage.findById(friendId));
         }
-        log.info("Список друзей пользователся с id {}: {}", userId, result);
+        log.info("Список друзей пользователя с id {}: {}", userId, result);
         return result.stream().map(UserMapper::toDto).collect(Collectors.toList());
     }
 
