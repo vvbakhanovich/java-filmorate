@@ -4,17 +4,19 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.dao.UserDao;
 import ru.yandex.practicum.filmorate.dto.UserDto;
 import ru.yandex.practicum.filmorate.mapper.UserMapper;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.UserService;
-import ru.yandex.practicum.filmorate.dao.UserDao;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
+
+import static ru.yandex.practicum.filmorate.model.FriendshipStatus.NOT_ACK;
 
 @Service
 @RequiredArgsConstructor
@@ -57,8 +59,10 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserDto addFriend(final long userId, final long friendId) {
         User user = userStorage.findById(userId);
-        user.getFriends().put(friendId, "Не подтверждено.");
-        log.info("Пользователи с id {} и id {} стали друзьями.", friendId, userId);
+        User friend = userStorage.findById(friendId);
+        user.getFriends().put(friendId, NOT_ACK.toString());
+        userStorage.update(user);
+        log.info("Пользователи с id {} и id {} стали друзьями.", userId, friendId);
         return UserMapper.toDto(user);
 
     }
