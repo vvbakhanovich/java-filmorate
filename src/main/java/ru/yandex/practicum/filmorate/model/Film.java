@@ -5,8 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 
 import java.time.LocalDate;
-import java.util.EnumSet;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Set;
 
 @Data
@@ -17,7 +16,7 @@ public class Film {
     private String description; //описание
     private LocalDate releaseDate; //дата релиза
     private int duration; //продолжительность фильма
-    private Mpa mpaRating;
-    private final Set<Genre> genres = new HashSet<>();
-    private final Set<Long> likes = new HashSet<>(); //список лайков от пользователей
+    private Mpa mpa; //возрастной рейтинг
+    private final Set<Genre> genres = new LinkedHashSet<>(); //жанры
+    private final Set<Long> likes = new LinkedHashSet<>(); //список лайков от пользователей
 }
