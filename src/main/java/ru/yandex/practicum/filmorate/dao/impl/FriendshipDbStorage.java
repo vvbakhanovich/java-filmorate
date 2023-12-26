@@ -10,10 +10,11 @@ import ru.yandex.practicum.filmorate.model.Friendship;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
+
+import static ru.yandex.practicum.filmorate.model.Friendship.NOT_ACK;
 
 @Repository
 @Slf4j
@@ -23,39 +24,38 @@ public class FriendshipDbStorage implements FriendshipDao {
     private final JdbcTemplate jdbcTemplate;
 
     @Override
-    public void merge(Friendship friendship) {
-        final String sql = "MERGE INTO friendship (user_id, friend_id, friendship_status_id) VALUES (?, ?, ?)";
-        jdbcTemplate.update(sql, friendship.getUserId(), friendship.getFriendId(),
-                friendship.getFriendshipStatus().getStatusId());
+    public void add(long userId, long friendId) {
+        final String sql = "INSERT INTO friendship (user_id, friend_id, friendship_status_id) VALUES (?, ?, ?)";
+        jdbcTemplate.update(sql, userId, friendId,
+                NOT_ACK.getStatusId());
     }
 
     @Override
     public void remove(long userId, long friendId) {
-
+        final String sql = "DELETE FROM friendship WHERE user_id = ? AND friend_id = ?";
+        int rows =  jdbcTemplate.update(sql, userId, friendId);
+        if (rows != 1) {
+            log.info("Удаление из друзей не было произведено, так как {} не был в списке друзей у {}", friendId, userId);
+        }
     }
 
     @Override
-    public Collection<Friendship> findAll() {
-        return null;
-    }
-
-    @Override
-    public Map<Long, String> findFriendsById(final long userId) {
+    public Map<Long, Friendship> findById(final long userId) {
         final String friendsSql = "SELECT f.friend_id, fs.status_name FROM friendship f LEFT JOIN friendship_status fs " +
                 "ON f.friendship_status_id = fs.id WHERE f.user_id = ?";
-        Map<Long, String> friends = jdbcTemplate.query(friendsSql, this::extractToFriendStatusMap, userId);
+        Map<Long, Friendship> friends = jdbcTemplate.query(friendsSql, this::extractToFriendStatusMap, userId);
         if (friends == null) {
             friends = Collections.emptyMap();
         }
         return friends;
     }
 
-    private Map<Long, String> extractToFriendStatusMap(ResultSet rs) throws SQLException, DataAccessException {
-        Map<Long, String> result = new LinkedHashMap<>();
+    private Map<Long, Friendship> extractToFriendStatusMap(ResultSet rs) throws SQLException, DataAccessException {
+        Map<Long, Friendship> result = new LinkedHashMap<>();
         while (rs.next()) {
             Long friendId = rs.getLong("friend_id");
             String friendshipStatus = rs.getString("status_name");
-            result.put(friendId, friendshipStatus);
+            result.put(friendId, Friendship.fromString(friendshipStatus));
         }
         return result;
     }
