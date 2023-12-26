@@ -61,9 +61,7 @@ public class UserDbStorage implements UserDao {
                 user.getName(),
                 user.getBirthday(),
                 user.getId());
-        if (update == 1) {
-            log.info("Обновлен пользователь с id '{}'", user.getId());
-        } else {
+        if (update == 0) {
             log.error("Пользователь с id '{}' не найден.", user.getId());
             throw new NotFoundException("Пользователь с id '" + user.getId() + "' не найден.");
         }
