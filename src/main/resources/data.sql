@@ -1,2 +1,2 @@
-INSERT INTO friendship_status (status_name) VALUES ('Acknowledged');
-INSERT INTO friendship_status (status_name) VALUES ('Not acknowledged');
+MERGE INTO friendship_status (id, status_name) VALUES (1, 'Acknowledged');
+MERGE INTO friendship_status (id, status_name) VALUES (2, 'Not acknowledged');
