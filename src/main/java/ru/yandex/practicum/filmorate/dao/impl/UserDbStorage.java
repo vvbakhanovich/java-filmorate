@@ -73,10 +73,10 @@ public class UserDbStorage implements UserDao {
     public Collection<User> findAll() {
         final String allUserSql = "SELECT id, email, login, nickname, birthday FROM filmorate_user";
 
-        List<User> users = jdbcTemplate.query(allUserSql, this::mapRowToUser);
+        final List<User> users = jdbcTemplate.query(allUserSql, this::mapRowToUser);
 
         for (User user : users) {
-            Map<Long, String> friends = friendshipDao.findFriendsById(user.getId());
+            final Map<Long, Friendship> friends = friendshipDao.findById(user.getId());
             user.getFriends().putAll(friends);
         }
         return users;
@@ -87,7 +87,7 @@ public class UserDbStorage implements UserDao {
         final String userSql = "SELECT id, email, login, nickname, birthday FROM filmorate_user WHERE id = ?";
         try {
             final User user = jdbcTemplate.queryForObject(userSql, this::mapRowToUser, id);
-            Map<Long, String> friends = friendshipDao.findFriendsById(user.getId());
+            final Map<Long, Friendship> friends = friendshipDao.findById(user.getId());
             user.getFriends().putAll(friends);
             return user;
         } catch (DataAccessException e) {
