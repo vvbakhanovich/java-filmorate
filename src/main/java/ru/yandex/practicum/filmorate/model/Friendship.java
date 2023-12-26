@@ -1,18 +1,20 @@
 package ru.yandex.practicum.filmorate.model;
 
+import com.fasterxml.jackson.annotation.JsonValue;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
+@Getter
 @RequiredArgsConstructor
 public enum Friendship {
     ACK(1, "Acknowledged"),
     NOT_ACK(2, "Not acknowledged");
 
-    @Getter
     private final Integer statusId;
     private final String status;
 
     @Override
+    @JsonValue
     public String toString() {
         return status;
     }
