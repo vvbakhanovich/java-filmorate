@@ -4,7 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 
 import java.time.LocalDate;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 @Data
@@ -15,5 +15,5 @@ public class User {
     private String login; //логин пользователя
     private String name; //имя для отображения
     private LocalDate birthday; //дата рождения
-    private final Map<Long, String> friends = new HashMap<>(); //список друзей
+    private final Map<Long, Friendship> friends = new LinkedHashMap<>(); //список друзей
 }
