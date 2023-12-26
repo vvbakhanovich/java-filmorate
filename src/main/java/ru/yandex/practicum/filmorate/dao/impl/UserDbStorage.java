@@ -12,7 +12,6 @@ import ru.yandex.practicum.filmorate.dao.FriendshipDao;
 import ru.yandex.practicum.filmorate.dao.UserDao;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Friendship;
-import ru.yandex.practicum.filmorate.model.FriendshipStatus;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.sql.Date;
@@ -62,12 +61,6 @@ public class UserDbStorage implements UserDao {
                 user.getName(),
                 user.getBirthday(),
                 user.getId());
-
-        final Map<Long, String> friends = user.getFriends();
-        for (Long friendId : friends.keySet()) {
-            friendshipDao.merge(new Friendship(user.getId(), friendId, FriendshipStatus.fromString(friends.get(friendId))));
-        }
-
         if (update == 1) {
             log.info("Обновлен пользователь с id '{}'", user.getId());
         } else {
