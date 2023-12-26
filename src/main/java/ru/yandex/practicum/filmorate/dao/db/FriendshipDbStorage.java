@@ -26,8 +26,7 @@ public class FriendshipDbStorage implements FriendshipDao {
     @Override
     public void add(long userId, long friendId) {
         final String sql = "INSERT INTO friendship (user_id, friend_id, friendship_status_id) VALUES (?, ?, ?)";
-        jdbcTemplate.update(sql, userId, friendId,
-                NOT_ACK.getStatusId());
+        jdbcTemplate.update(sql, userId, friendId, NOT_ACK.getStatusId());
     }
 
     @Override
