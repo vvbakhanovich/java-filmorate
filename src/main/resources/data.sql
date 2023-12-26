@@ -1,2 +1,13 @@
 MERGE INTO friendship_status (id, status_name) VALUES (1, 'Acknowledged');
 MERGE INTO friendship_status (id, status_name) VALUES (2, 'Not acknowledged');
+MERGE INTO genre (id, genre_name) VALUES (1, 'Comedy');
+MERGE INTO genre (id, genre_name) VALUES (2, 'Drama');
+MERGE INTO genre (id, genre_name) VALUES (3, 'Cartoon');
+MERGE INTO genre (id, genre_name) VALUES (4, 'Thriller');
+MERGE INTO genre (id, genre_name) VALUES (5, 'Documentary');
+MERGE INTO genre (id, genre_name) VALUES (6, 'Action');
+MERGE INTO mpa (id, rating_name) VALUES (1, 'G');
+MERGE INTO mpa (id, rating_name) VALUES (2, 'PG');
+MERGE INTO mpa (id, rating_name) VALUES (3, 'PG-13');
+MERGE INTO mpa (id, rating_name) VALUES (4, 'R');
+MERGE INTO mpa (id, rating_name) VALUES (5, 'NC-17');
