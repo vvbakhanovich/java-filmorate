@@ -10,7 +10,9 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.PastOrPresent;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 @Data
@@ -25,5 +27,5 @@ public class UserDto {
     private String name; //имя для отображения
     @PastOrPresent(message = "Дата рождения не может быть в будущем.")
     private LocalDate birthday; //дата рождения
-    private final Map<Long, Friendship> friends = new LinkedHashMap<>(); //список друзей
+    private final List<Friendship> friends = new ArrayList<>(); //список друзей
 }

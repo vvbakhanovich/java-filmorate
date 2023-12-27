@@ -10,11 +10,8 @@ import ru.yandex.practicum.filmorate.model.Friendship;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
-
-import static ru.yandex.practicum.filmorate.model.Friendship.NOT_ACK;
 
 @Repository
 @Slf4j
@@ -26,7 +23,7 @@ public class FriendshipDbStorage implements FriendshipDao {
     @Override
     public void add(long userId, long friendId) {
         final String sql = "INSERT INTO friendship (user_id, friend_id, friendship_status_id) VALUES (?, ?, ?)";
-        jdbcTemplate.update(sql, userId, friendId, NOT_ACK.getStatusId());
+//        jdbcTemplate.update(sql, userId, friendId, NOT_ACK.getStatusId());
     }
 
     @Override
@@ -40,13 +37,14 @@ public class FriendshipDbStorage implements FriendshipDao {
 
     @Override
     public Map<Long, Friendship> findById(final long userId) {
-        final String friendsSql = "SELECT f.friend_id, fs.status_name FROM friendship f LEFT JOIN friendship_status fs " +
-                "ON f.friendship_status_id = fs.id WHERE f.user_id = ?";
-        Map<Long, Friendship> friends = jdbcTemplate.query(friendsSql, this::extractToFriendStatusMap, userId);
-        if (friends == null) {
-            friends = Collections.emptyMap();
-        }
-        return friends;
+//        final String friendsSql = "SELECT f.friend_id, fs.status_name FROM friendship f LEFT JOIN friendship_status fs " +
+//                "ON f.friendship_status_id = fs.id WHERE f.user_id = ?";
+//        Map<Long, Friendship> friends = jdbcTemplate.query(friendsSql, this::extractToFriendStatusMap, userId);
+//        if (friends == null) {
+//            friends = Collections.emptyMap();
+//        }
+//        return friends;
+        return null;
     }
 
     private Map<Long, Friendship> extractToFriendStatusMap(ResultSet rs) throws SQLException, DataAccessException {
@@ -54,7 +52,7 @@ public class FriendshipDbStorage implements FriendshipDao {
         while (rs.next()) {
             Long friendId = rs.getLong("friend_id");
             String friendshipStatus = rs.getString("status_name");
-            result.put(friendId, Friendship.fromString(friendshipStatus));
+//            result.put(friendId, Friendship.fromString(friendshipStatus));
         }
         return result;
     }

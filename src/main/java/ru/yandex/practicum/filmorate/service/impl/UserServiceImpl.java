@@ -88,7 +88,6 @@ public class UserServiceImpl implements UserService {
         log.info("Список друзей пользователя с id {}: {}", userId, result);
         return result.stream().map(UserMapper::toDto).collect(Collectors.toList());
     }
-
     @Override
     public Collection<UserDto> findCommonFriends(final long userId, final long otherUserId) {
         final User user = userStorage.findById(userId);
