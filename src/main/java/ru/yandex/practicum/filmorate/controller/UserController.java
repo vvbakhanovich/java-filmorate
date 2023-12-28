@@ -6,7 +6,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.dto.UserDto;
 import ru.yandex.practicum.filmorate.service.UserService;
-import ru.yandex.practicum.filmorate.service.impl.UserServiceImpl;
 
 import javax.validation.Valid;
 import java.util.Collection;
@@ -55,8 +54,8 @@ public class UserController {
     }
 
     @DeleteMapping("/{id}/friends/{friendId}")
-    public UserDto removeFriend(@PathVariable long id, @PathVariable long friendId) {
-        return userService.removeFriend(id, friendId);
+    public void removeFriend(@PathVariable long id, @PathVariable long friendId) {
+        userService.removeFriend(id, friendId);
     }
 
 }

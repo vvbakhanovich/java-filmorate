@@ -15,7 +15,6 @@ import ru.yandex.practicum.filmorate.service.UserService;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -87,13 +86,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public Collection<UserDto> showFriendList(final long userId) {
-//        final User user = userStorage.findById(userId);
-//        final List<Friendship> friendships = user.getFriends();
-//        final List<User> result = new ArrayList<>();
-//        for (Friendship friendship : friendships) {
-//            result.add(userStorage.findById(friendship.getId()));
-//        }
-//        log.info("Список друзей пользователя с id {}: {}", userId, result);
+        log.info("Получение списка друзей пользователя с id {}.", userId);
         return userStorage.findFriendsByUserId(userId).stream().map(UserMapper::toDto).collect(Collectors.toList());
     }
 
@@ -116,16 +109,11 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserDto removeFriend(final long userId, final long friendId) {
-//        final User user = userStorage.findById(userId);
-//        final User friend = userStorage.findById(friendId);
-//        friendshipDao.remove(userId, friendId);
-//        final Set<Long> userFriendsId = user.getFriends().keySet();
-//        userFriendsId.remove(friendId);
-//        log.info("Пользователи с id {} и {} перестали быть друзьями", userId, friend);
-//        return UserMapper.toDto(user);
-        return null;
-
+    public void removeFriend(final long userId, final long friendId) {
+        final User user = userStorage.findById(userId);
+        final User friend = userStorage.findById(friendId);
+        friendshipDao.remove(userId, friendId);
+        log.info("Пользователи с id {} и {} перестали быть друзьями", userId, friendId);
     }
 
     private UserDto validateUserName(final UserDto userDto) {
