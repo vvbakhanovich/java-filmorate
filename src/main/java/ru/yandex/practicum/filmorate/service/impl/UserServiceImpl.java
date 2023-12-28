@@ -17,6 +17,9 @@ import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static ru.yandex.practicum.filmorate.model.FriendshipStatus.ACKNOWLEDGED;
+import static ru.yandex.practicum.filmorate.model.FriendshipStatus.NOT_ACKNOWLEDGED;
+
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -72,12 +75,12 @@ public class UserServiceImpl implements UserService {
         Friendship friendship = new Friendship();
         friendship.setId(friendId);
         if (friend.getFriends().stream().map(Friendship::getId).anyMatch(id -> id == userId)) {
-            friendship.setStatus("Acknowledged");
-            friendshipDao.add(userId, friendId, 1);
-            friendshipDao.update(friendId, userId, 1);
+            friendship.setStatus(ACKNOWLEDGED.getStatus());
+            friendshipDao.add(userId, friendId, ACKNOWLEDGED.getId());
+            friendshipDao.update(friendId, userId, ACKNOWLEDGED.getId());
         } else {
-            friendship.setStatus("Not acknowledged");
-            friendshipDao.add(userId, friendId, 2);
+            friendship.setStatus(NOT_ACKNOWLEDGED.getStatus());
+            friendshipDao.add(userId, friendId, NOT_ACKNOWLEDGED.getId());
         }
         user.getFriends().add(friendship);
         log.info("Пользователи с id {} и id {} стали друзьями.", userId, friendId);
