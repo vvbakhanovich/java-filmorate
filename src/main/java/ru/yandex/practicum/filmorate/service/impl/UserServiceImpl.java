@@ -30,6 +30,12 @@ public class UserServiceImpl implements UserService {
 
     private final FriendshipDao friendshipDao;
 
+    /**
+     * Сохранение пользователя в БД.
+     *
+     * @param userDto пользователь
+     * @return пользователь с присвоенным идентификатором
+     */
     @Override
     public UserDto addUser(final UserDto userDto) {
         final User user = UserMapper.toModel(validateUserName(userDto));
@@ -38,6 +44,12 @@ public class UserServiceImpl implements UserService {
         return UserMapper.toDto(addedUser);
     }
 
+    /**
+     * Обновляются все поля класса за исключением списка друзей.
+     *
+     * @param updatedUserDto пользователь с новыми данными.
+     * @return пользователь с обновленными данными.
+     */
     @Override
     public UserDto updateUser(final UserDto updatedUserDto) {
         final User updatedUser = UserMapper.toModel(validateUserName(updatedUserDto));
@@ -47,12 +59,23 @@ public class UserServiceImpl implements UserService {
         return UserMapper.toDto(updatedUser);
     }
 
+    /**
+     * Получение из БД списка всех пользователей. Данные включают список друзей в формате: id - статус дружбы.
+     *
+     * @return коллекция пользователей.
+     */
     @Override
     public Collection<UserDto> getAllUser() {
         log.info("Получение списка всех пользователей.");
         return userStorage.findAll().stream().map(UserMapper::toDto).collect(Collectors.toCollection(ArrayList::new));
     }
 
+    /**
+     * Получение пользователя по id.
+     *
+     * @param userId идентификатор пользователя.
+     * @return пользователь, полученный из БД.
+     */
     @Override
     public UserDto getUserById(final long userId) {
         final User user = userStorage.findById(userId);
@@ -61,12 +84,12 @@ public class UserServiceImpl implements UserService {
     }
 
     /**
-     * При добавлении пользователя в друзья сначала проверяется наличие этих пользователей в БД, после чего происходит
-     * добавление в друзья со статусом "Не подтверждено".
+     * Добавление пользователя в друзья. Если, пользователи взаимно подружились, то статус дружбы переходит в
+     * "Подтверждено".
      *
-     * @param userId   идентификатор пользователя
-     * @param friendId идентификатор пользователя, которого требуется добавить в друзья
-     * @return пользователь с обновленным списком друзей
+     * @param userId   идентификатор пользователя.
+     * @param friendId идентификатор пользователя, которого требуется добавить в друзья.
+     * @return пользователь с обновленным списком друзей.
      */
     @Override
     public UserDto addFriend(final long userId, final long friendId) {
@@ -87,12 +110,25 @@ public class UserServiceImpl implements UserService {
         return UserMapper.toDto(user);
     }
 
+    /**
+     * Получение списка друзей пользователя.
+     *
+     * @param userId идентификатор пользователя, список друзей которого требуется отобразить
+     * @return список пользователей
+     */
     @Override
     public Collection<UserDto> showFriendList(final long userId) {
         log.info("Получение списка друзей пользователя с id {}.", userId);
         return userStorage.findFriendsByUserId(userId).stream().map(UserMapper::toDto).collect(Collectors.toList());
     }
 
+    /**
+     * Получение списка общих друзей между пользователями.
+     *
+     * @param userId      идентификатор первого пользователя.
+     * @param otherUserId идентификатор второго пользователя.
+     * @return список общих друзей между первым и вторым пользователем.
+     */
     @Override
     public Collection<UserDto> findCommonFriends(final long userId, final long otherUserId) {
         final User user = userStorage.findById(userId);
@@ -111,6 +147,13 @@ public class UserServiceImpl implements UserService {
         return result.stream().map(UserMapper::toDto).collect(Collectors.toList());
     }
 
+    /**
+     * Удаление пользователя из списка друзей. Удаление происходит только у пользователя с userId. Если дружба была
+     * обоюдной, удаление произойдет только у одного из них.
+     *
+     * @param userId   идентификатор пользователя.
+     * @param friendId идентификатор друга, которого требуется исключить из списка друзей.
+     */
     @Override
     public void removeFriend(final long userId, final long friendId) {
         final User user = userStorage.findById(userId);
