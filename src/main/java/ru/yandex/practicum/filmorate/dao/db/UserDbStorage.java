@@ -85,9 +85,45 @@ public class UserDbStorage implements UserDao {
 
     private List<User> extractToUserList(ResultSet rs) throws SQLException, DataAccessException {
 
+    private User extractToUser(ResultSet rs) throws SQLException, DataAccessException {
+
+        User user = null;
+        final Map<Long, User> userIdMap = new HashMap<>();
+
+        while (rs.next()) {
+
+            Long userId = rs.getLong(1);
+            user = userIdMap.get(userId);
+            if (user == null) {
+                user = new User(
+                        userId,
+                        rs.getString("email"),
+                        rs.getString("login"),
+                        rs.getString("nickname"),
+                        rs.getDate("birthday").toLocalDate()
+                );
+                userIdMap.put(userId, user);
+            }
+
+            final long friendshipId = rs.getLong("friend_id");
+            if (friendshipId == 0) {
+                user.getFriends().addAll(Collections.emptyList());
+                break;
+            }
+
+            final Friendship friendship = new Friendship();
+            friendship.setId(friendshipId);
+            friendship.setStatus(rs.getString("status_name"));
+            user.getFriends().add(friendship);
+        }
+
+        return user;
+    }
+
+    private List<User> extractToUserList(ResultSet rs) throws SQLException, DataAccessException {
+
         final List<User> users = new ArrayList<>();
         final Map<Long, User> userIdMap = new HashMap<>();
-        final Map<Long, Friendship> friendshipIdMap = new HashMap<>();
 
         while (rs.next()) {
 
@@ -105,74 +141,18 @@ public class UserDbStorage implements UserDao {
                 userIdMap.put(userId, user);
             }
 
-            Long friendshipId = rs.getLong("friend_id");
+            final long friendshipId = rs.getLong("friend_id");
             if (friendshipId == 0) {
                 user.getFriends().addAll(Collections.emptyList());
                 break;
             }
 
-            Friendship friendship = friendshipIdMap.get(friendshipId);
-            if (friendship == null) {
-                friendship = new Friendship();
-                friendship.setId(friendshipId);
-                friendship.setStatus(rs.getString("status_name"));
-                user.getFriends().add(friendship);
-                friendshipIdMap.put(friendshipId, friendship);
-            }
+            final Friendship friendship = new Friendship();
+            friendship.setId(friendshipId);
+            friendship.setStatus(rs.getString("status_name"));
+            user.getFriends().add(friendship);
         }
 
         return users;
-    }
-
-    public Collection<User> findFriendsByUserId(long userId) {
-        final String friendsIdsSql = "SELECT friend_id FROM friendship WHERE user_id = ?";
-        final List<Long> friendsIds = jdbcTemplate.queryForList(friendsIdsSql, Long.class, userId);
-        final String inSql = String.join(",", Collections.nCopies(friendsIds.size(), "?"));
-        final String sql = String.format("SELECT " +
-                "fu.ID, fu.EMAIL, fu.LOGIN, fu.NICKNAME, fu.BIRTHDAY, f.FRIEND_ID,f.FRIENDSHIP_STATUS_ID, fs.STATUS_NAME " +
-                "FROM FILMORATE_USER fu LEFT JOIN FRIENDSHIP f ON fu.ID = f.USER_ID " +
-                "LEFT JOIN FRIENDSHIP_STATUS fs ON f.FRIENDSHIP_STATUS_ID = fs.ID WHERE fu.ID IN (%s)", inSql);
-        return jdbcTemplate.query(sql, this::extractToUserList, friendsIds.toArray());
-    }
-
-
-    private User extractToUser(ResultSet rs) throws SQLException, DataAccessException {
-
-        User user = null;
-        final Map<Long, User> userIdMap = new HashMap<>();
-        final Map<Long, Friendship> friendshipIdMap = new HashMap<>();
-
-        while (rs.next()) {
-
-            Long userId = rs.getLong(1);
-            user = userIdMap.get(userId);
-            if (user == null) {
-                user = new User(
-                        userId,
-                        rs.getString("email"),
-                        rs.getString("login"),
-                        rs.getString("nickname"),
-                        rs.getDate("birthday").toLocalDate()
-                );
-                userIdMap.put(userId, user);
-            }
-
-            Long friendshipId = rs.getLong("friend_id");
-            if (friendshipId == 0) {
-                user.getFriends().addAll(Collections.emptyList());
-                break;
-            }
-
-            Friendship friendship = friendshipIdMap.get(friendshipId);
-            if (friendship == null) {
-                friendship = new Friendship();
-                friendship.setId(friendshipId);
-                friendship.setStatus(rs.getString("status_name"));
-                user.getFriends().add(friendship);
-                friendshipIdMap.put(friendshipId, friendship);
-            }
-        }
-
-        return user;
     }
 }
