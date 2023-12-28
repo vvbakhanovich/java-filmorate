@@ -99,19 +99,20 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public Collection<UserDto> findCommonFriends(final long userId, final long otherUserId) {
-//        final User user = userStorage.findById(userId);
-//        final User otherUser = userStorage.findById(otherUserId);
-//        final Set<Long> userFriendsId = user.getFriends().keySet();
-//        final Set<Long> otherUserFriendsId = otherUser.getFriends().keySet();
-//        final Set<Long> commonIds = userFriendsId.stream().filter(otherUserFriendsId::contains).collect(Collectors.toSet());
-//        final List<User> result = new ArrayList<>();
-//        log.info("Cписок id общих друзей пользователей с id {} и {}: {}", userId, otherUser, result);
-//        for (Long id : commonIds) {
-//            result.add(userStorage.findById(id));
-//        }
-//        return result.stream().map(UserMapper::toDto).collect(Collectors.toList());
-        return null;
-
+        final User user = userStorage.findById(userId);
+        final User otherUser = userStorage.findById(otherUserId);
+        final List<Friendship> userFriends = user.getFriends();
+        final List<Friendship> otherUserFriends = otherUser.getFriends();
+        final List<Long> commonIds = userFriends.stream()
+                .map(Friendship::getId)
+                .filter(id -> otherUserFriends.stream().anyMatch(friendship1 -> friendship1.getId().equals(id)))
+                .collect(Collectors.toList());
+        final List<User> result = new ArrayList<>();
+        log.info("Получение списка общих друзей пользователей с id {} и {}.", userId, otherUserId);
+        for (Long id : commonIds) {
+            result.add(userStorage.findById(id));
+        }
+        return result.stream().map(UserMapper::toDto).collect(Collectors.toList());
     }
 
     @Override
