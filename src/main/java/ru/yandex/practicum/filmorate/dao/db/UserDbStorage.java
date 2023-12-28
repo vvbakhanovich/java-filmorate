@@ -5,10 +5,13 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
+import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.dao.UserDao;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Friendship;
 import ru.yandex.practicum.filmorate.model.User;
 
@@ -49,10 +52,10 @@ public class UserDbStorage implements UserDao {
     }
 
     @Override
-    public void update(final User user) {
+    public int update(final User user) {
         final String userUpdateSql = "UPDATE filmorate_user SET email = ?, login = ?, nickname = ?, birthday = ? " +
                 "WHERE id = ?";
-        jdbcTemplate.update(userUpdateSql,
+        return jdbcTemplate.update(userUpdateSql,
                 user.getEmail(),
                 user.getLogin(),
                 user.getName(),
@@ -74,8 +77,27 @@ public class UserDbStorage implements UserDao {
         final String sql = "SELECT " +
                 "fu.ID, fu.EMAIL, fu.LOGIN, fu.NICKNAME, fu.BIRTHDAY, f.FRIEND_ID,f.FRIENDSHIP_STATUS_ID, fs.STATUS_NAME " +
                 "FROM FILMORATE_USER fu LEFT JOIN FRIENDSHIP f ON fu.ID = f.USER_ID " +
-                "LEFT JOIN FRIENDSHIP_STATUS fs ON f.FRIENDSHIP_STATUS_ID = fs.ID WHERE fu.ID = 3";
+                "LEFT JOIN FRIENDSHIP_STATUS fs ON f.FRIENDSHIP_STATUS_ID = fs.ID WHERE fu.ID = ?";
         return jdbcTemplate.query(sql, this::extractToUserList, id).get(0);
+    }
+
+    public void addFriend(final long userId, final long friendId, final int status) {
+        final String sql = "INSERT INTO friendship VALUES (?, ?, ?)";
+        jdbcTemplate.update(sql, userId, friendId, status);
+    }
+
+    public Collection<User> findFriendsByUserId(long userId) {
+//        final String friendsIdsSql = "SELECT friend_id FROM friendship WHERE user_id = ?";
+//        final List<Long> friendsIds = jdbcTemplate.queryForList(friendsIdsSql, Long.class, userId);
+//        final String inSql;
+//        final SqlParameterSource parameters = new MapSqlParameterSource("ids", friendsIds);
+//        final String sql = "SELECT " +
+//                "fu.ID, fu.EMAIL, fu.LOGIN, fu.NICKNAME, fu.BIRTHDAY, f.FRIEND_ID,f.FRIENDSHIP_STATUS_ID, fs.STATUS_NAME " +
+//                "FROM FILMORATE_USER fu LEFT JOIN FRIENDSHIP f ON fu.ID = f.USER_ID " +
+//                "LEFT JOIN FRIENDSHIP_STATUS fs ON f.FRIENDSHIP_STATUS_ID = fs.ID WHERE fu.ID IN (:ids)";
+//        return jdbcTemplate.query(sql, this::extractToUserList, );
+
+        return null;
     }
 
     private List<User> extractToUserList(ResultSet rs) throws SQLException, DataAccessException {
