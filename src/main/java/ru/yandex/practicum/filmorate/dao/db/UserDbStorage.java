@@ -57,12 +57,15 @@ public class UserDbStorage implements UserDao {
     public void update(final User user) {
         final String userUpdateSql = "UPDATE filmorate_user SET email = ?, login = ?, nickname = ?, birthday = ? " +
                 "WHERE id = ?";
-        jdbcTemplate.update(userUpdateSql,
+        int result = jdbcTemplate.update(userUpdateSql,
                 user.getEmail(),
                 user.getLogin(),
                 user.getName(),
                 user.getBirthday(),
                 user.getId());
+        if (result != 1) {
+            throw new NotFoundException("Пользователь с id '" + user.getId() + "' не найден.");
+        }
     }
 
     @Override
