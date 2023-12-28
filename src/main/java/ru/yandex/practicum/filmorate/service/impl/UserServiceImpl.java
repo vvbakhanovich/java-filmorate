@@ -8,6 +8,7 @@ import ru.yandex.practicum.filmorate.dao.FriendshipDao;
 import ru.yandex.practicum.filmorate.dao.UserDao;
 import ru.yandex.practicum.filmorate.dto.UserDto;
 import ru.yandex.practicum.filmorate.mapper.UserMapper;
+import ru.yandex.practicum.filmorate.model.Friendship;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.UserService;
 
@@ -16,8 +17,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
-
-import static ru.yandex.practicum.filmorate.model.Friendship.NOT_ACK;
 
 @Service
 @RequiredArgsConstructor
@@ -70,10 +69,17 @@ public class UserServiceImpl implements UserService {
     public UserDto addFriend(final long userId, final long friendId) {
         final User user = userStorage.findById(userId);
         final User friend = userStorage.findById(friendId);
+        Friendship friendship = new Friendship();
+        friendship.setId(friendId);
+        if (friend.getFriends().stream().map(Friendship::getId).anyMatch(id -> id == userId)) {
+            friendship.setStatus("Acknowledged");
+            user.getFriends().add(friendship);
+            userStorage.addFriend(userId, friendId, 2);
+        } else {
+
+        }
         friendshipDao.add(userId, friendId);
-        user.getFriends().put(friendId, NOT_ACK);
         log.info("Пользователи с id {} и id {} стали друзьями.", userId, friendId);
-        return UserMapper.toDto(user);
 
     }
 
