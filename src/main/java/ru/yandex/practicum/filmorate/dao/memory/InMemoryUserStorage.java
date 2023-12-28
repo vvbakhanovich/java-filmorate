@@ -9,10 +9,7 @@ import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.dao.IdGenerator;
 import ru.yandex.practicum.filmorate.dao.UserDao;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Repository
 @Qualifier("inMemoryUserStorage")
@@ -68,5 +65,10 @@ public class InMemoryUserStorage implements UserDao {
             log.error("Пользователь с userId {} не был найден.", userId);
             throw new NotFoundException("Пользователь с userId " + userId + " не найден.");
         }
+    }
+
+    @Override
+    public Collection<User> findFriendsByUserId(long userId) {
+        return null;
     }
 }
