@@ -21,9 +21,9 @@ public class FriendshipDbStorage implements FriendshipDao {
     private final JdbcTemplate jdbcTemplate;
 
     @Override
-    public void add(long userId, long friendId) {
+    public void add(long userId, long friendId, int statusId) {
         final String sql = "INSERT INTO friendship (user_id, friend_id, friendship_status_id) VALUES (?, ?, ?)";
-//        jdbcTemplate.update(sql, userId, friendId, NOT_ACK.getStatusId());
+        jdbcTemplate.update(sql, userId, friendId, statusId);
     }
 
     @Override
@@ -45,6 +45,12 @@ public class FriendshipDbStorage implements FriendshipDao {
 //        }
 //        return friends;
         return null;
+    }
+
+    @Override
+    public void update(long userId, long friendId, int statusId) {
+        final String sql = "UPDATE friendship SET friendship_status_id = ? WHERE user_id = ? AND friend_id = ?";
+        jdbcTemplate.update(sql, statusId, userId, friendId);
     }
 
     private Map<Long, Friendship> extractToFriendStatusMap(ResultSet rs) throws SQLException, DataAccessException {
