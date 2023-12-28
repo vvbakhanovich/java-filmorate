@@ -46,7 +46,11 @@ public class UserDbStorage implements UserDao {
 
     @Override
     public void remove(final long id) {
-
+        final String sql = "DELETE FROM filmorate_user WHERE id = ?";
+        int result = jdbcTemplate.update(sql, id);
+        if (result != 1) {
+            throw new NotFoundException("Пользователь с id '" + id + "' не найден.");
+        }
     }
 
     @Override
