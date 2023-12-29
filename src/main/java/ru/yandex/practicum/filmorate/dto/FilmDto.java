@@ -30,7 +30,7 @@ public class FilmDto {
     @NotNull
     private Mpa mpa; //возрастной рейтинг
     private final List<Genre> genres = new ArrayList<>(); //жанры
-    private long likes; //список лайков от пользователей
+    private long likes; //количество лайков от пользователей
 
     public FilmDto(long id, String name, String description, LocalDate releaseDate, int duration, Mpa mpa) {
         this.id = id;
