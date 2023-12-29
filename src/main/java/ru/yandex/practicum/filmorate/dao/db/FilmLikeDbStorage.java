@@ -7,7 +7,8 @@ import ru.yandex.practicum.filmorate.dao.FilmLikeDao;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.List;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 @Component
 @RequiredArgsConstructor
@@ -28,12 +29,21 @@ public class FilmLikeDbStorage implements FilmLikeDao {
     }
 
     @Override
-    public List<Long> getAllById(long filmId) {
-        final String sql = "SELECT user_id FROM film_like WHERE film_id = ?";
-        return jdbcTemplate.query(sql, this::mapRowToLong, filmId);
+    public Long getCountById(long filmId) {
+        final String sql = "SELECT COUNT(*) AS likes FROM film_like GROUP BY film_id HAVING film_id = ?";
+        return jdbcTemplate.queryForObject(sql, Long.class, filmId);
     }
 
-    private Long mapRowToLong(ResultSet rs, int rowNum) throws SQLException {
-        return rs.getLong("user_id");
+    public Map<Long, Long> findAll() {
+        final String sql = "SELECT film_id, COUNT(*) AS likes FROM film_like GROUP BY film_id";
+        return jdbcTemplate.queryForObject(sql, this::mapRowToIdCount);
+    }
+
+    private Map<Long, Long> mapRowToIdCount(ResultSet rs, int rowNum) throws SQLException {
+        final Map<Long, Long> result = new LinkedHashMap<>();
+        while (rs.next()) {
+            result.put(rs.getLong("film_id"), rs.getLong("likes"));
+        }
+        return result;
     }
 }
