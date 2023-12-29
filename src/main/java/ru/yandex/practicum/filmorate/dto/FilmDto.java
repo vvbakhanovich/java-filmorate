@@ -13,9 +13,7 @@ import javax.validation.constraints.Positive;
 import javax.validation.constraints.Size;
 import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Set;
 
 @Data
 @AllArgsConstructor
@@ -32,5 +30,22 @@ public class FilmDto {
     @NotNull
     private Mpa mpa; //возрастной рейтинг
     private final List<Genre> genres = new ArrayList<>(); //жанры
-    private final Set<Long> likes = new LinkedHashSet<>(); //список лайков от пользователей
+    private Long likes; //список лайков от пользователей
+
+    public FilmDto(long id, String name, String description, LocalDate releaseDate, int duration, Mpa mpa) {
+        this.id = id;
+        this.name = name;
+        this.description = description;
+        this.releaseDate = releaseDate;
+        this.duration = duration;
+        this.mpa = mpa;
+    }
+
+    public FilmDto(long id, String name, String description, LocalDate releaseDate, int duration) {
+        this.id = id;
+        this.name = name;
+        this.description = description;
+        this.releaseDate = releaseDate;
+        this.duration = duration;
+    }
 }

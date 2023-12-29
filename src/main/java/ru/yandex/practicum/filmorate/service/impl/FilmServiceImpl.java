@@ -4,16 +4,15 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.dao.FilmDao;
+import ru.yandex.practicum.filmorate.dao.UserDao;
 import ru.yandex.practicum.filmorate.dto.FilmDto;
 import ru.yandex.practicum.filmorate.mapper.FilmMapper;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
-import ru.yandex.practicum.filmorate.dao.FilmDao;
-import ru.yandex.practicum.filmorate.dao.UserDao;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Comparator;
 import java.util.stream.Collectors;
 
 import static ru.yandex.practicum.filmorate.mapper.FilmMapper.toDto;
@@ -64,7 +63,7 @@ public class FilmServiceImpl implements FilmService {
     public FilmDto likeFilm(final long filmId, final long userId) {
         Film film = filmStorage.findById(filmId);
         userStorage.findById(userId);
-        film.getLikes().add(userId);
+        film.setLikes(film.getLikes() + 1);
         log.info("Пользователь с id {} поставил лайк фильму с id {}", userId, filmId);
         return toDto(film);
     }
@@ -72,18 +71,19 @@ public class FilmServiceImpl implements FilmService {
     @Override
     public FilmDto removeLike(final long filmId, final long userId) {
         Film film = filmStorage.findById(filmId);
-        userStorage.findById(userId);
-        film.getLikes().remove(userId);
-        log.info("Пользователь с id {} удалил лайк фильма с id {}", userId, filmId);
+//        userStorage.findById(userId);
+//        film.getLikes().remove(userId);
+//        log.info("Пользователь с id {} удалил лайк фильма с id {}", userId, filmId);
         return toDto(film);
     }
 
     @Override
     public Collection<FilmDto> getMostPopularFilms(final int count) {
-        return filmStorage.findAll().stream()
-                .sorted(Comparator.comparingInt((Film o) -> o.getLikes().size()).reversed())
-                .limit(count)
-                .map(FilmMapper::toDto)
-                .collect(Collectors.toList());
+//        return filmStorage.findAll().stream()
+//                .sorted(Comparator.comparingInt((Film o) -> o.getLikes().size()).reversed())
+//                .limit(count)
+//                .map(FilmMapper::toDto)
+//                .collect(Collectors.toList());
+        return null;
     }
 }
