@@ -18,7 +18,7 @@ public class Film {
     private int duration; //продолжительность фильма
     private Mpa mpa; //возрастной рейтинг
     private final List<Genre> genres = new ArrayList<>(); //жанры
-    private Long likes; //количество лайков от пользователей
+    private long likes; //количество лайков от пользователей
 
     public Film(long id, String name, String description, LocalDate releaseDate, int duration, Mpa mpa) {
         this.id = id;
