@@ -80,7 +80,16 @@ public class FilmDbStorage implements FilmDao {
         final String sql = "SELECT f.ID, f.TITLE, f.DESCRIPTION, f.RELEASE_DATE, f.DURATION, f.MPA_ID, m.RATING_NAME, " +
                 "fg.GENRE_ID, g.GENRE_NAME FROM FILM f LEFT JOIN MPA m ON f.MPA_ID = m.ID LEFT JOIN FILM_GENRE fg ON " +
                 "f.ID = fg.FILM_ID LEFT JOIN GENRE g ON fg.GENRE_ID = g.ID";
-        return jdbcTemplate.query(sql, this::extractToFilmList);
+        final Map<Long, Film> idFilmMap = jdbcTemplate.query(sql, this::extractToFilmList);
+        final Map<Long, Long> filmLikesMap = filmLikeDao.findAll();
+
+        if (!filmLikesMap.isEmpty()) {
+            for (Long filmId : filmLikesMap.keySet()) {
+                Film film = idFilmMap.get(filmId);
+                film.setLikes(filmLikesMap.get(filmId));
+            }
+        }
+        return idFilmMap.values();
     }
 
     @Override
@@ -97,17 +106,6 @@ public class FilmDbStorage implements FilmDao {
         }
         return film;
     }
-
-//    private Film mapRowToFilm(ResultSet rs, int rowNum) throws SQLException {
-//        return new Film(
-//                rs.getLong("id"),
-//                rs.getString("title"),
-//                rs.getString("description"),
-//                rs.getDate("release_date").toLocalDate(),
-//                rs.getInt("duration"),
-//                new Mpa(rs.getInt("mpa_id"), rs.getString("rating_name"))
-//        );
-//    }
 
     private Film extractToFilm(ResultSet rs) throws SQLException, DataAccessException {
 
@@ -145,9 +143,8 @@ public class FilmDbStorage implements FilmDao {
         return film;
     }
 
-    private List<Film> extractToFilmList(ResultSet rs) throws SQLException, DataAccessException {
+    private Map<Long, Film> extractToFilmList(ResultSet rs) throws SQLException, DataAccessException {
 
-        final List<Film> films = new ArrayList<>();
         final Map<Long, Film> filmIdMap = new HashMap<>();
 
         while (rs.next()) {
@@ -163,7 +160,6 @@ public class FilmDbStorage implements FilmDao {
                         rs.getInt("duration"),
                         new Mpa(rs.getInt("mpa_id"), rs.getString("rating_name"))
                 );
-                films.add(film);
                 filmIdMap.put(filmId, film);
             }
 
@@ -179,6 +175,6 @@ public class FilmDbStorage implements FilmDao {
             film.getGenres().add(genre);
         }
 
-        return films;
+        return filmIdMap;
     }
 }
