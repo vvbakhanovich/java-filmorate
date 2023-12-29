@@ -126,7 +126,7 @@ public class UserDbStorage implements UserDao {
             final long friendshipId = rs.getLong("friend_id");
             if (friendshipId == 0) {
                 user.getFriends().addAll(Collections.emptyList());
-                break;
+                continue;
             }
 
             final Friendship friendship = new Friendship();
@@ -162,7 +162,7 @@ public class UserDbStorage implements UserDao {
             final long friendshipId = rs.getLong("friend_id");
             if (friendshipId == 0) {
                 user.getFriends().addAll(Collections.emptyList());
-                break;
+                continue;
             }
 
             final Friendship friendship = new Friendship();
