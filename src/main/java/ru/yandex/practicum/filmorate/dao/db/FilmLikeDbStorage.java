@@ -34,12 +34,13 @@ public class FilmLikeDbStorage implements FilmLikeDao {
         return jdbcTemplate.queryForObject(sql, Long.class, filmId);
     }
 
+    @Override
     public Map<Long, Long> findAll() {
         final String sql = "SELECT film_id, COUNT(*) AS likes FROM film_like GROUP BY film_id";
-        return jdbcTemplate.queryForObject(sql, this::mapRowToIdCount);
+        return jdbcTemplate.query(sql, this::mapRowToIdCount);
     }
 
-    private Map<Long, Long> mapRowToIdCount(ResultSet rs, int rowNum) throws SQLException {
+    private Map<Long, Long> mapRowToIdCount(ResultSet rs) throws SQLException {
         final Map<Long, Long> result = new LinkedHashMap<>();
         while (rs.next()) {
             result.put(rs.getLong("film_id"), rs.getLong("likes"));
