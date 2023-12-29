@@ -3,6 +3,7 @@ package ru.yandex.practicum.filmorate.dao.db;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
@@ -11,17 +12,13 @@ import ru.yandex.practicum.filmorate.dao.FilmDao;
 import ru.yandex.practicum.filmorate.dao.FilmGenreDao;
 import ru.yandex.practicum.filmorate.dao.FilmLikeDao;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
-import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.Genre;
-import ru.yandex.practicum.filmorate.model.Mpa;
+import ru.yandex.practicum.filmorate.model.*;
 
 import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Collection;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 @Repository
 @Qualifier("FilmDbStorage")
@@ -80,30 +77,108 @@ public class FilmDbStorage implements FilmDao {
 
     @Override
     public Collection<Film> findAll() {
-        final String sql = "SELECT id, title, description, release_date, duration, mpa_id FROM film";
-        final List<Film> films = jdbcTemplate.query(sql, this::mapRowToFilm);
-
-        for (Film film : films) {
-            film.getLikes().addAll(filmLikeDao.getAllById(film.getId()));
-            film.getGenres().addAll(filmGenreDao.getAllById(film.getId()));
-        }
-
-        return films;
+        final String sql = "SELECT f.ID, f.TITLE, f.DESCRIPTION, f.RELEASE_DATE, f.DURATION, f.MPA_ID, m.RATING_NAME, " +
+                "fg.GENRE_ID, g.GENRE_NAME FROM FILM f LEFT JOIN MPA m ON f.MPA_ID = m.ID LEFT JOIN FILM_GENRE fg ON " +
+                "f.ID = fg.FILM_ID LEFT JOIN GENRE g ON fg.GENRE_ID = g.ID";
+        return jdbcTemplate.query(sql, this::extractToFilmList);
     }
 
     @Override
     public Film findById(long id) {
-        return null;
+        final String sql = "SELECT f.ID, f.TITLE, f.DESCRIPTION, f.RELEASE_DATE, f.DURATION, f.MPA_ID, m.RATING_NAME, " +
+                "fg.GENRE_ID, g.GENRE_NAME FROM FILM f LEFT JOIN MPA m ON f.MPA_ID = m.ID LEFT JOIN FILM_GENRE fg ON " +
+                "f.ID = fg.FILM_ID LEFT JOIN GENRE g ON fg.GENRE_ID = g.ID WHERE f.id = ?";
+
+        final Film film = jdbcTemplate.query(sql, this::extractToFilm, id);
+        if (film != null) {
+            film.setLikes(filmLikeDao.getCountById(id));
+        } else {
+            throw new NotFoundException("Фильм с id '" + id + "'не найден.");
+        }
+        return film;
     }
 
-    private Film mapRowToFilm(ResultSet rs, int rowNum) throws SQLException {
-        return new Film(
-                rs.getLong("id"),
-                rs.getString("title"),
-                rs.getString("description"),
-                rs.getDate("release_date").toLocalDate(),
-                rs.getInt("duration"),
-                Mpa.fromId(rs.getInt("mpa_id"))
-        );
+//    private Film mapRowToFilm(ResultSet rs, int rowNum) throws SQLException {
+//        return new Film(
+//                rs.getLong("id"),
+//                rs.getString("title"),
+//                rs.getString("description"),
+//                rs.getDate("release_date").toLocalDate(),
+//                rs.getInt("duration"),
+//                new Mpa(rs.getInt("mpa_id"), rs.getString("rating_name"))
+//        );
+//    }
+
+    private Film extractToFilm(ResultSet rs) throws SQLException, DataAccessException {
+
+        Film film = null;
+        final Map<Long, Film> filmIdMap = new HashMap<>();
+
+        while (rs.next()) {
+
+            Long filmId = rs.getLong(1);
+            film = filmIdMap.get(filmId);
+            if (film == null) {
+                film = new Film(
+                        filmId,
+                        rs.getString("title"),
+                        rs.getString("description"),
+                        rs.getDate("release_date").toLocalDate(),
+                        rs.getInt("duration"),
+                        new Mpa(rs.getInt("mpa_id"), rs.getString("rating_name"))
+                );
+                filmIdMap.put(filmId, film);
+            }
+
+            final int genre_id = rs.getInt("genre_id");
+            if (genre_id == 0) {
+                film.getGenres().addAll(Collections.emptyList());
+                continue;
+            }
+
+            final Genre genre = new Genre();
+            genre.setId(genre_id);
+            genre.setName(rs.getString("genre_name"));
+            film.getGenres().add(genre);
+        }
+
+        return film;
+    }
+
+    private List<Film> extractToFilmList(ResultSet rs) throws SQLException, DataAccessException {
+
+        final List<Film> films = new ArrayList<>();
+        final Map<Long, Film> filmIdMap = new HashMap<>();
+
+        while (rs.next()) {
+
+            Long filmId = rs.getLong(1);
+            Film film = filmIdMap.get(filmId);
+            if (film == null) {
+                film = new Film(
+                        filmId,
+                        rs.getString("title"),
+                        rs.getString("description"),
+                        rs.getDate("release_date").toLocalDate(),
+                        rs.getInt("duration"),
+                        new Mpa(rs.getInt("mpa_id"), rs.getString("rating_name"))
+                );
+                films.add(film);
+                filmIdMap.put(filmId, film);
+            }
+
+            final int genre_id = rs.getInt("genre_id");
+            if (genre_id == 0) {
+                film.getGenres().addAll(Collections.emptyList());
+                continue;
+            }
+
+            final Genre genre = new Genre();
+            genre.setId(genre_id);
+            genre.setName(rs.getString("genre_name"));
+            film.getGenres().add(genre);
+        }
+
+        return films;
     }
 }
