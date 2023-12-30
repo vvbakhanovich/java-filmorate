@@ -41,7 +41,7 @@ public class UserServiceImpl implements UserService {
         final User user = UserMapper.toModel(validateUserName(userDto));
         final User addedUser = userStorage.add(user);
         log.info("Добавление нового пользователя: {}", addedUser);
-        return UserMapper.toDto(addedUser);
+        return UserMapper.toDto(userStorage.findById(addedUser.getId()));
     }
 
     /**
@@ -56,7 +56,7 @@ public class UserServiceImpl implements UserService {
         final long userId = updatedUser.getId();
         userStorage.update(updatedUser);
         log.info("Обновление пользователя с id {} : {}", userId, updatedUser);
-        return UserMapper.toDto(updatedUser);
+        return UserMapper.toDto(userStorage.findById(userId));
     }
 
     /**
@@ -107,7 +107,7 @@ public class UserServiceImpl implements UserService {
         }
         user.getFriends().add(friendship);
         log.info("Пользователи с id {} и id {} стали друзьями.", userId, friendId);
-        return UserMapper.toDto(user);
+        return UserMapper.toDto(userStorage.findById(userId));
     }
 
     /**
@@ -156,8 +156,8 @@ public class UserServiceImpl implements UserService {
      */
     @Override
     public void removeFriend(final long userId, final long friendId) {
-        final User user = userStorage.findById(userId);
-        final User friend = userStorage.findById(friendId);
+        userStorage.findById(userId);
+        userStorage.findById(friendId);
         friendshipDao.remove(userId, friendId);
         log.info("Пользователи с id {} и {} перестали быть друзьями", userId, friendId);
     }
