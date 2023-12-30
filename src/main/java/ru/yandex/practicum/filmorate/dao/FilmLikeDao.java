@@ -10,4 +10,6 @@ public interface FilmLikeDao {
     Long getCountById(long filmId);
 
     Map<Long, Long> findAll();
+
+    void remove(long filmId, long userId);
 }

@@ -49,6 +49,12 @@ public class FilmLikeDbStorage implements FilmLikeDao {
         return jdbcTemplate.query(sql, this::mapRowToIdCount);
     }
 
+    @Override
+    public void remove(long filmId, long userId) {
+        final String sql = "DELETE FROM film_like WHERE film_id = ? AND user_id = ?";
+        jdbcTemplate.update(sql, filmId, userId);
+    }
+
     private Map<Long, Long> mapRowToIdCount(ResultSet rs) throws SQLException {
         final Map<Long, Long> result = new LinkedHashMap<>();
         while (rs.next()) {

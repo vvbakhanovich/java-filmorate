@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.dao.FilmDao;
+import ru.yandex.practicum.filmorate.dao.FilmLikeDao;
 import ru.yandex.practicum.filmorate.dao.UserDao;
 import ru.yandex.practicum.filmorate.dto.FilmDto;
 import ru.yandex.practicum.filmorate.mapper.FilmMapper;
@@ -28,6 +29,8 @@ public class FilmServiceImpl implements FilmService {
 
     @Qualifier("UserDbStorage")
     private final UserDao userStorage;
+
+    private final FilmLikeDao filmLikeDao;
 
     @Override
     public FilmDto addFilm(final FilmDto filmDto) {
@@ -63,6 +66,7 @@ public class FilmServiceImpl implements FilmService {
     public FilmDto likeFilm(final long filmId, final long userId) {
         Film film = filmStorage.findById(filmId);
         userStorage.findById(userId);
+        filmLikeDao.add(filmId, userId);
         film.setLikes(film.getLikes() + 1);
         log.info("Пользователь с id {} поставил лайк фильму с id {}", userId, filmId);
         return toDto(film);
@@ -71,9 +75,10 @@ public class FilmServiceImpl implements FilmService {
     @Override
     public FilmDto removeLike(final long filmId, final long userId) {
         Film film = filmStorage.findById(filmId);
-//        userStorage.findById(userId);
-//        film.getLikes().remove(userId);
-//        log.info("Пользователь с id {} удалил лайк фильма с id {}", userId, filmId);
+        userStorage.findById(userId);
+        filmLikeDao.remove(filmId, userId);
+        film.setLikes(film.getLikes() - 1);
+        log.info("Пользователь с id {} удалил лайк фильма с id {}", userId, filmId);
         return toDto(film);
     }
 
