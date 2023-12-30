@@ -32,7 +32,7 @@ public class FilmDbStorageTest {
 
     private FilmDbStorage filmDbStorage;
     private Film film;
-    Film updatedFilm;
+    private Film updatedFilm;
 
     @BeforeEach
     public void setUp() {
