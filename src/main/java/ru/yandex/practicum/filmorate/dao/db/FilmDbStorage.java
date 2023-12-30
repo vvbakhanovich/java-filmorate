@@ -46,10 +46,12 @@ public class FilmDbStorage implements FilmDao {
             return stmt;
         }, keyHolder);
 
+        film.getMpa().setName(MpaStatus.fromId(film.getMpa().getId()).getName());
         film.setId(Objects.requireNonNull(keyHolder.getKey(), "Не удалось добавить фильм.").longValue());
 
         for (Genre genre : film.getGenres()) {
             filmGenreDao.add(film.getId(), genre.getId());
+            genre.setName(GenreStatus.fromId(genre.getId()).getGenreName());
         }
 
         return film;
@@ -70,8 +72,11 @@ public class FilmDbStorage implements FilmDao {
             throw new NotFoundException("Фильм с id '" + film.getId() + "' не найден.");
         }
 
+        film.getMpa().setName(MpaStatus.fromId(film.getMpa().getId()).getName());
+
         for (Genre genre : film.getGenres()) {
             filmGenreDao.update(film.getId(), genre.getId());
+            genre.setName(GenreStatus.fromId(genre.getId()).getGenreName());
         }
     }
 
