@@ -29,7 +29,6 @@ public class FilmDto {
     private LocalDate releaseDate; //дата релиза
     @Positive(message = "Продолжительность должна быть больше нуля")
     private int duration; //продолжительность фильма
-    @NotNull
     private Mpa mpa; //возрастной рейтинг
     private final List<Genre> genres = new ArrayList<>(); //жанры
     private long likes; //количество лайков от пользователей
