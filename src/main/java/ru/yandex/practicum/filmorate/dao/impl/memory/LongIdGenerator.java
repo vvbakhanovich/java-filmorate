@@ -1,4 +1,4 @@
-package ru.yandex.practicum.filmorate.dao.memory;
+package ru.yandex.practicum.filmorate.dao.impl.memory;
 
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;

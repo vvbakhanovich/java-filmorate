@@ -1,4 +1,4 @@
-package ru.yandex.practicum.filmorate.dao.memory;
+package ru.yandex.practicum.filmorate.dao.impl.memory;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
