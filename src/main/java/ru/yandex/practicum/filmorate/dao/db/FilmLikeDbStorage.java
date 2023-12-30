@@ -1,6 +1,8 @@
 package ru.yandex.practicum.filmorate.dao.db;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.dao.FilmLikeDao;
@@ -12,8 +14,10 @@ import java.util.Map;
 
 @Component
 @RequiredArgsConstructor
+@Slf4j
 public class FilmLikeDbStorage implements FilmLikeDao {
 
+    private final Long NO_LIKES = 0L;
     private final JdbcTemplate jdbcTemplate;
 
     @Override
@@ -30,8 +34,13 @@ public class FilmLikeDbStorage implements FilmLikeDao {
 
     @Override
     public Long getCountById(long filmId) {
-        final String sql = "SELECT COUNT(*) AS likes FROM film_like GROUP BY film_id HAVING film_id = ?";
-        return jdbcTemplate.queryForObject(sql, Long.class, filmId);
+        try {
+            final String sql = "SELECT COUNT(*) AS likes FROM film_like GROUP BY film_id HAVING film_id = ?";
+            return jdbcTemplate.queryForObject(sql, Long.class, filmId);
+        } catch (EmptyResultDataAccessException e) {
+            log.debug("getCountById вернул пустую строку.");
+        }
+        return NO_LIKES;
     }
 
     @Override
