@@ -9,5 +9,9 @@ public interface FilmGenreDao {
 
     void update(long filmId, long genreId);
 
-    List<Genre> getAllById(long filmId);
+    List<Genre> findAllById(long filmId);
+
+    void deleteAll(long id);
+
+    void delete(long filmId, long genreId);
 }
