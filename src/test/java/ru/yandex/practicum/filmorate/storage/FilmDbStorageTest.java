@@ -14,6 +14,7 @@ import ru.yandex.practicum.filmorate.dao.impl.db.FilmDbStorage;
 import ru.yandex.practicum.filmorate.dao.impl.db.FilmGenreDbStorage;
 import ru.yandex.practicum.filmorate.dao.impl.db.FilmLikeDbStorage;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Mpa;
 import ru.yandex.practicum.filmorate.model.MpaStatus;
 
@@ -29,16 +30,17 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class FilmDbStorageTest {
 
     private final JdbcTemplate jdbcTemplate;
-
     private FilmDbStorage filmDbStorage;
     private Film film;
     private Film updatedFilm;
+    private FilmGenreStorage filmGenreStorage;
 
     @BeforeEach
     public void setUp() {
-        FilmGenreStorage filmGenreStorage = new FilmGenreDbStorage(jdbcTemplate);
+        filmGenreStorage = new FilmGenreDbStorage(jdbcTemplate);
         FilmLikeStorage filmLikeStorage = new FilmLikeDbStorage(jdbcTemplate);
         filmDbStorage = new FilmDbStorage(jdbcTemplate, filmGenreStorage, filmLikeStorage);
+
         film = new Film(1L, "film", "film description", LocalDate.of(2020, 12, 12),
                 123, new Mpa(1, MpaStatus.fromId(1).getName()));
         updatedFilm = new Film(1L, "updated film", "updated film description",
@@ -97,5 +99,22 @@ public class FilmDbStorageTest {
         assertThat(filmDbStorage.findAll())
                 .isNotNull()
                 .isEmpty();
+    }
+
+    @Test
+    @DisplayName("Тест на добавление и получение списка жанров по id фильма")
+    void testAddAndGetById() {
+        Genre genre1 = new Genre(1, "Комедия");
+        Genre genre2 = new Genre(6, "Боевик");
+        film.getGenres().add(genre1);
+        film.getGenres().add(genre2);
+        filmDbStorage.add(film);
+
+        List<Genre> genres = filmGenreStorage.findAllById(1);
+
+
+        assertThat(genres)
+                .isNotNull()
+                .isEqualTo(List.of(genre1, genre2));
     }
 }
