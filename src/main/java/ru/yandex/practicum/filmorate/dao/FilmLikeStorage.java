@@ -2,7 +2,7 @@ package ru.yandex.practicum.filmorate.dao;
 
 import java.util.Map;
 
-public interface FilmLikeDao {
+public interface FilmLikeStorage {
     void add(long filmId, long userId);
 
     void update(long filmId, long userId);

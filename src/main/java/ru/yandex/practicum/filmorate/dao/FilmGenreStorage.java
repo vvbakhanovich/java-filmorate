@@ -4,7 +4,7 @@ import ru.yandex.practicum.filmorate.model.Genre;
 
 import java.util.List;
 
-public interface FilmGenreDao {
+public interface FilmGenreStorage {
     void add(long filmId, long genreId);
 
     void update(long filmId, long genreId);

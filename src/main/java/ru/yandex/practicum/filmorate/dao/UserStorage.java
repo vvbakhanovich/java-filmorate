@@ -4,7 +4,7 @@ import ru.yandex.practicum.filmorate.model.User;
 
 import java.util.Collection;
 
-public interface UserDao extends Dao<User> {
+public interface UserStorage extends Dao<User> {
 
     Collection<User> findFriendsByUserId(final long userId);
 }

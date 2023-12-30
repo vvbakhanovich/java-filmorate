@@ -7,7 +7,7 @@ import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.dao.IdGenerator;
-import ru.yandex.practicum.filmorate.dao.UserDao;
+import ru.yandex.practicum.filmorate.dao.UserStorage;
 
 import java.util.*;
 
@@ -15,7 +15,7 @@ import java.util.*;
 @Qualifier("inMemoryUserStorage")
 @Slf4j
 @RequiredArgsConstructor
-public class InMemoryUserStorage implements UserDao {
+public class InMemoryUserStorage implements UserStorage {
 
     private final IdGenerator<Long> idGenerator;
 

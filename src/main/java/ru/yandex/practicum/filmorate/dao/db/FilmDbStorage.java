@@ -8,9 +8,9 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
-import ru.yandex.practicum.filmorate.dao.FilmDao;
-import ru.yandex.practicum.filmorate.dao.FilmGenreDao;
-import ru.yandex.practicum.filmorate.dao.FilmLikeDao;
+import ru.yandex.practicum.filmorate.dao.FilmStorage;
+import ru.yandex.practicum.filmorate.dao.FilmGenreStorage;
+import ru.yandex.practicum.filmorate.dao.FilmLikeStorage;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.*;
 
@@ -24,13 +24,13 @@ import java.util.*;
 @Qualifier("FilmDbStorage")
 @Slf4j
 @RequiredArgsConstructor
-public class FilmDbStorage implements FilmDao {
+public class FilmDbStorage implements FilmStorage {
 
     private final JdbcTemplate jdbcTemplate;
 
-    private final FilmGenreDao filmGenreDao;
+    private final FilmGenreStorage filmGenreStorage;
 
-    private final FilmLikeDao filmLikeDao;
+    private final FilmLikeStorage filmLikeStorage;
 
     @Override
     public Film add(final Film film) {
@@ -49,7 +49,7 @@ public class FilmDbStorage implements FilmDao {
         film.setId(Objects.requireNonNull(keyHolder.getKey(), "Не удалось добавить фильм.").longValue());
 
         for (Genre genre : film.getGenres()) {
-            filmGenreDao.add(film.getId(), genre.getId());
+            filmGenreStorage.add(film.getId(), genre.getId());
         }
 
         return film;
@@ -70,10 +70,10 @@ public class FilmDbStorage implements FilmDao {
             throw new NotFoundException("Фильм с id '" + film.getId() + "' не найден.");
         }
 
-        filmGenreDao.deleteAll(film.getId());
+        filmGenreStorage.deleteAll(film.getId());
 
         for (Genre genre : film.getGenres()) {
-            filmGenreDao.add(film.getId(), genre.getId());
+            filmGenreStorage.add(film.getId(), genre.getId());
         }
     }
 
@@ -83,7 +83,7 @@ public class FilmDbStorage implements FilmDao {
                 "fg.GENRE_ID, g.GENRE_NAME FROM FILM f LEFT JOIN MPA m ON f.MPA_ID = m.ID LEFT JOIN FILM_GENRE fg ON " +
                 "f.ID = fg.FILM_ID LEFT JOIN GENRE g ON fg.GENRE_ID = g.ID";
         final Map<Long, Film> idFilmMap = jdbcTemplate.query(sql, this::extractToFilmList);
-        final Map<Long, Long> filmLikesMap = filmLikeDao.findAll();
+        final Map<Long, Long> filmLikesMap = filmLikeStorage.findAll();
 
         if (!filmLikesMap.isEmpty()) {
             for (Long filmId : filmLikesMap.keySet()) {
@@ -103,7 +103,7 @@ public class FilmDbStorage implements FilmDao {
 
         final Film film = jdbcTemplate.query(sql, this::extractToFilm, id);
         if (film != null) {
-            film.setLikes(filmLikeDao.getCountById(id));
+            film.setLikes(filmLikeStorage.getCountById(id));
         } else {
             throw new NotFoundException("Фильм с id '" + id + "'не найден.");
         }

@@ -3,7 +3,7 @@ package ru.yandex.practicum.filmorate.dao.db;
 import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
-import ru.yandex.practicum.filmorate.dao.FilmGenreDao;
+import ru.yandex.practicum.filmorate.dao.FilmGenreStorage;
 import ru.yandex.practicum.filmorate.model.Genre;
 
 import java.sql.ResultSet;
@@ -12,7 +12,7 @@ import java.util.List;
 
 @Component
 @RequiredArgsConstructor
-public class FilmGenreDbStorage implements FilmGenreDao {
+public class FilmGenreDbStorage implements FilmGenreStorage {
 
     private final JdbcTemplate jdbcTemplate;
 

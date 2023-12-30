@@ -4,7 +4,7 @@ import ru.yandex.practicum.filmorate.model.Genre;
 
 import java.util.Collection;
 
-public interface GenreDao {
+public interface GenreStorage {
     Genre findGenreById(int genreId);
 
     Collection<Genre> findAll();

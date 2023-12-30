@@ -6,7 +6,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.dao.FilmDao;
+import ru.yandex.practicum.filmorate.dao.FilmStorage;
 import ru.yandex.practicum.filmorate.dao.IdGenerator;
 
 import java.util.ArrayList;
@@ -18,7 +18,7 @@ import java.util.Map;
 @Qualifier("inMemoryFilmStorage")
 @Slf4j
 @RequiredArgsConstructor
-public class InMemoryFilmStorage implements FilmDao {
+public class InMemoryFilmStorage implements FilmStorage {
 
     private final IdGenerator<Long> idGenerator;
 

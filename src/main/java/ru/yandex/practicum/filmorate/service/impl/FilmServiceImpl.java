@@ -4,9 +4,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
-import ru.yandex.practicum.filmorate.dao.FilmDao;
-import ru.yandex.practicum.filmorate.dao.FilmLikeDao;
-import ru.yandex.practicum.filmorate.dao.UserDao;
+import ru.yandex.practicum.filmorate.dao.FilmStorage;
+import ru.yandex.practicum.filmorate.dao.FilmLikeStorage;
+import ru.yandex.practicum.filmorate.dao.UserStorage;
 import ru.yandex.practicum.filmorate.dto.FilmDto;
 import ru.yandex.practicum.filmorate.mapper.FilmMapper;
 import ru.yandex.practicum.filmorate.model.Film;
@@ -26,12 +26,12 @@ import static ru.yandex.practicum.filmorate.mapper.FilmMapper.toModel;
 public class FilmServiceImpl implements FilmService {
 
     @Qualifier("FilmDbStorage")
-    private final FilmDao filmStorage;
+    private final FilmStorage filmStorage;
 
     @Qualifier("UserDbStorage")
-    private final UserDao userStorage;
+    private final UserStorage userStorage;
 
-    private final FilmLikeDao filmLikeDao;
+    private final FilmLikeStorage filmLikeStorage;
 
     @Override
     public FilmDto addFilm(final FilmDto filmDto) {
@@ -67,7 +67,7 @@ public class FilmServiceImpl implements FilmService {
     public FilmDto likeFilm(final long filmId, final long userId) {
         filmStorage.findById(filmId);
         userStorage.findById(userId);
-        filmLikeDao.add(filmId, userId);
+        filmLikeStorage.add(filmId, userId);
         log.info("Пользователь с id {} поставил лайк фильму с id {}", userId, filmId);
         return toDto(filmStorage.findById(filmId));
     }
@@ -76,7 +76,7 @@ public class FilmServiceImpl implements FilmService {
     public FilmDto removeLike(final long filmId, final long userId) {
         filmStorage.findById(filmId);
         userStorage.findById(userId);
-        filmLikeDao.remove(filmId, userId);
+        filmLikeStorage.remove(filmId, userId);
         log.info("Пользователь с id {} удалил лайк фильма с id {}", userId, filmId);
         return toDto(filmStorage.findById(filmId));
     }

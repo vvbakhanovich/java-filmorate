@@ -4,8 +4,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
-import ru.yandex.practicum.filmorate.dao.FriendshipDao;
-import ru.yandex.practicum.filmorate.dao.UserDao;
+import ru.yandex.practicum.filmorate.dao.FriendshipStorage;
+import ru.yandex.practicum.filmorate.dao.UserStorage;
 import ru.yandex.practicum.filmorate.dto.UserDto;
 import ru.yandex.practicum.filmorate.mapper.UserMapper;
 import ru.yandex.practicum.filmorate.model.Friendship;
@@ -26,9 +26,9 @@ import static ru.yandex.practicum.filmorate.model.FriendshipStatus.NOT_ACKNOWLED
 public class UserServiceImpl implements UserService {
 
     @Qualifier("UserDbStorage")
-    private final UserDao userStorage;
+    private final UserStorage userStorage;
 
-    private final FriendshipDao friendshipDao;
+    private final FriendshipStorage friendshipStorage;
 
     /**
      * Сохранение пользователя в БД.
@@ -99,11 +99,11 @@ public class UserServiceImpl implements UserService {
         friendship.setId(friendId);
         if (friend.getFriends().stream().map(Friendship::getId).anyMatch(id -> id == userId)) {
             friendship.setStatus(ACKNOWLEDGED.getStatus());
-            friendshipDao.add(userId, friendId, ACKNOWLEDGED.getId());
-            friendshipDao.update(friendId, userId, ACKNOWLEDGED.getId());
+            friendshipStorage.add(userId, friendId, ACKNOWLEDGED.getId());
+            friendshipStorage.update(friendId, userId, ACKNOWLEDGED.getId());
         } else {
             friendship.setStatus(NOT_ACKNOWLEDGED.getStatus());
-            friendshipDao.add(userId, friendId, NOT_ACKNOWLEDGED.getId());
+            friendshipStorage.add(userId, friendId, NOT_ACKNOWLEDGED.getId());
         }
         user.getFriends().add(friendship);
         log.info("Пользователи с id {} и id {} стали друзьями.", userId, friendId);
@@ -158,7 +158,7 @@ public class UserServiceImpl implements UserService {
     public void removeFriend(final long userId, final long friendId) {
         userStorage.findById(userId);
         userStorage.findById(friendId);
-        friendshipDao.remove(userId, friendId);
+        friendshipStorage.remove(userId, friendId);
         log.info("Пользователи с id {} и {} перестали быть друзьями", userId, friendId);
     }
 

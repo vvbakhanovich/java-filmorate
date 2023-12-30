@@ -5,7 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
-import ru.yandex.practicum.filmorate.dao.FilmLikeDao;
+import ru.yandex.practicum.filmorate.dao.FilmLikeStorage;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -15,7 +15,7 @@ import java.util.Map;
 @Component
 @RequiredArgsConstructor
 @Slf4j
-public class FilmLikeDbStorage implements FilmLikeDao {
+public class FilmLikeDbStorage implements FilmLikeStorage {
 
     private final Long NO_LIKES = 0L;
     private final JdbcTemplate jdbcTemplate;
