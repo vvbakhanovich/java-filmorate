@@ -2,6 +2,7 @@ package ru.yandex.practicum.filmorate.storage;
 
 import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.JdbcTest;
@@ -46,6 +47,7 @@ public class FilmDbStorageTest {
     }
 
     @Test
+    @DisplayName("Тест добавления и получения по id")
     public void testAddAndFindByFilmId() {
         filmDbStorage.add(film);
 
@@ -58,6 +60,7 @@ public class FilmDbStorageTest {
     }
 
     @Test
+    @DisplayName("Тест обновления данных фильма")
     public void testUpdate() {
 
         filmDbStorage.add(film);
@@ -73,6 +76,7 @@ public class FilmDbStorageTest {
     }
 
     @Test
+    @DisplayName("Тест получения списка всех фильмов")
     public void testFindAll() {
         filmDbStorage.add(film);
         filmDbStorage.add(updatedFilm);
@@ -88,11 +92,10 @@ public class FilmDbStorageTest {
     }
 
     @Test
+    @DisplayName("Тест получения списка всех фильмов при пустой таблице")
     public void testFindAllEmptyDb() {
         assertThat(filmDbStorage.findAll())
                 .isNotNull()
                 .isEmpty();
     }
-
-
 }
