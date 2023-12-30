@@ -74,7 +74,7 @@ public class FilmServiceImpl implements FilmService {
 
     @Override
     public FilmDto removeLike(final long filmId, final long userId) {
-        Film film = filmStorage.findById(filmId);
+        filmStorage.findById(filmId);
         userStorage.findById(userId);
         filmLikeDao.remove(filmId, userId);
         log.info("Пользователь с id {} удалил лайк фильма с id {}", userId, filmId);
