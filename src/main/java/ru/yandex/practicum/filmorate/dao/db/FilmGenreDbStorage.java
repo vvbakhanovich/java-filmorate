@@ -18,7 +18,7 @@ public class FilmGenreDbStorage implements FilmGenreDao {
 
     @Override
     public void add(final long filmId, final long genreId) {
-        final String sql = "INSERT INTO film_genre (film_id, genre_id) VALUES (?, ?) ON CONFLICT DO NOTHING";
+        final String sql = "MERGE INTO film_genre (film_id, genre_id) VALUES (?, ?)";
         jdbcTemplate.update(sql, filmId, genreId);
     }
 
