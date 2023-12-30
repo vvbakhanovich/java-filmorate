@@ -31,7 +31,7 @@ public class FilmGenreDbStorage implements FilmGenreStorage {
 
     @Override
     public List<Genre> findAllById(long filmId) {
-        final String sql = "SELECT fg.genre_id g.genre_name FROM film_genre fg JOIN genre g ON fg.genre_id = g.id" +
+        final String sql = "SELECT fg.genre_id, g.genre_name FROM film_genre fg JOIN genre g ON fg.genre_id = g.id" +
                 " WHERE film_id = ?";
         return jdbcTemplate.query(sql, this::mapRowToLong, filmId);
     }
