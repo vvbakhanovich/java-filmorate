@@ -38,7 +38,7 @@ public class FilmServiceImpl implements FilmService {
         Film film = toModel(filmDto);
         Film addedFilm = filmStorage.add(film);
         log.info("Добавление нового фильма: {}", addedFilm);
-        return toDto(addedFilm);
+        return toDto(filmStorage.findById(addedFilm.getId()));
     }
 
     @Override
@@ -47,7 +47,7 @@ public class FilmServiceImpl implements FilmService {
         long filmId = updatedFilmDto.getId();
         filmStorage.update(updatedFilm);
         log.info("Обновление фильма с id {}: {}", filmId, updatedFilm);
-        return toDto(updatedFilm);
+        return toDto(filmStorage.findById(filmId));
     }
 
     @Override
@@ -60,7 +60,7 @@ public class FilmServiceImpl implements FilmService {
     public FilmDto getFilmById(final long filmId) {
         Film film = filmStorage.findById(filmId);
         log.info("Фильм с id {} найден.", filmId);
-        return toDto(film);
+        return toDto(filmStorage.findById(filmId));
     }
 
     @Override
@@ -68,9 +68,8 @@ public class FilmServiceImpl implements FilmService {
         Film film = filmStorage.findById(filmId);
         userStorage.findById(userId);
         filmLikeDao.add(filmId, userId);
-        film.setLikes(film.getLikes() + 1);
         log.info("Пользователь с id {} поставил лайк фильму с id {}", userId, filmId);
-        return toDto(film);
+        return toDto(filmStorage.findById(filmId));
     }
 
     @Override
@@ -78,9 +77,8 @@ public class FilmServiceImpl implements FilmService {
         Film film = filmStorage.findById(filmId);
         userStorage.findById(userId);
         filmLikeDao.remove(filmId, userId);
-        film.setLikes(film.getLikes() - 1);
         log.info("Пользователь с id {} удалил лайк фильма с id {}", userId, filmId);
-        return toDto(film);
+        return toDto(filmStorage.findById(filmId));
     }
 
     @Override
