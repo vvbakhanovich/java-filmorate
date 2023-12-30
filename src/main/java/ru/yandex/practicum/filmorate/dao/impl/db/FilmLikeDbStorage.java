@@ -17,7 +17,7 @@ import java.util.Map;
 @Slf4j
 public class FilmLikeDbStorage implements FilmLikeStorage {
 
-    private final Long NO_LIKES = 0L;
+    private static final Long NO_LIKES = 0L;
     private final JdbcTemplate jdbcTemplate;
 
     @Override
