@@ -58,7 +58,7 @@ public class FilmServiceImpl implements FilmService {
 
     @Override
     public FilmDto getFilmById(final long filmId) {
-        Film film = filmStorage.findById(filmId);
+        filmStorage.findById(filmId);
         log.info("Фильм с id {} найден.", filmId);
         return toDto(filmStorage.findById(filmId));
     }
