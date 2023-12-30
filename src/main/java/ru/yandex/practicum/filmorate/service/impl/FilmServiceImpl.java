@@ -65,7 +65,7 @@ public class FilmServiceImpl implements FilmService {
 
     @Override
     public FilmDto likeFilm(final long filmId, final long userId) {
-        Film film = filmStorage.findById(filmId);
+        filmStorage.findById(filmId);
         userStorage.findById(userId);
         filmLikeDao.add(filmId, userId);
         log.info("Пользователь с id {} поставил лайк фильму с id {}", userId, filmId);
