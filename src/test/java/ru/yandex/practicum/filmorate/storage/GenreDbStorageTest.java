@@ -10,12 +10,15 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.annotation.DirtiesContext;
 import ru.yandex.practicum.filmorate.dao.GenreStorage;
 import ru.yandex.practicum.filmorate.dao.impl.db.GenreDbStorage;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Genre;
 
 import java.util.Collection;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @JdbcTest
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
@@ -37,7 +40,7 @@ class GenreDbStorageTest {
     void testFindByIdComedy() {
         Genre genre = new Genre(1, "Комедия");
 
-        Genre savedGenre = genreStorage.findGenreById(1);
+        Genre savedGenre = genreStorage.findById(1);
 
         assertThat(savedGenre)
                 .isNotNull()
@@ -50,7 +53,7 @@ class GenreDbStorageTest {
     void testFindByIdDrama() {
         Genre genre = new Genre(2, "Драма");
 
-        Genre savedGenre = genreStorage.findGenreById(2);
+        Genre savedGenre = genreStorage.findById(2);
 
         assertThat(savedGenre)
                 .isNotNull()
@@ -63,7 +66,7 @@ class GenreDbStorageTest {
     void testFindByIdCartoon() {
         Genre genre = new Genre(3, "Мультфильм");
 
-        Genre savedGenre = genreStorage.findGenreById(3);
+        Genre savedGenre = genreStorage.findById(3);
 
         assertThat(savedGenre)
                 .isNotNull()
@@ -76,7 +79,7 @@ class GenreDbStorageTest {
     void testFindByIdThriller() {
         Genre genre = new Genre(4, "Триллер");
 
-        Genre savedGenre = genreStorage.findGenreById(4);
+        Genre savedGenre = genreStorage.findById(4);
 
         assertThat(savedGenre)
                 .isNotNull()
@@ -89,7 +92,7 @@ class GenreDbStorageTest {
     void testFindByIdDocumentary() {
         Genre genre = new Genre(5, "Документальный");
 
-        Genre savedGenre = genreStorage.findGenreById(5);
+        Genre savedGenre = genreStorage.findById(5);
 
         assertThat(savedGenre)
                 .isNotNull()
@@ -102,7 +105,7 @@ class GenreDbStorageTest {
     void testFindByIdAction() {
         Genre genre = new Genre(6, "Боевик");
 
-        Genre savedGenre = genreStorage.findGenreById(6);
+        Genre savedGenre = genreStorage.findById(6);
 
         assertThat(savedGenre)
                 .isNotNull()
@@ -128,6 +131,14 @@ class GenreDbStorageTest {
                 .isNotNull()
                 .isNotEmpty()
                 .containsAll(allGenres);
+    }
+
+    @Test
+    @DisplayName("Тест получения жанра с неверным id")
+    void findByWrongId() {
+
+        NotFoundException e = assertThrows(NotFoundException.class, () -> genreStorage.findById(99));
+        assertEquals("Жанр c id '99' не найден.", e.getMessage());
     }
 
 }
