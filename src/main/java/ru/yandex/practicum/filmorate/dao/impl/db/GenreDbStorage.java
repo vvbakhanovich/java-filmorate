@@ -19,7 +19,7 @@ public class GenreDbStorage implements GenreStorage {
     private final JdbcTemplate jdbcTemplate;
 
     @Override
-    public Genre findGenreById(final int genreId) {
+    public Genre findById(final int genreId) {
         try {
             final String sql = "SELECT id, genre_name FROM genre WHERE id = ?";
             return jdbcTemplate.queryForObject(sql, this::mapRowToGenre, genreId);

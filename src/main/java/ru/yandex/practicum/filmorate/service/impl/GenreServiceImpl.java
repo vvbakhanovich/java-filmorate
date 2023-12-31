@@ -19,7 +19,7 @@ public class GenreServiceImpl implements GenreService {
     @Override
     public Genre findById(int id) {
         log.info("Запрошен жанр с id '{}'.", id);
-        return genreStorage.findGenreById(id);
+        return genreStorage.findById(id);
     }
 
     @Override
