@@ -38,12 +38,10 @@ public class FilmDbStorageTest {
     private FilmStorage filmDbStorage;
     private FilmGenreStorage filmGenreStorage;
     private FilmLikeStorage filmLikeStorage;
-
     private UserStorage userStorage;
 
     private Film film;
     private Film updatedFilm;
-
     private User user;
 
     @BeforeEach
