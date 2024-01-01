@@ -23,13 +23,6 @@ public class FilmGenreDbStorage implements FilmGenreStorage {
     }
 
     @Override
-    public void update(final long filmId, final long genreId) {
-        deleteAll(filmId);
-        final String sql = "INSERT INTO film_genre (film_id, genre_id) VALUES (?, ?)";
-        jdbcTemplate.update(sql, filmId, genreId);
-    }
-
-    @Override
     public List<Genre> findAllById(long filmId) {
         final String sql = "SELECT fg.genre_id, g.genre_name FROM film_genre fg JOIN genre g ON fg.genre_id = g.id" +
                 " WHERE film_id = ?";
@@ -37,15 +30,9 @@ public class FilmGenreDbStorage implements FilmGenreStorage {
     }
 
     @Override
-    public void deleteAll(long id) {
+    public void deleteAllById(long id) {
         final String sql = "DELETE FROM film_genre WHERE film_id = ?";
         jdbcTemplate.update(sql, id);
-    }
-
-    @Override
-    public void delete(long filmId, long genreId) {
-        final String sql = "DELETE FROM film_genre WHERE film_id = ? AND genre_id = ?";
-        jdbcTemplate.update(sql, filmId, genreId);
     }
 
     private Genre mapRowToLong(ResultSet rs, int rowNum) throws SQLException {
