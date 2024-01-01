@@ -106,7 +106,7 @@ public class FilmDbStorage implements FilmStorage {
         if (film != null) {
             film.setLikes(filmLikeStorage.getCountById(id));
         } else {
-            throw new NotFoundException("Фильм с id '" + id + "'не найден.");
+            throw new NotFoundException("Фильм с id '" + id + "' не найден.");
         }
         return film;
     }
