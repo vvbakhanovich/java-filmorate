@@ -33,6 +33,12 @@ public class FilmServiceImpl implements FilmService {
 
     private final FilmLikeStorage filmLikeStorage;
 
+    /**
+     * Добавление фильма в БД.
+     *
+     * @param filmDto фильм.
+     * @return фильм с присвоенным идентификатором.
+     */
     @Override
     public FilmDto addFilm(final FilmDto filmDto) {
         final Film film = toModel(filmDto);
@@ -41,6 +47,12 @@ public class FilmServiceImpl implements FilmService {
         return toDto(filmStorage.findById(addedFilm.getId()));
     }
 
+    /**
+     * Обновление данных фильма.
+     *
+     * @param updatedFilmDto фильм с новыми данными и идентификатором фильма, данные которого требуется обновить.
+     * @return обновленный фильм.
+     */
     @Override
     public FilmDto updateFilm(final FilmDto updatedFilmDto) {
         final Film updatedFilm = toModel(updatedFilmDto);
@@ -50,12 +62,23 @@ public class FilmServiceImpl implements FilmService {
         return toDto(filmStorage.findById(filmId));
     }
 
+    /**
+     * Получение списка всех фильмов.
+     *
+     * @return список всех фильмов, хранящихся в БД.
+     */
     @Override
     public Collection<FilmDto> getAllFilms() {
         log.info("Получение списка всех фильмов.");
         return filmStorage.findAll().stream().map(FilmMapper::toDto).collect(Collectors.toCollection(ArrayList::new));
     }
 
+    /**
+     * Поиск фильма по идентификатору.
+     *
+     * @param filmId идентификатор фильма.
+     * @return найденный фильм.
+     */
     @Override
     public FilmDto getFilmById(final long filmId) {
         filmStorage.findById(filmId);
@@ -63,6 +86,13 @@ public class FilmServiceImpl implements FilmService {
         return toDto(filmStorage.findById(filmId));
     }
 
+    /**
+     * Постановка лайка фильму от пользователя.
+     *
+     * @param filmId идентификатор фильма, которму ставится лайк.
+     * @param userId идентификатор пользователя, который ставит лайк.
+     * @return фильм, которому поставили лайк.
+     */
     @Override
     public FilmDto likeFilm(final long filmId, final long userId) {
         filmStorage.findById(filmId);
@@ -72,6 +102,13 @@ public class FilmServiceImpl implements FilmService {
         return toDto(filmStorage.findById(filmId));
     }
 
+    /**
+     * Удаление лайка у фильма.
+     *
+     * @param filmId идентификатор фильма, у которого требуется удалить лайк.
+     * @param userId идентфикатор пользователя лайк которого требуется удалить.
+     * @return фильм, у которого удалили лайк.
+     */
     @Override
     public FilmDto removeLike(final long filmId, final long userId) {
         filmStorage.findById(filmId);
@@ -81,6 +118,17 @@ public class FilmServiceImpl implements FilmService {
         return toDto(filmStorage.findById(filmId));
     }
 
+    /**
+     * Получение списка самых популярных фильмов. Под популярностью понимается количество лайков у фильма. Чем больше
+     * лайков, тем популярнее фильм.
+     *
+     * @param count ограничение количества выводимых фильмов
+     * @return список фильмов.
+     */
+
+    // Изначально реализация данного метода была через join с таблицей film_like и агрегацией по количеству лайков и
+    // и ограничению по количеству выводимых строк, но база данных h2 выдавала неверный результат вычисления COUNT().
+    // Поэтому пришлось отказаться от такой реализации, хотя в БД Postges запрос отрабатывает корректно.
     @Override
     public Collection<FilmDto> getMostPopularFilms(final int count) {
         return filmStorage.findAll().stream()
