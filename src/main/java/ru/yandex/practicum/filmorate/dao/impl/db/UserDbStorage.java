@@ -71,7 +71,7 @@ public class UserDbStorage implements UserStorage {
     @Override
     public Collection<User> findAll() {
         final String sql = "SELECT " +
-                "fu.ID, fu.EMAIL, fu.LOGIN, fu.NICKNAME, fu.BIRTHDAY, f.FRIEND_ID,f.FRIENDSHIP_STATUS_ID, fs.STATUS_NAME " +
+                "fu.ID, fu.EMAIL, fu.LOGIN, fu.NICKNAME, fu.BIRTHDAY, f.FRIEND_ID, f.FRIENDSHIP_STATUS_ID, fs.STATUS_NAME " +
                 "FROM FILMORATE_USER fu LEFT JOIN FRIENDSHIP f ON fu.ID = f.USER_ID " +
                 "LEFT JOIN FRIENDSHIP_STATUS fs ON f.FRIENDSHIP_STATUS_ID = fs.ID";
         return jdbcTemplate.query(sql, this::extractToUserList);
@@ -85,7 +85,7 @@ public class UserDbStorage implements UserStorage {
                 "LEFT JOIN FRIENDSHIP_STATUS fs ON f.FRIENDSHIP_STATUS_ID = fs.ID WHERE fu.ID = ?";
         User user = jdbcTemplate.query(sql, this::extractToUser, id);
         if (user == null) {
-            throw new NotFoundException("Пользователь с id " + id + " не найден.");
+            throw new NotFoundException("Пользователь с id '" + id + "' не найден.");
         }
         return user;
     }
