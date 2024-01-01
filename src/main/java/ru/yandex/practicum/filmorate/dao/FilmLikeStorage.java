@@ -5,8 +5,6 @@ import java.util.Map;
 public interface FilmLikeStorage {
     void add(long filmId, long userId);
 
-    void update(long filmId, long userId);
-
     Long getCountById(long filmId);
 
     Map<Long, Long> findAll();

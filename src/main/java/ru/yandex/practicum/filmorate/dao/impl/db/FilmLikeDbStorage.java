@@ -27,12 +27,6 @@ public class FilmLikeDbStorage implements FilmLikeStorage {
     }
 
     @Override
-    public void update(final long filmId, final long userId) {
-        final String sql = "MERGE INTO film_like (film_id, user_id) VALUES (?, ?)";
-        jdbcTemplate.update(sql, filmId, userId);
-    }
-
-    @Override
     public Long getCountById(long filmId) {
         try {
             final String sql = "SELECT COUNT(*) AS likes FROM film_like GROUP BY film_id HAVING film_id = ?";
