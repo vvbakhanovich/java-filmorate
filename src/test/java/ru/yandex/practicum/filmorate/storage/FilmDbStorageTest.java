@@ -86,7 +86,6 @@ public class FilmDbStorageTest {
     public void testUpdate() {
 
         filmDbStorage.add(film);
-        System.out.println(filmDbStorage.findAll());
         filmDbStorage.update(updatedFilm);
 
         Film savedFilm = filmDbStorage.findById(1L);
@@ -101,7 +100,6 @@ public class FilmDbStorageTest {
     @DisplayName("Тест обновления данных фильма с несуществующим id")
     public void testUpdateWithWrongId() {
 
-        film.setId(99);
         filmDbStorage.add(film);
         updatedFilm.setId(99);
 
