@@ -35,16 +35,16 @@ public class FilmServiceImpl implements FilmService {
 
     @Override
     public FilmDto addFilm(final FilmDto filmDto) {
-        Film film = toModel(filmDto);
-        Film addedFilm = filmStorage.add(film);
+        final Film film = toModel(filmDto);
+        final Film addedFilm = filmStorage.add(film);
         log.info("Добавление нового фильма: {}", addedFilm);
         return toDto(filmStorage.findById(addedFilm.getId()));
     }
 
     @Override
     public FilmDto updateFilm(final FilmDto updatedFilmDto) {
-        Film updatedFilm = toModel(updatedFilmDto);
-        long filmId = updatedFilmDto.getId();
+        final Film updatedFilm = toModel(updatedFilmDto);
+        final long filmId = updatedFilmDto.getId();
         filmStorage.update(updatedFilm);
         log.info("Обновление фильма с id {}: {}", filmId, updatedFilm);
         return toDto(filmStorage.findById(filmId));
