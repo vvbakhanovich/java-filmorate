@@ -16,12 +16,23 @@ public class GenreServiceImpl implements GenreService {
 
     private final GenreStorage genreStorage;
 
+    /**
+     * Поиск жанра по идентификатору.
+     *
+     * @param id идентификатор жанра.
+     * @return жанр.
+     */
     @Override
     public Genre findById(int id) {
         log.info("Запрошен жанр с id '{}'.", id);
         return genreStorage.findById(id);
     }
 
+    /**
+     * Получение списка жанров.
+     *
+     * @return список всех жанров, хранящихся в БД.
+     */
     @Override
     public Collection<Genre> findAll() {
         log.info("Запрошен список всех жанров.");
