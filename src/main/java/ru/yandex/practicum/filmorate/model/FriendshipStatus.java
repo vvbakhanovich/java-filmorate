@@ -7,7 +7,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public enum FriendshipStatus {
     ACKNOWLEDGED(1, "Acknowledged"),
-    NOT_ACKNOWLEDGED(2, "Not Acknowledged");
+    NOT_ACKNOWLEDGED(2, "Not acknowledged");
 
     private final int id;
     private final String status;
