@@ -13,6 +13,7 @@ import ru.yandex.practicum.filmorate.dao.FilmLikeStorage;
 import ru.yandex.practicum.filmorate.dao.impl.db.FilmDbStorage;
 import ru.yandex.practicum.filmorate.dao.impl.db.FilmGenreDbStorage;
 import ru.yandex.practicum.filmorate.dao.impl.db.FilmLikeDbStorage;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Mpa;
@@ -23,6 +24,8 @@ import java.util.Collection;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @JdbcTest
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
@@ -62,6 +65,15 @@ public class FilmDbStorageTest {
     }
 
     @Test
+    @DisplayName("Тест получения фильма с несуществующим id")
+    public void testFindByWrongId() {
+
+        NotFoundException e = assertThrows(NotFoundException.class, () -> filmDbStorage.findById(99));
+
+        assertEquals("Фильм с id '99' не найден.", e.getMessage());
+    }
+
+    @Test
     @DisplayName("Тест обновления данных фильма")
     public void testUpdate() {
 
@@ -75,6 +87,19 @@ public class FilmDbStorageTest {
                 .isNotNull()
                 .usingRecursiveComparison()
                 .isEqualTo(updatedFilm);
+    }
+
+    @Test
+    @DisplayName("Тест обновления данных фильма с несуществующим id")
+    public void testUpdateWithWrongId() {
+
+        film.setId(99);
+        filmDbStorage.add(film);
+        updatedFilm.setId(99);
+
+        NotFoundException e = assertThrows(NotFoundException.class, () -> filmDbStorage.update(updatedFilm));
+
+        assertEquals("Фильм с id '99' не найден.", e.getMessage());
     }
 
     @Test
