@@ -14,7 +14,6 @@ import ru.yandex.practicum.filmorate.service.UserService;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 import java.util.stream.Collectors;
 
 import static ru.yandex.practicum.filmorate.model.FriendshipStatus.ACKNOWLEDGED;
@@ -134,18 +133,9 @@ public class UserServiceImpl implements UserService {
     public Collection<UserDto> findCommonFriends(final long userId, final long otherUserId) {
         final User user = userStorage.findById(userId);
         final User otherUser = userStorage.findById(otherUserId);
-        final List<Friendship> userFriends = user.getFriends();
-        final List<Friendship> otherUserFriends = otherUser.getFriends();
-        final List<Long> commonIds = userFriends.stream()
-                .map(Friendship::getId)
-                .filter(id -> otherUserFriends.stream().anyMatch(friendship1 -> friendship1.getId().equals(id)))
+        return userStorage.findCommonFriends(userId, otherUserId).stream()
+                .map(UserMapper::toDto)
                 .collect(Collectors.toList());
-        final List<User> result = new ArrayList<>();
-        log.info("Получение списка общих друзей пользователей с id {} и {}.", userId, otherUserId);
-        for (Long id : commonIds) {
-            result.add(userStorage.findById(id));
-        }
-        return result.stream().map(UserMapper::toDto).collect(Collectors.toList());
     }
 
     /**
