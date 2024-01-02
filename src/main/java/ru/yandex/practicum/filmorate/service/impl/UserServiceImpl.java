@@ -24,7 +24,6 @@ import static ru.yandex.practicum.filmorate.model.FriendshipStatus.NOT_ACKNOWLED
 @Slf4j
 public class UserServiceImpl implements UserService {
 
-    @Qualifier("UserDbStorage")
     private final UserStorage userStorage;
 
     private final FriendshipStorage friendshipStorage;

@@ -25,10 +25,8 @@ import static ru.yandex.practicum.filmorate.mapper.FilmMapper.toModel;
 @Slf4j
 public class FilmServiceImpl implements FilmService {
 
-    @Qualifier("FilmDbStorage")
     private final FilmStorage filmStorage;
 
-    @Qualifier("UserDbStorage")
     private final UserStorage userStorage;
 
     private final FilmLikeStorage filmLikeStorage;
