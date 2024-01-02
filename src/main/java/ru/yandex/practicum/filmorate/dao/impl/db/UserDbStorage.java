@@ -91,12 +91,24 @@ public class UserDbStorage implements UserStorage {
     }
 
     @Override
-    public Collection<User> findFriendsByUserId(long userId) {
+    public Collection<User> findFriendsByUserId(final long userId) {
         final String friendsIdsSql = "SELECT friend_id FROM friendship WHERE user_id = ?";
-        final String sql = String.format("SELECT fu.ID, fu.EMAIL, fu.LOGIN, fu.NICKNAME, fu.BIRTHDAY, f.FRIEND_ID, f.FRIENDSHIP_STATUS_ID, fs.STATUS_NAME " +
+        final String sql = String.format(
+                "SELECT fu.ID, fu.EMAIL, fu.LOGIN, fu.NICKNAME, fu.BIRTHDAY, f.FRIEND_ID, f.FRIENDSHIP_STATUS_ID, fs.STATUS_NAME " +
                 "FROM FILMORATE_USER fu LEFT JOIN FRIENDSHIP f ON fu.ID = f.USER_ID " +
                 "LEFT JOIN FRIENDSHIP_STATUS fs ON f.FRIENDSHIP_STATUS_ID = fs.ID WHERE fu.ID IN (%s)", friendsIdsSql);
         return jdbcTemplate.query(sql, this::extractToUserList, userId);
+    }
+
+    @Override
+    public Collection<User> findCommonFriends(final long userId, final long anotherUserId) {
+        final String commonFriendIdsSql = "SELECT fu1.friend_id FROM friendship fu1, friendship fu2 " +
+                "WHERE fu1.user_id = ? AND fu2.user_id = ? AND fu1.friend_id = fu2.friend_id";
+        final String sql = String.format(
+                "SELECT fu.ID, fu.EMAIL, fu.LOGIN, fu.NICKNAME, fu.BIRTHDAY, f.FRIEND_ID, f.FRIENDSHIP_STATUS_ID, fs.STATUS_NAME " +
+                "FROM FILMORATE_USER fu LEFT JOIN FRIENDSHIP f ON fu.ID = f.USER_ID " +
+                "LEFT JOIN FRIENDSHIP_STATUS fs ON f.FRIENDSHIP_STATUS_ID = fs.ID WHERE fu.ID IN (%s)", commonFriendIdsSql);
+        return jdbcTemplate.query(sql, this::extractToUserList, userId, anotherUserId);
     }
 
 
