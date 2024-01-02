@@ -52,10 +52,10 @@ public class FilmDbStorageTest {
         userStorage = new UserDbStorage(jdbcTemplate);
 
         film = new Film(1L, "film", "film description", LocalDate.of(2020, 12, 12),
-                123, new Mpa(1, MpaStatus.fromId(1).getName()));
+                123, new Mpa(1, "G"));
         updatedFilm = new Film(1L, "updated film", "updated film description",
                 LocalDate.of(2020, 12, 12), 123,
-                new Mpa(1, MpaStatus.fromId(1).getName()));
+                new Mpa(1, "G"));
         user = new User(1, "email", "login", "name", LocalDate.now());
     }
 
