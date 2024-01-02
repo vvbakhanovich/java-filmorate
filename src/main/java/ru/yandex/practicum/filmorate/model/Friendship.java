@@ -10,6 +10,5 @@ import lombok.NoArgsConstructor;
 public class Friendship {
 
     private Long id;
-
     private String status;
 }
