@@ -1,18 +1,19 @@
-package ru.yandex.practicum.filmorate.dao.impl.db;
+package ru.yandex.practicum.filmorate.dao.impl;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
-import ru.yandex.practicum.filmorate.dao.FilmStorage;
 import ru.yandex.practicum.filmorate.dao.FilmGenreStorage;
 import ru.yandex.practicum.filmorate.dao.FilmLikeStorage;
+import ru.yandex.practicum.filmorate.dao.FilmStorage;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
-import ru.yandex.practicum.filmorate.model.*;
+import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.Genre;
+import ru.yandex.practicum.filmorate.model.Mpa;
 
 import java.sql.Date;
 import java.sql.PreparedStatement;
@@ -21,7 +22,6 @@ import java.sql.SQLException;
 import java.util.*;
 
 @Repository
-@Qualifier("FilmDbStorage")
 @Slf4j
 @RequiredArgsConstructor
 public class FilmDbStorage implements FilmStorage {
@@ -48,9 +48,7 @@ public class FilmDbStorage implements FilmStorage {
 
         film.setId(Objects.requireNonNull(keyHolder.getKey(), "Не удалось добавить фильм.").longValue());
 
-        for (Genre genre : film.getGenres()) {
-            filmGenreStorage.add(film.getId(), genre.getId());
-        }
+        filmGenreStorage.batchUpdate(film.getId(), film.getGenres());
 
         return film;
     }
@@ -73,9 +71,7 @@ public class FilmDbStorage implements FilmStorage {
 
         filmGenreStorage.deleteAllById(film.getId());
 
-        for (Genre genre : film.getGenres()) {
-            filmGenreStorage.add(film.getId(), genre.getId());
-        }
+        filmGenreStorage.batchUpdate(film.getId(), film.getGenres());
     }
 
     @Override

@@ -13,10 +13,10 @@ import ru.yandex.practicum.filmorate.dao.FilmGenreStorage;
 import ru.yandex.practicum.filmorate.dao.FilmLikeStorage;
 import ru.yandex.practicum.filmorate.dao.FilmStorage;
 import ru.yandex.practicum.filmorate.dao.UserStorage;
-import ru.yandex.practicum.filmorate.dao.impl.db.FilmDbStorage;
-import ru.yandex.practicum.filmorate.dao.impl.db.FilmGenreDbStorage;
-import ru.yandex.practicum.filmorate.dao.impl.db.FilmLikeDbStorage;
-import ru.yandex.practicum.filmorate.dao.impl.db.UserDbStorage;
+import ru.yandex.practicum.filmorate.dao.impl.FilmDbStorage;
+import ru.yandex.practicum.filmorate.dao.impl.FilmGenreDbStorage;
+import ru.yandex.practicum.filmorate.dao.impl.FilmLikeDbStorage;
+import ru.yandex.practicum.filmorate.dao.impl.UserDbStorage;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.*;
 
