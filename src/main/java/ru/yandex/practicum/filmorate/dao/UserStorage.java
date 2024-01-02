@@ -6,5 +6,7 @@ import java.util.Collection;
 
 public interface UserStorage extends Dao<User> {
 
-    Collection<User> findFriendsByUserId(final long userId);
+    Collection<User> findFriendsByUserId(long userId);
+
+    Collection<User> findCommonFriends(long userId, long anotherUserId);
 }

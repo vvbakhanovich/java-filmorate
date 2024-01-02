@@ -5,11 +5,14 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.mapper.UserMapper;
+import ru.yandex.practicum.filmorate.model.Friendship;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.dao.IdGenerator;
 import ru.yandex.practicum.filmorate.dao.UserStorage;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Repository
 @Qualifier("inMemoryUserStorage")
@@ -70,5 +73,23 @@ public class InMemoryUserStorage implements UserStorage {
     @Override
     public Collection<User> findFriendsByUserId(long userId) {
         return null;
+    }
+
+    @Override
+    public Collection<User> findCommonFriends(long userId, long anotherUserId) {
+        final User user = users.get(userId);
+        final User otherUser = users.get(anotherUserId);
+        final List<Friendship> userFriends = user.getFriends();
+        final List<Friendship> otherUserFriends = otherUser.getFriends();
+        final List<Long> commonIds = userFriends.stream()
+                .map(Friendship::getId)
+                .filter(id -> otherUserFriends.stream().anyMatch(friendship1 -> friendship1.getId().equals(id)))
+                .collect(Collectors.toList());
+        final List<User> result = new ArrayList<>();
+        log.info("Получение списка общих друзей пользователей с id {} и {}.", userId, anotherUserId);
+        for (Long id : commonIds) {
+            result.add(users.get(id));
+        }
+        return result;
     }
 }
