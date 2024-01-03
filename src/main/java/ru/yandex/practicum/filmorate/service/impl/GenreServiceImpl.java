@@ -4,10 +4,14 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.dao.GenreStorage;
-import ru.yandex.practicum.filmorate.model.Genre;
+import ru.yandex.practicum.filmorate.dto.GenreDto;
+import ru.yandex.practicum.filmorate.mapper.GenreMapper;
 import ru.yandex.practicum.filmorate.service.GenreService;
 
 import java.util.Collection;
+import java.util.stream.Collectors;
+
+import static ru.yandex.practicum.filmorate.mapper.GenreMapper.toDto;
 
 @Service
 @RequiredArgsConstructor
@@ -23,9 +27,9 @@ public class GenreServiceImpl implements GenreService {
      * @return жанр.
      */
     @Override
-    public Genre findById(int id) {
+    public GenreDto findById(int id) {
         log.info("Запрошен жанр с id '{}'.", id);
-        return genreStorage.findById(id);
+        return toDto(genreStorage.findById(id));
     }
 
     /**
@@ -34,8 +38,8 @@ public class GenreServiceImpl implements GenreService {
      * @return список всех жанров, хранящихся в БД.
      */
     @Override
-    public Collection<Genre> findAll() {
+    public Collection<GenreDto> findAll() {
         log.info("Запрошен список всех жанров.");
-        return genreStorage.findAll();
+        return genreStorage.findAll().stream().map(GenreMapper::toDto).collect(Collectors.toList());
     }
 }

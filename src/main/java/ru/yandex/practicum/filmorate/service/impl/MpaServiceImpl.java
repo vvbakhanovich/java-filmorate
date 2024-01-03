@@ -4,10 +4,14 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.dao.MpaStorage;
-import ru.yandex.practicum.filmorate.model.Mpa;
+import ru.yandex.practicum.filmorate.dto.MpaDto;
+import ru.yandex.practicum.filmorate.mapper.MpaMapper;
 import ru.yandex.practicum.filmorate.service.MpaService;
 
 import java.util.Collection;
+import java.util.stream.Collectors;
+
+import static ru.yandex.practicum.filmorate.mapper.MpaMapper.toDto;
 
 @Service
 @RequiredArgsConstructor
@@ -23,9 +27,9 @@ public class MpaServiceImpl implements MpaService {
      * @return рейтинг MPA
      */
     @Override
-    public Mpa findMpaById(int id) {
+    public MpaDto findMpaById(int id) {
         log.info("Запрошен Mpa с id '{}'.", id);
-        return mpaStorage.findById(id);
+        return toDto(mpaStorage.findById(id));
     }
 
     /**
@@ -34,8 +38,8 @@ public class MpaServiceImpl implements MpaService {
      * @return список всех рейтингов, хранящихся в БД.
      */
     @Override
-    public Collection<Mpa> findAll() {
+    public Collection<MpaDto> findAll() {
         log.info("Запрошен список всех Mpa.");
-        return mpaStorage.findAll();
+        return mpaStorage.findAll().stream().map(MpaMapper::toDto).collect(Collectors.toList());
     }
 }
