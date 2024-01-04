@@ -48,7 +48,7 @@ public class FilmDbStorageTest {
     public void setUp() {
         filmLikeStorage = new FilmLikeDbStorage(jdbcTemplate);
         filmGenreStorage = new FilmGenreDbStorage(jdbcTemplate);
-        filmDbStorage = new FilmDbStorage(jdbcTemplate, filmGenreStorage, filmLikeStorage);
+        filmDbStorage = new FilmDbStorage(jdbcTemplate, filmGenreStorage);
         userStorage = new UserDbStorage(jdbcTemplate);
 
         film = new Film(1L, "film", "film description", LocalDate.of(2020, 12, 12),

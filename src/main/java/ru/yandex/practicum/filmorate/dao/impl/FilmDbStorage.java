@@ -8,7 +8,6 @@ import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.dao.FilmGenreStorage;
-import ru.yandex.practicum.filmorate.dao.FilmLikeStorage;
 import ru.yandex.practicum.filmorate.dao.FilmStorage;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
@@ -29,8 +28,6 @@ public class FilmDbStorage implements FilmStorage {
     private final JdbcTemplate jdbcTemplate;
 
     private final FilmGenreStorage filmGenreStorage;
-
-    private final FilmLikeStorage filmLikeStorage;
 
     @Override
     public Film add(final Film film) {
@@ -76,35 +73,52 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public Collection<Film> findAll() {
-        final String sql = "SELECT f.ID, f.TITLE, f.DESCRIPTION, f.RELEASE_DATE, f.DURATION, f.MPA_ID, m.RATING_NAME, " +
-                "fg.GENRE_ID, g.GENRE_NAME FROM FILM f LEFT JOIN MPA m ON f.MPA_ID = m.ID LEFT JOIN FILM_GENRE fg ON " +
-                "f.ID = fg.FILM_ID LEFT JOIN GENRE g ON fg.GENRE_ID = g.ID";
-        final Map<Long, Film> idFilmMap = jdbcTemplate.query(sql, this::extractToFilmList);
-        final Map<Long, Long> filmLikesMap = filmLikeStorage.findAll();
+        final String sql = "SELECT " +
+                "f.ID, f.TITLE, f.DESCRIPTION, f.RELEASE_DATE, f.DURATION, f.MPA_ID, m.RATING_NAME, fg.GENRE_ID, g.GENRE_NAME, COUNT(fl.USER_ID) AS likes " +
+                "FROM " +
+                "FILM f LEFT JOIN MPA m ON f.MPA_ID = m.ID " +
+                "LEFT JOIN FILM_GENRE fg ON f.ID = fg.FILM_ID " +
+                "LEFT JOIN GENRE g ON fg.GENRE_ID = g.ID " +
+                "LEFT JOIN film_like fl on f.id = fl.film_id " +
+                "GROUP BY f.id, m.rating_name, fg.genre_id, g.genre_name";
 
-        if (!filmLikesMap.isEmpty()) {
-            for (Long filmId : filmLikesMap.keySet()) {
-                Film film = idFilmMap.get(filmId);
-                film.setLikes(filmLikesMap.get(filmId));
-            }
-        }
+        return jdbcTemplate.query(sql, this::extractToFilmList);
 
-        return idFilmMap.values();
     }
 
     @Override
-    public Film findById(final long id) {
-        final String sql = "SELECT f.ID, f.TITLE, f.DESCRIPTION, f.RELEASE_DATE, f.DURATION, f.MPA_ID, m.RATING_NAME, " +
-                "fg.GENRE_ID, g.GENRE_NAME FROM FILM f LEFT JOIN MPA m ON f.MPA_ID = m.ID LEFT JOIN FILM_GENRE fg ON " +
-                "f.ID = fg.FILM_ID LEFT JOIN GENRE g ON fg.GENRE_ID = g.ID WHERE f.id = ?";
+    public Film findById(final long filmId) {
+        final String sql = "SELECT " +
+                "f.ID, f.TITLE, f.DESCRIPTION, f.RELEASE_DATE, f.DURATION, f.MPA_ID, m.RATING_NAME, fg.GENRE_ID, g.GENRE_NAME, COUNT(fl.USER_ID) AS likes " +
+                "FROM " +
+                "FILM f LEFT JOIN MPA m ON f.MPA_ID = m.ID " +
+                "LEFT JOIN FILM_GENRE fg ON f.ID = fg.FILM_ID " +
+                "LEFT JOIN GENRE g ON fg.GENRE_ID = g.ID " +
+                "LEFT JOIN film_like fl on f.id = fl.film_id " +
+                "GROUP BY f.id, m.rating_name, fg.genre_id, g.genre_name " +
+                "HAVING f.ID = ?";
 
-        final Film film = jdbcTemplate.query(sql, this::extractToFilm, id);
-        if (film != null) {
-            film.setLikes(filmLikeStorage.getCountById(id));
-        } else {
-            throw new NotFoundException("Фильм с id '" + id + "' не найден.");
+        final Film film = jdbcTemplate.query(sql, this::extractToFilm, filmId);
+
+        if (film == null) {
+            throw new NotFoundException("Фильм с id '" + filmId + "' не найден.");
         }
         return film;
+    }
+
+    public Collection<Film> findMostLikedFilmsLimitBy(final int count) {
+        final String sql = "SELECT " +
+                "f.ID, f.TITLE, f.DESCRIPTION, f.RELEASE_DATE, f.DURATION, f.MPA_ID, m.RATING_NAME, fg.GENRE_ID, g.GENRE_NAME, COUNT(fl.USER_ID) AS likes " +
+                "FROM " +
+                "FILM f LEFT JOIN MPA m ON f.MPA_ID = m.ID " +
+                "LEFT JOIN FILM_GENRE fg ON f.ID = fg.FILM_ID " +
+                "LEFT JOIN GENRE g ON fg.GENRE_ID = g.ID " +
+                "LEFT JOIN film_like fl on f.id = fl.film_id " +
+                "GROUP BY f.id, m.rating_name, fg.genre_id, g.genre_name " +
+                "ORDER BY COUNT(fl.USER_ID) DESC " +
+                "LIMIT ?";
+
+        return jdbcTemplate.query(sql, this::extractToFilmList, count);
     }
 
     private Film extractToFilm(ResultSet rs) throws SQLException, DataAccessException {
@@ -125,6 +139,7 @@ public class FilmDbStorage implements FilmStorage {
                         rs.getInt("duration"),
                         new Mpa(rs.getInt("mpa_id"), rs.getString("rating_name"))
                 );
+                film.setLikes(rs.getLong("likes"));
                 filmIdMap.put(filmId, film);
             }
 
@@ -143,9 +158,9 @@ public class FilmDbStorage implements FilmStorage {
         return film;
     }
 
-    private Map<Long, Film> extractToFilmList(ResultSet rs) throws SQLException, DataAccessException {
+    private Collection<Film> extractToFilmList(ResultSet rs) throws SQLException, DataAccessException {
 
-        final Map<Long, Film> filmIdMap = new HashMap<>();
+        final Map<Long, Film> filmIdMap = new LinkedHashMap<>();
 
         while (rs.next()) {
 
@@ -160,6 +175,7 @@ public class FilmDbStorage implements FilmStorage {
                         rs.getInt("duration"),
                         new Mpa(rs.getInt("mpa_id"), rs.getString("rating_name"))
                 );
+                film.setLikes(rs.getLong("likes"));
                 filmIdMap.put(filmId, film);
             }
 
@@ -175,6 +191,6 @@ public class FilmDbStorage implements FilmStorage {
             film.getGenres().add(genre);
         }
 
-        return filmIdMap;
+        return filmIdMap.values();
     }
 }

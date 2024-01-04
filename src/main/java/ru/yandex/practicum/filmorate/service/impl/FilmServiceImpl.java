@@ -13,7 +13,6 @@ import ru.yandex.practicum.filmorate.service.FilmService;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Comparator;
 import java.util.stream.Collectors;
 
 import static ru.yandex.practicum.filmorate.mapper.FilmMapper.toDto;
@@ -124,10 +123,6 @@ public class FilmServiceImpl implements FilmService {
      */
     @Override
     public Collection<FilmDto> getMostPopularFilms(final int count) {
-        return filmStorage.findAll().stream()
-                .sorted(Comparator.comparingLong(Film::getLikes).reversed())
-                .limit(count)
-                .map(FilmMapper::toDto)
-                .collect(Collectors.toList());
+        return filmStorage.findMostLikedFilmsLimitBy(count).stream().map(FilmMapper::toDto).collect(Collectors.toList());
     }
 }
