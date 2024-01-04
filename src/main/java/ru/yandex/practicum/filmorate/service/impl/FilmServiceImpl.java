@@ -122,10 +122,6 @@ public class FilmServiceImpl implements FilmService {
      * @param count ограничение количества выводимых фильмов
      * @return список фильмов.
      */
-
-    // Изначально реализация данного метода была через join с таблицей film_like и агрегацией по количеству лайков и
-    // и ограничению по количеству выводимых строк, но база данных h2 выдавала неверный результат вычисления COUNT().
-    // Поэтому пришлось отказаться от такой реализации, хотя в БД Postges запрос отрабатывает корректно.
     @Override
     public Collection<FilmDto> getMostPopularFilms(final int count) {
         return filmStorage.findAll().stream()
