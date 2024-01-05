@@ -1,8 +1,8 @@
-package ru.yandex.practicum.filmorate.storage;
+package ru.yandex.practicum.filmorate.dao;
 
 import java.util.Collection;
 
-public interface Storage<T> {
+public interface Dao<T> {
     T add(T t);
 
     void remove(long id);
