@@ -7,8 +7,8 @@ import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.dao.FriendshipStorage;
 
 @Repository
-@Slf4j
 @RequiredArgsConstructor
+@Slf4j
 public class FriendshipDbStorage implements FriendshipStorage {
 
     private final JdbcTemplate jdbcTemplate;

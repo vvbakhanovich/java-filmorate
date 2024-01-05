@@ -21,8 +21,8 @@ import java.sql.SQLException;
 import java.util.*;
 
 @Repository
-@Slf4j
 @RequiredArgsConstructor
+@Slf4j
 public class FilmDbStorage implements FilmStorage {
 
     private final JdbcTemplate jdbcTemplate;

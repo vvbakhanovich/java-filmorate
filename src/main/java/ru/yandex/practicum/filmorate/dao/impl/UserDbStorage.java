@@ -19,8 +19,8 @@ import java.sql.SQLException;
 import java.util.*;
 
 @Repository
-@Slf4j
 @RequiredArgsConstructor
+@Slf4j
 public class UserDbStorage implements UserStorage {
 
     private final JdbcTemplate jdbcTemplate;
@@ -93,8 +93,8 @@ public class UserDbStorage implements UserStorage {
         final String friendsIdsSql = "SELECT friend_id FROM friendship WHERE user_id = ?";
         final String sql = String.format(
                 "SELECT fu.ID, fu.EMAIL, fu.LOGIN, fu.NICKNAME, fu.BIRTHDAY, f.FRIEND_ID, f.FRIENDSHIP_STATUS_ID, fs.STATUS_NAME " +
-                "FROM FILMORATE_USER fu LEFT JOIN FRIENDSHIP f ON fu.ID = f.USER_ID " +
-                "LEFT JOIN FRIENDSHIP_STATUS fs ON f.FRIENDSHIP_STATUS_ID = fs.ID WHERE fu.ID IN (%s)", friendsIdsSql);
+                        "FROM FILMORATE_USER fu LEFT JOIN FRIENDSHIP f ON fu.ID = f.USER_ID " +
+                        "LEFT JOIN FRIENDSHIP_STATUS fs ON f.FRIENDSHIP_STATUS_ID = fs.ID WHERE fu.ID IN (%s)", friendsIdsSql);
         return jdbcTemplate.query(sql, this::extractToUserList, userId);
     }
 
@@ -104,8 +104,8 @@ public class UserDbStorage implements UserStorage {
                 "WHERE fu1.user_id = ? AND fu2.user_id = ? AND fu1.friend_id = fu2.friend_id";
         final String sql = String.format(
                 "SELECT fu.ID, fu.EMAIL, fu.LOGIN, fu.NICKNAME, fu.BIRTHDAY, f.FRIEND_ID, f.FRIENDSHIP_STATUS_ID, fs.STATUS_NAME " +
-                "FROM FILMORATE_USER fu LEFT JOIN FRIENDSHIP f ON fu.ID = f.USER_ID " +
-                "LEFT JOIN FRIENDSHIP_STATUS fs ON f.FRIENDSHIP_STATUS_ID = fs.ID WHERE fu.ID IN (%s)", commonFriendIdsSql);
+                        "FROM FILMORATE_USER fu LEFT JOIN FRIENDSHIP f ON fu.ID = f.USER_ID " +
+                        "LEFT JOIN FRIENDSHIP_STATUS fs ON f.FRIENDSHIP_STATUS_ID = fs.ID WHERE fu.ID IN (%s)", commonFriendIdsSql);
         return jdbcTemplate.query(sql, this::extractToUserList, userId, anotherUserId);
     }
 
@@ -181,3 +181,4 @@ public class UserDbStorage implements UserStorage {
         return users;
     }
 }
+
