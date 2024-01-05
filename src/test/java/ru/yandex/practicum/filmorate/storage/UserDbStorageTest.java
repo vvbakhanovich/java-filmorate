@@ -27,16 +27,15 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static ru.yandex.practicum.filmorate.model.FriendshipStatus.ACKNOWLEDGED;
 import static ru.yandex.practicum.filmorate.model.FriendshipStatus.NOT_ACKNOWLEDGED;
 
+
 @JdbcTest
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
 @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
 class UserDbStorageTest {
 
     private final JdbcTemplate jdbcTemplate;
-    @Qualifier("FilmDbStorage")
     private UserStorage userStorage;
     private FriendshipStorage friendshipStorage;
-
     private User user;
     private User updatedUser;
     private User anotherUser;

@@ -26,7 +26,6 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 class GenreDbStorageTest {
 
     private final JdbcTemplate jdbcTemplate;
-
     private GenreStorage genreStorage;
 
     @BeforeEach

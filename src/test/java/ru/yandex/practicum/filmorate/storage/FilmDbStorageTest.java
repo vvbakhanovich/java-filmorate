@@ -34,7 +34,6 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 public class FilmDbStorageTest {
 
     private final JdbcTemplate jdbcTemplate;
-    @Qualifier("FilmDbStorage")
     private FilmStorage filmDbStorage;
     private FilmGenreStorage filmGenreStorage;
     private FilmLikeStorage filmLikeStorage;

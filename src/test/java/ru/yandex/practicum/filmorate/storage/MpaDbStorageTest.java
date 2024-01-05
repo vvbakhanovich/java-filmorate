@@ -25,7 +25,6 @@ import static org.junit.jupiter.api.Assertions.*;
 class MpaDbStorageTest {
 
     private final JdbcTemplate jdbcTemplate;
-
     private MpaStorage mpaStorage;
 
     @BeforeEach
