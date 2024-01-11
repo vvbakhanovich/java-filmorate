@@ -2,6 +2,7 @@ package ru.yandex.practicum.filmorate.model;
 
 
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -12,6 +13,7 @@ import java.util.List;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
+@Builder
 public class Film {
     private long id; //целочисленный идентификатор
     private String name; //название
@@ -21,13 +23,4 @@ public class Film {
     private Mpa mpa; //возрастной рейтинг
     private final List<Genre> genres = new ArrayList<>(); //жанры
     private long likes; //количество лайков от пользователей
-
-    public Film(long id, String name, String description, LocalDate releaseDate, int duration, Mpa mpa) {
-        this.id = id;
-        this.name = name;
-        this.description = description;
-        this.releaseDate = releaseDate;
-        this.duration = duration;
-        this.mpa = mpa;
-    }
 }

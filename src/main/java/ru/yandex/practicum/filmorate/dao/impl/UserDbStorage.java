@@ -120,13 +120,13 @@ public class UserDbStorage implements UserStorage {
             Long userId = rs.getLong(1);
             user = userIdMap.get(userId);
             if (user == null) {
-                user = new User(
-                        userId,
-                        rs.getString("email"),
-                        rs.getString("login"),
-                        rs.getString("nickname"),
-                        rs.getDate("birthday").toLocalDate()
-                );
+                user = User.builder()
+                        .id(userId)
+                        .email(rs.getString("email"))
+                        .login(rs.getString("login"))
+                        .name(rs.getString("nickname"))
+                        .birthday(rs.getDate("birthday").toLocalDate())
+                        .build();
                 userIdMap.put(userId, user);
             }
 
@@ -155,13 +155,13 @@ public class UserDbStorage implements UserStorage {
             Long userId = rs.getLong(1);
             User user = userIdMap.get(userId);
             if (user == null) {
-                user = new User(
-                        userId,
-                        rs.getString("email"),
-                        rs.getString("login"),
-                        rs.getString("nickname"),
-                        rs.getDate("birthday").toLocalDate()
-                );
+                user = User.builder()
+                        .id(userId)
+                        .email(rs.getString("email"))
+                        .login(rs.getString("login"))
+                        .name(rs.getString("nickname"))
+                        .birthday(rs.getDate("birthday").toLocalDate())
+                        .build();
                 users.add(user);
                 userIdMap.put(userId, user);
             }

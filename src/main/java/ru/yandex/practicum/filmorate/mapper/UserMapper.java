@@ -8,14 +8,25 @@ import ru.yandex.practicum.filmorate.model.User;
 public class UserMapper {
 
     public static UserDto toDto(User user) {
-        UserDto userDto = new UserDto(user.getId(), user.getEmail(), user.getLogin(), user.getName(), user.getBirthday());
+        UserDto userDto = UserDto.builder()
+                .id(user.getId())
+                .email(user.getEmail())
+                .login(user.getLogin())
+                .name(user.getName())
+                .birthday(user.getBirthday())
+                .build();
         userDto.getFriends().addAll(user.getFriends());
         return userDto;
     }
 
     public static User toModel(UserDto userDto) {
-        User user = new User(userDto.getId(), userDto.getEmail(), userDto.getLogin(), userDto.getName(),
-                userDto.getBirthday());
+        User user = User.builder()
+                .id(userDto.getId())
+                .email(userDto.getEmail())
+                .login(userDto.getLogin())
+                .name(userDto.getName())
+                .birthday(userDto.getBirthday())
+                .build();
         user.getFriends().addAll(userDto.getFriends());
         return user;
     }

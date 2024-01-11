@@ -20,8 +20,13 @@ public class FilmValidationTest {
     @ValueSource(strings = {"", " ", "   ", "     "})
     @DisplayName("Проверка невозможности добавить фильм с пустым названием")
     public void createFilmWithoutName(String name) {
-        FilmDto filmDto = new FilmDto(1, name, "Описание фильма",
-                LocalDate.of(2000, 2, 13), 113);
+        FilmDto filmDto = FilmDto.builder()
+                .id(1)
+                .name(name)
+                .description("Описание фильма")
+                .releaseDate(LocalDate.of(2000, 2, 13))
+                .duration(113)
+                .build();
 
         assertTrue(dtoHasErrorMessage(filmDto, "Название не может быть пустым."));
 
@@ -31,8 +36,13 @@ public class FilmValidationTest {
     @DisplayName("Проверка невозможности добавить описание длиной более 200 символов")
     public void createFilmWithLongDescription() {
         String longDescription = StringUtils.repeat("*", 201);
-        FilmDto filmDto = new FilmDto(1, "Фильм", longDescription,
-                LocalDate.of(2000, 2, 13), 113);
+        FilmDto filmDto = FilmDto.builder()
+                .id(1)
+                .name("Фильм")
+                .description(longDescription)
+                .releaseDate(LocalDate.of(2000, 2, 13))
+                .duration(113)
+                .build();
 
         assertTrue(dtoHasErrorMessage(filmDto, "Максимальная длина описания: 200 символов"));
     }
@@ -42,8 +52,13 @@ public class FilmValidationTest {
     @DisplayName("Проверка добавления описания разрешенной длины")
     public void createFilmWithDescription(int length) {
         String longDescription = StringUtils.repeat("*", length);
-        FilmDto filmDto = new FilmDto(1, "Фильм", longDescription,
-                LocalDate.of(2000, 2, 13), 113);
+        FilmDto filmDto = FilmDto.builder()
+                .id(1)
+                .name("Фильм")
+                .description(longDescription)
+                .releaseDate(LocalDate.of(2000, 2, 13))
+                .duration(113)
+                .build();
 
         assertTrue(VALIDATOR.validate(filmDto).isEmpty());
     }
@@ -53,7 +68,13 @@ public class FilmValidationTest {
     @DisplayName("Проверка невозможности добавление даты релиза раньше 12 декабря 1895 года")
     public void createFilmWithInvalidReleaseDate(String date) {
         LocalDate releaseDate = LocalDate.parse(date);
-        FilmDto filmDto = new FilmDto(1,"Фильм", "Описание фильма", releaseDate, 113);
+        FilmDto filmDto = FilmDto.builder()
+                .id(1)
+                .name("Фильм")
+                .description("Описание фильма")
+                .releaseDate(releaseDate)
+                .duration(113)
+                .build();
 
         assertTrue(dtoHasErrorMessage(filmDto, "Введите более позднюю дату."));
 
@@ -64,7 +85,13 @@ public class FilmValidationTest {
     @DisplayName("Проверка добавления фильма с разрешенным значением даты релиза")
     public void createFilmWithValidReleaseDate(String date) {
         LocalDate releaseDate = LocalDate.parse(date);
-        FilmDto filmDto = new FilmDto(1, "Фильм", "Описание фильма", releaseDate, 113);
+        FilmDto filmDto = FilmDto.builder()
+                .id(1)
+                .name("Фильм")
+                .description("Описание фильма")
+                .releaseDate(releaseDate)
+                .duration(113)
+                .build();
 
         assertTrue(VALIDATOR.validate(filmDto).isEmpty());
     }
@@ -73,8 +100,13 @@ public class FilmValidationTest {
     @ValueSource(ints = {Integer.MIN_VALUE, -13, -5, 0})
     @DisplayName("Проверка невозможности добавить фильм с длительностью, меньшей или равной нулю")
     public void createFilmWithInvalidDuration(int duration) {
-        FilmDto filmDto = new FilmDto(1,"Фильм", "Описание фильма",
-                LocalDate.of(2000, 2, 13), duration);
+        FilmDto filmDto = FilmDto.builder()
+                .id(1)
+                .name("Фильм")
+                .description("Описание фильма")
+                .releaseDate(LocalDate.of(2000, 2, 13))
+                .duration(duration)
+                .build();
 
         assertTrue(dtoHasErrorMessage(filmDto, "Продолжительность должна быть больше нуля"));
     }
@@ -83,8 +115,13 @@ public class FilmValidationTest {
     @ValueSource(ints = {1, 13, 155, Integer.MAX_VALUE})
     @DisplayName("Проверка добавления фильма с разрешенным значением длительности")
     public void createFilmWithValidDuration(int duration) {
-        FilmDto filmDto = new FilmDto(1,"Фильм", "Описание фильма",
-                LocalDate.of(2000, 2, 13), duration);
+        FilmDto filmDto = FilmDto.builder()
+                .id(1)
+                .name("Фильм")
+                .description("Описание фильма")
+                .releaseDate(LocalDate.of(2000, 2, 13))
+                .duration(duration)
+                .build();
 
         assertTrue(VALIDATOR.validate(filmDto).isEmpty());
     }
@@ -93,8 +130,13 @@ public class FilmValidationTest {
     @DisplayName("Проверка добавления фильма с неразрешенным названием, описанием, датой релиза длительностью")
     public void createFilmWithInvalidNameDescriptionReleaseDateAndDuration() {
         String longDescription = StringUtils.repeat("*", 201);
-        FilmDto filmDto = new FilmDto(1,"", longDescription,
-                LocalDate.of(1777, 2, 13), -13);
+        FilmDto filmDto = FilmDto.builder()
+                .id(1)
+                .name("")
+                .description(longDescription)
+                .releaseDate(LocalDate.of(1777, 2, 13))
+                .duration(-13)
+                .build();
 
         assertAll(
                 () -> assertTrue(dtoHasErrorMessage(filmDto, "Название не может быть пустым.")),

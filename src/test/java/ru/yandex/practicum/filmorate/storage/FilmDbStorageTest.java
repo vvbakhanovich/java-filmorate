@@ -52,11 +52,26 @@ public class FilmDbStorageTest {
         filmDbStorage = new FilmDbStorage(jdbcTemplate, filmGenreStorage);
         userStorage = new UserDbStorage(jdbcTemplate);
 
-        film = new Film(1L, "film", "film description", LocalDate.of(2020, 12, 12),
-                123, new Mpa(1, "G"));
-        updatedFilm = new Film(1L, "updated film", "updated film description",
-                LocalDate.of(2020, 12, 12), 123,
-                new Mpa(1, "G"));
+        Mpa mpa = new Mpa(1, "G");
+
+        film = Film.builder()
+                .id(1)
+                .name("film")
+                .description("film description")
+                .releaseDate(LocalDate.of(2020, 12, 12))
+                .duration(123)
+                .mpa(mpa)
+                .build();
+
+        updatedFilm = Film.builder()
+                .id(1)
+                .name("updated film")
+                .description("updated film description")
+                .releaseDate(LocalDate.of(2020, 12, 12))
+                .duration(123)
+                .mpa(mpa)
+                .build();
+
         user = new User(1, "email", "login", "name", LocalDate.now());
     }
 
