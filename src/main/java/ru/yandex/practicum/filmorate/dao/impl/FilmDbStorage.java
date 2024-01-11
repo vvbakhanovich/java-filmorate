@@ -131,14 +131,14 @@ public class FilmDbStorage implements FilmStorage {
             Long filmId = rs.getLong(1);
             film = filmIdMap.get(filmId);
             if (film == null) {
-                film = new Film(
-                        filmId,
-                        rs.getString("title"),
-                        rs.getString("description"),
-                        rs.getDate("release_date").toLocalDate(),
-                        rs.getInt("duration"),
-                        new Mpa(rs.getInt("mpa_id"), rs.getString("rating_name"))
-                );
+                film = Film.builder()
+                        .id(filmId)
+                        .name(rs.getString("title"))
+                        .description(rs.getString("description"))
+                        .releaseDate(rs.getDate("release_date").toLocalDate())
+                        .duration(rs.getInt("duration"))
+                        .mpa(new Mpa(rs.getInt("mpa_id"), rs.getString("rating_name")))
+                        .build();
                 film.setLikes(rs.getLong("likes"));
                 filmIdMap.put(filmId, film);
             }
@@ -167,14 +167,14 @@ public class FilmDbStorage implements FilmStorage {
             Long filmId = rs.getLong(1);
             Film film = filmIdMap.get(filmId);
             if (film == null) {
-                film = new Film(
-                        filmId,
-                        rs.getString("title"),
-                        rs.getString("description"),
-                        rs.getDate("release_date").toLocalDate(),
-                        rs.getInt("duration"),
-                        new Mpa(rs.getInt("mpa_id"), rs.getString("rating_name"))
-                );
+                film = Film.builder()
+                        .id(filmId)
+                        .name(rs.getString("title"))
+                        .description(rs.getString("description"))
+                        .releaseDate(rs.getDate("release_date").toLocalDate())
+                        .duration(rs.getInt("duration"))
+                        .mpa(new Mpa(rs.getInt("mpa_id"), rs.getString("rating_name")))
+                        .build();
                 film.setLikes(rs.getLong("likes"));
                 filmIdMap.put(filmId, film);
             }
