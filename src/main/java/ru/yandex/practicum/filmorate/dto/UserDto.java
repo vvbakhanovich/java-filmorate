@@ -2,7 +2,9 @@ package ru.yandex.practicum.filmorate.dto;
 
 
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import ru.yandex.practicum.filmorate.model.Friendship;
 
 import javax.validation.constraints.Email;
@@ -15,6 +17,8 @@ import java.util.List;
 
 @Data
 @AllArgsConstructor
+@NoArgsConstructor
+@Builder
 public class UserDto {
     private long id;
     @Email(message = "Некорректный формат электронной почты.", regexp = "^[\\w\\-\\.]+@([\\w-]+\\.)+[\\w-]{2,4}$")

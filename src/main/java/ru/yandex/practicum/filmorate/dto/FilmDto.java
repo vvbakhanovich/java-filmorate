@@ -2,6 +2,7 @@ package ru.yandex.practicum.filmorate.dto;
 
 
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import ru.yandex.practicum.filmorate.model.Genre;
@@ -18,6 +19,7 @@ import java.util.List;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
+@Builder
 public class FilmDto {
     private long id;
     @NotBlank(message = "Название не может быть пустым.")
@@ -31,21 +33,4 @@ public class FilmDto {
     private Mpa mpa; //возрастной рейтинг
     private final List<Genre> genres = new ArrayList<>(); //жанры
     private long likes; //количество лайков от пользователей
-
-    public FilmDto(long id, String name, String description, LocalDate releaseDate, int duration, Mpa mpa) {
-        this.id = id;
-        this.name = name;
-        this.description = description;
-        this.releaseDate = releaseDate;
-        this.duration = duration;
-        this.mpa = mpa;
-    }
-
-    public FilmDto(long id, String name, String description, LocalDate releaseDate, int duration) {
-        this.id = id;
-        this.name = name;
-        this.description = description;
-        this.releaseDate = releaseDate;
-        this.duration = duration;
-    }
 }

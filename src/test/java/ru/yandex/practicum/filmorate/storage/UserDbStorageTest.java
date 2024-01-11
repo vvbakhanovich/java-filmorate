@@ -44,9 +44,27 @@ class UserDbStorageTest {
     void setUp() {
         userStorage = new UserDbStorage(jdbcTemplate);
         friendshipStorage = new FriendshipDbStorage(jdbcTemplate);
-        user = new User(1, "email", "login", "name", LocalDate.now());
-        updatedUser = new User(1, "new_email", "new_login", "new_name", LocalDate.now());
-        anotherUser = new User(2, "another_email", "another_login", "another_name", LocalDate.now());
+        user = User.builder()
+                .id(1)
+                .email("email")
+                .login("login")
+                .name("name")
+                .birthday(LocalDate.now())
+                .build();
+        updatedUser = User.builder()
+                .id(1)
+                .email("new_email")
+                .login("new_login")
+                .name("new_name")
+                .birthday(LocalDate.now())
+                .build();
+        anotherUser = User.builder()
+                .id(2)
+                .email("another_email")
+                .login("another_login")
+                .name("another_name")
+                .birthday(LocalDate.now())
+                .build();
     }
 
     @Test
