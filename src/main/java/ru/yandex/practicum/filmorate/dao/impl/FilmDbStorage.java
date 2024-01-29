@@ -62,7 +62,6 @@ public class FilmDbStorage implements FilmStorage {
         int update = jdbcTemplate.update(sql, film.getName(), film.getDescription(), film.getReleaseDate(),
                 film.getDuration(), film.getMpa().getId(), film.getId());
         if (update != 1) {
-            log.error("Фильм с id '{}' не найден.", film.getId());
             throw new NotFoundException("Фильм с id '" + film.getId() + "' не найден.");
         }
 
