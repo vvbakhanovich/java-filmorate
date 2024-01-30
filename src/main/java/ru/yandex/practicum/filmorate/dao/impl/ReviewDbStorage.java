@@ -78,14 +78,14 @@ public class ReviewDbStorage implements ReviewStorage {
     @Override
     public List<Review> findByFilmIdLimitBy(final long filmId, final int count) {
         final String sql = "SELECT ID, REVIEW_CONTENT, IS_POSITIVE, USEFUL, USER_ID, FILM_ID " +
-                "FROM REVIEW WHERE FILM_ID = ? LIMIT ?";
+                "FROM REVIEW WHERE FILM_ID = ? ORDER BY USEFUL DESC LIMIT ?";
         return jdbcTemplate.query(sql, this::mapReview, filmId, count);
     }
 
     @Override
     public List<Review> findAllLimitBy(final int count) {
         final String sql = "SELECT ID, REVIEW_CONTENT, IS_POSITIVE, USEFUL, USER_ID, FILM_ID " +
-                "FROM REVIEW LIMIT ?";
+                "FROM REVIEW ORDER BY USEFUL DESC LIMIT ?";
         return jdbcTemplate.query(sql, this::mapReview, count);
     }
 
