@@ -38,6 +38,14 @@ public class FilmController {
         return filmService.getFilmById(id);
     }
 
+    @GetMapping("/common")
+    public Collection<FilmDto> getCommonFilms(
+            @RequestParam long userId,
+            @RequestParam long friendId){
+        return filmService.getCommonFilms(userId, friendId);
+
+    }
+
     @PutMapping("/{id}/like/{userId}")
     public FilmDto likeFilm(@PathVariable long id, @PathVariable long userId) {
         return filmService.likeFilm(id, userId);

@@ -11,8 +11,11 @@ import ru.yandex.practicum.filmorate.mapper.FilmMapper;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
 
+import java.util.Comparator;
+import java.util.Objects;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import static ru.yandex.practicum.filmorate.mapper.FilmMapper.toDto;
@@ -124,5 +127,21 @@ public class FilmServiceImpl implements FilmService {
     @Override
     public Collection<FilmDto> getMostPopularFilms(final int count) {
         return filmStorage.findMostLikedFilmsLimitBy(count).stream().map(FilmMapper::toDto).collect(Collectors.toList());
+    }
+
+    @Override
+    public Collection<FilmDto> getCommonFilms(long userId, long friendId) {
+
+        Set<Long> userFilms = filmLikeStorage.findLikedFilmsByUser(userId);
+        Set<Long> friendFilms = filmLikeStorage.findLikedFilmsByUser(friendId);
+
+        userFilms.retainAll(friendFilms);
+
+        return userFilms.stream()
+                .map(filmId -> filmStorage.findById(filmId))
+                .filter(Objects::nonNull)
+                .map(FilmMapper::toDto)
+                .sorted(Comparator.comparingLong(FilmDto::getLikes).reversed())
+                .collect(Collectors.toList());
     }
 }

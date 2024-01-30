@@ -9,8 +9,10 @@ import ru.yandex.practicum.filmorate.dao.FilmLikeStorage;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Set;
 
 @Repository
 @RequiredArgsConstructor
@@ -56,4 +58,11 @@ public class FilmLikeDbStorage implements FilmLikeStorage {
         }
         return result;
     }
+
+    @Override
+    public Set<Long> findLikedFilmsByUser(long userId) {
+        final String sql = "SELECT film_id FROM film_like WHERE user_id = ?";
+        return new HashSet<>(jdbcTemplate.queryForList(sql, Long.class, userId));
+    }
+
 }
