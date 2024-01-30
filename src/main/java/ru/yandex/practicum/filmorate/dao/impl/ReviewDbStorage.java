@@ -47,7 +47,10 @@ public class ReviewDbStorage implements ReviewStorage {
     @Override
     public void remove(final long id) {
         final String sql = "DELETE FROM review WHERE id = ?";
-        jdbcTemplate.update(sql, id);
+        int update = jdbcTemplate.update(sql, id);
+        if (update != 1) {
+            throw new NotFoundException("Отзыв с id '" +  id + "' не найден.");
+        }
     }
 
     @Override
