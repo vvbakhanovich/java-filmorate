@@ -49,6 +49,13 @@ public class ReviewServiceImpl implements ReviewService {
         return toDto(reviewStorage.findById(reviewId));
     }
 
+    @Override
+    public void deleteReview(long id) {
+        reviewStorage.findById(id);
+        reviewStorage.remove(id);
+        log.info("Отзыв с id '{}' был удален.", id);
+    }
+
     private void findUserAndFilmInDb(ReviewDto updatedReviewDto) {
         userStorage.findById(updatedReviewDto.getUserId());
         filmStorage.findById(updatedReviewDto.getFilmId());
