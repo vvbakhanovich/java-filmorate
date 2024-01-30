@@ -14,5 +14,5 @@ public interface ReviewService {
 
     void deleteReview(long id);
 
-    List<ReviewDto> getReviewsByFilmId(long filmId, int count);
+    List<ReviewDto> getReviewsByFilmId(Long filmId, int count);
 }
