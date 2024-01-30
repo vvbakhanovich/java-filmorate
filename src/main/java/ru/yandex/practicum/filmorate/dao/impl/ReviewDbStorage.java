@@ -95,6 +95,12 @@ public class ReviewDbStorage implements ReviewStorage {
         jdbcTemplate.update(sql, id);
     }
 
+    @Override
+    public void addDislikeToReview(long id, long userId) {
+        final String sql = "UPDATE review SET useful = useful - 1 WHERE id = ?";
+        jdbcTemplate.update(sql, id);
+    }
+
     private Review mapReview(final ResultSet rs, final int rowNum) throws SQLException {
         return Review.builder()
                 .reviewId(rs.getLong("id"))
