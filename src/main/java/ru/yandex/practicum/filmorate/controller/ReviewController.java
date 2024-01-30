@@ -36,13 +36,13 @@ public class ReviewController {
     public ReviewDto getReviewById(@PathVariable long id) {
         return reviewService.getReviewById(id);
     }
-//
-//    @GetMapping
-//    public List<ReviewDto> getReviewsByFilmId(@RequestParam long filmId,
-//                                              @RequestParam(required = false, defaultValue = "10") int count) {
-//        return reviewService.getReviewsByFilmId(filmId, count);
-//    }
-//
+
+    @GetMapping
+    public List<ReviewDto> getReviewsByFilmId(@RequestParam long filmId,
+                                              @RequestParam(required = false, defaultValue = "10") int count) {
+        return reviewService.getReviewsByFilmId(filmId, count);
+    }
+
 //    @PutMapping("/{id}/like/{userId}")
 //    public ReviewDto addLikeToReview(@PathVariable long id, @PathVariable long userId) {
 //        return reviewService.addLikeToReview(id, userId);

@@ -15,6 +15,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Collection;
+import java.util.List;
 import java.util.Objects;
 
 @Repository
@@ -76,7 +77,7 @@ public class ReviewDbStorage implements ReviewStorage {
         }
     }
 
-    private Review mapReview(ResultSet rs, int rowNum) throws SQLException {
+    private Review mapReview(final ResultSet rs, final int rowNum) throws SQLException {
         return Review.builder()
                 .reviewId(rs.getLong("id"))
                 .content(rs.getString("review_content"))
@@ -85,5 +86,12 @@ public class ReviewDbStorage implements ReviewStorage {
                 .userId(rs.getLong("user_id"))
                 .filmId(rs.getLong("film_id"))
                 .build();
+    }
+
+    @Override
+    public List<Review> findByFilmIdLimitBy(final long filmId, final int count) {
+        final String sql = "SELECT ID, REVIEW_CONTENT, IS_POSITIVE, USEFUL, USER_ID, FILM_ID " +
+                "FROM REVIEW WHERE FILM_ID = ? LIMIT ?";
+        return jdbcTemplate.query(sql, this::mapReview, filmId, count);
     }
 }
