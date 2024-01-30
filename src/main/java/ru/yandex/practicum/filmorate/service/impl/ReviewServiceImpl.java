@@ -76,11 +76,23 @@ public class ReviewServiceImpl implements ReviewService {
 
     @Override
     public ReviewDto addLikeToReview(final long id, final long userId) {
-        reviewStorage.findById(id);
-        userStorage.findById(userId);
+        findReviewAndUserInDb(id, userId);
         reviewStorage.addLikeToReview(id, userId);
         log.info("Пользователь с id '{}' поставил лайк отзыву с id '{}'", userId, id);
         return toDto(reviewStorage.findById(id));
+    }
+
+    @Override
+    public ReviewDto addDislikeToReview(long id, long userId) {
+        findReviewAndUserInDb(id, userId);
+        reviewStorage.addDislikeToReview(id, userId);
+        log.info("Пользователь с id '{}' поставил дислайк отзыву с id '{}'", userId, id);
+        return toDto(reviewStorage.findById(id));
+    }
+
+    private void findReviewAndUserInDb(long id, long userId) {
+        reviewStorage.findById(id);
+        userStorage.findById(userId);
     }
 
     private void findUserAndFilmInDb(ReviewDto updatedReviewDto) {
