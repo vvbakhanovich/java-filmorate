@@ -6,4 +6,6 @@ import java.util.List;
 
 public interface ReviewStorage extends Dao<Review> {
     List<Review> findByFilmIdLimitBy(long filmId, int count);
+
+    List<Review> findAllLimitBy(int count);
 }
