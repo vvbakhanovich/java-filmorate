@@ -19,4 +19,8 @@ public interface ReviewService {
     ReviewDto addLikeToReview(long id, long userId);
 
     ReviewDto addDislikeToReview(long id, long userId);
+
+    ReviewDto deleteLikeFromReview(long id, long userId);
+
+    ReviewDto deleteDislikeFromReview(long id, long userId);
 }

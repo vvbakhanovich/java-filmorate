@@ -52,14 +52,14 @@ public class ReviewController {
     public ReviewDto addDislikeToReview(@PathVariable long id, @PathVariable long userId) {
         return reviewService.addDislikeToReview(id, userId);
     }
-//
-//    @DeleteMapping("/{id}/like/{userId}")
-//    public void deleteLikeFromReview(@PathVariable long id, @PathVariable long userId) {
-//        reviewService.deleteLikeFromReview(id, userId);
-//    }
-//
-//    @DeleteMapping("/{id}/dislike/{userId}")
-//    public void deleteDislikeFromReview(@PathVariable long id, @PathVariable long userId) {
-//        reviewService.deleteDislikeFromReview(id, userId);
-//    }
+
+    @DeleteMapping("/{id}/like/{userId}")
+    public ReviewDto deleteLikeFromReview(@PathVariable long id, @PathVariable long userId) {
+        return reviewService.deleteLikeFromReview(id, userId);
+    }
+
+    @DeleteMapping("/{id}/dislike/{userId}")
+    public ReviewDto deleteDislikeFromReview(@PathVariable long id, @PathVariable long userId) {
+        return reviewService.deleteDislikeFromReview(id, userId);
+    }
 }
