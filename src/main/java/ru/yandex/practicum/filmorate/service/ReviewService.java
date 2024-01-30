@@ -7,4 +7,6 @@ public interface ReviewService {
     ReviewDto addReview(ReviewDto reviewDto);
 
     ReviewDto getReviewById(long id);
+
+    ReviewDto updateReview(ReviewDto updatedReviewDto);
 }

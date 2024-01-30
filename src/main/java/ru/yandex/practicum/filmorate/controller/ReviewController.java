@@ -22,10 +22,10 @@ public class ReviewController {
         return reviewService.addReview(reviewDto);
     }
 
-//    @PutMapping
-//    public ReviewDto updateReview(@Valid @RequestBody ReviewDto updatedReviewDto) {
-//        return reviewService.updateReview(updatedReviewDto);
-//    }
+    @PutMapping
+    public ReviewDto updateReview(@Valid @RequestBody ReviewDto updatedReviewDto) {
+        return reviewService.updateReview(updatedReviewDto);
+    }
 //
 //    @DeleteMapping("/{id}")
 //    public void deleteReview(@PathVariable long id) {

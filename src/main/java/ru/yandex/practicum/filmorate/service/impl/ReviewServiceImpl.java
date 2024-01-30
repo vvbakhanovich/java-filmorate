@@ -25,9 +25,8 @@ public class ReviewServiceImpl implements ReviewService {
 
     @Override
     public ReviewDto addReview(final ReviewDto reviewDto) {
+        findUserAndFilmInDb(reviewDto);
         final Review review = toModel(reviewDto);
-        userStorage.findById(review.getUserId());
-        filmStorage.findById(review.getFilmId());
         final Review addedReview = reviewStorage.add(review);
         log.info("Добавлен новый отзыв: {}.", addedReview);
         return toDto(reviewStorage.findById(addedReview.getReviewId()));
@@ -38,6 +37,21 @@ public class ReviewServiceImpl implements ReviewService {
         final Review review = reviewStorage.findById(id);
         log.info("Найден отзыв с id '{}'.", id);
         return toDto(review);
+    }
+
+    @Override
+    public ReviewDto updateReview(final ReviewDto updatedReviewDto) {
+        findUserAndFilmInDb(updatedReviewDto);
+        final Review updatedReview = toModel(updatedReviewDto);
+        reviewStorage.update(updatedReview);
+        final long reviewId = updatedReview.getReviewId();
+        log.info("Обновление отзыва с id '{}': {}", reviewId, updatedReview);
+        return toDto(reviewStorage.findById(reviewId));
+    }
+
+    private void findUserAndFilmInDb(ReviewDto updatedReviewDto) {
+        userStorage.findById(updatedReviewDto.getUserId());
+        filmStorage.findById(updatedReviewDto.getFilmId());
     }
 
 
