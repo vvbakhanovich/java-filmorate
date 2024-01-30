@@ -61,13 +61,15 @@ public class ReviewDbStorage implements ReviewStorage {
 
     @Override
     public Collection<Review> findAll() {
-        return null;
+        final String sql = "SELECT id, review_content, is_positive, useful, user_id, film_id " +
+                "FROM review ORDER BY useful DESC, id";
+        return jdbcTemplate.query(sql, this::mapReview);
     }
 
     @Override
     public Review findById(final long id) {
-        final String sql = "SELECT ID, REVIEW_CONTENT, IS_POSITIVE, USEFUL, USER_ID, FILM_ID " +
-                "FROM REVIEW WHERE ID = ?";
+        final String sql = "SELECT id, review_content, is_positive, useful, user_id, film_id " +
+                "FROM review WHERE id = ?";
         try {
             return jdbcTemplate.queryForObject(sql, this::mapReview, id);
         } catch (EmptyResultDataAccessException e) {
@@ -77,15 +79,15 @@ public class ReviewDbStorage implements ReviewStorage {
 
     @Override
     public List<Review> findByFilmIdLimitBy(final long filmId, final int count) {
-        final String sql = "SELECT ID, REVIEW_CONTENT, IS_POSITIVE, USEFUL, USER_ID, FILM_ID " +
-                "FROM REVIEW WHERE FILM_ID = ? ORDER BY USEFUL DESC LIMIT ?";
+        final String sql = "SELECT id, review_content, is_positive, useful, user_id, film_id " +
+                "FROM review WHERE film_id = ? ORDER BY useful DESC, id LIMIT ?";
         return jdbcTemplate.query(sql, this::mapReview, filmId, count);
     }
 
     @Override
     public List<Review> findAllLimitBy(final int count) {
-        final String sql = "SELECT ID, REVIEW_CONTENT, IS_POSITIVE, USEFUL, USER_ID, FILM_ID " +
-                "FROM REVIEW ORDER BY USEFUL DESC LIMIT ?";
+        final String sql = "SELECT id, review_content, is_positive, useful, user_id, film_id " +
+                "FROM review ORDER BY useful DESC, id LIMIT ?";
         return jdbcTemplate.query(sql, this::mapReview, count);
     }
 
