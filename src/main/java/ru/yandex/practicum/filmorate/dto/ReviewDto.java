@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 
 @Data
 @AllArgsConstructor
@@ -13,11 +14,13 @@ import javax.validation.constraints.NotBlank;
 @Builder
 public class ReviewDto {
     private long reviewId;
-    @NotBlank(message = "Отзыв не может быть пустой.")
+    @NotBlank(message = "Содержание отзыва не может быть пустым.")
     private String content;
-    @NotBlank(message = "Не указана полезность отзыва.")
+    @NotNull(message = "Не указана полезность отзыва.")
     private boolean isPositive;
     private long useful;
-    private long userId;
-    private long filmId;
+    @NotNull(message = "Не указан идентификатор пользователя.")
+    private Long userId;
+    @NotNull(message = "Не указан идентификатор фильма.")
+    private Long filmId;
 }
