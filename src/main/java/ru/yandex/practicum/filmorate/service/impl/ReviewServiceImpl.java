@@ -15,6 +15,7 @@ import java.util.stream.Collectors;
 
 import static ru.yandex.practicum.filmorate.mapper.ReviewMapper.toDto;
 import static ru.yandex.practicum.filmorate.mapper.ReviewMapper.toModel;
+import static ru.yandex.practicum.filmorate.model.ReviewLike.*;
 
 @Service
 @RequiredArgsConstructor
@@ -61,6 +62,7 @@ public class ReviewServiceImpl implements ReviewService {
      * @return обновленный отзыв.
      */
     @Override
+
     public ReviewDto updateReview(final ReviewDto updatedReviewDto) {
         findUserAndFilmInDb(updatedReviewDto);
         final Review updatedReview = toModel(updatedReviewDto);
@@ -77,7 +79,6 @@ public class ReviewServiceImpl implements ReviewService {
      */
     @Override
     public void deleteReview(final long id) {
-        reviewStorage.findById(id);
         reviewStorage.remove(id);
         log.info("Отзыв с id '{}' был удален.", id);
     }
@@ -113,8 +114,8 @@ public class ReviewServiceImpl implements ReviewService {
     @Override
     public ReviewDto addLikeToReview(final long id, final long userId) {
         findReviewAndUserInDb(id, userId);
-        reviewStorage.addLikeToReview(id, userId);
-        reviewLikeStorage.add(id, userId, ReviewLike.LIKE.toString());
+        reviewStorage.addLikeToReview(id);
+        reviewLikeStorage.add(id, userId, LIKE.toString());
         log.info("Пользователь с id '{}' поставил лайк отзыву с id '{}'", userId, id);
         return toDto(reviewStorage.findById(id));
     }
@@ -129,8 +130,8 @@ public class ReviewServiceImpl implements ReviewService {
     @Override
     public ReviewDto addDislikeToReview(long id, long userId) {
         findReviewAndUserInDb(id, userId);
-        reviewStorage.addDislikeToReview(id, userId);
-        reviewLikeStorage.add(id, userId, ReviewLike.DISLIKE.toString());
+        reviewStorage.addDislikeToReview(id);
+        reviewLikeStorage.add(id, userId, DISLIKE.toString());
         log.info("Пользователь с id '{}' поставил дизлайк отзыву с id '{}'", userId, id);
         return toDto(reviewStorage.findById(id));
     }
@@ -145,8 +146,8 @@ public class ReviewServiceImpl implements ReviewService {
     @Override
     public ReviewDto deleteLikeFromReview(long id, long userId) {
         findReviewAndUserInDb(id, userId);
-        reviewStorage.addDislikeToReview(id, userId);
-        reviewLikeStorage.delete(userId, ReviewLike.LIKE.toString());
+        reviewStorage.addDislikeToReview(id);
+        reviewLikeStorage.delete(id, userId, LIKE.toString());
         log.info("Пользователь с id '{}' удалил лайк отзыву с id '{}'", userId, id);
         return toDto(reviewStorage.findById(id));
     }
@@ -161,8 +162,8 @@ public class ReviewServiceImpl implements ReviewService {
     @Override
     public ReviewDto deleteDislikeFromReview(long id, long userId) {
         findReviewAndUserInDb(id, userId);
-        reviewStorage.addLikeToReview(id, userId);
-        reviewLikeStorage.delete(userId, ReviewLike.DISLIKE.toString());
+        reviewStorage.addLikeToReview(id);
+        reviewLikeStorage.delete(id, userId, DISLIKE.toString());
         log.info("Пользователь с id '{}' удалил дизлайк отзыву с id '{}'", userId, id);
         return toDto(reviewStorage.findById(id));
     }
