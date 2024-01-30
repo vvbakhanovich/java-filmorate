@@ -26,7 +26,12 @@ public class ReviewServiceImpl implements ReviewService {
     private final UserStorage userStorage;
     private final FilmStorage filmStorage;
 
-
+    /**
+     * Добавление отзыва в БД.
+     *
+     * @param reviewDto отзыв.
+     * @return отзыв с присвоенным идентификатором.
+     */
     @Override
     public ReviewDto addReview(final ReviewDto reviewDto) {
         findUserAndFilmInDb(reviewDto);
@@ -36,6 +41,12 @@ public class ReviewServiceImpl implements ReviewService {
         return toDto(reviewStorage.findById(addedReview.getReviewId()));
     }
 
+    /**
+     * Получение отзыва по идентификатору.
+     *
+     * @param id идентификатор отзыва.
+     * @return найденный отзыв.
+     */
     @Override
     public ReviewDto getReviewById(final long id) {
         final Review review = reviewStorage.findById(id);
@@ -43,6 +54,12 @@ public class ReviewServiceImpl implements ReviewService {
         return toDto(review);
     }
 
+    /**
+     * Обновление данных отзыва. Происходит обновление только полей content и isPositive.
+     *
+     * @param updatedReviewDto отзыв с обновленными полями.
+     * @return обновленный отзыв.
+     */
     @Override
     public ReviewDto updateReview(final ReviewDto updatedReviewDto) {
         findUserAndFilmInDb(updatedReviewDto);
@@ -53,6 +70,11 @@ public class ReviewServiceImpl implements ReviewService {
         return toDto(reviewStorage.findById(reviewId));
     }
 
+    /**
+     * Удаление отзыва из БД.
+     *
+     * @param id идентификатор отзыва.
+     */
     @Override
     public void deleteReview(final long id) {
         reviewStorage.findById(id);
@@ -60,6 +82,13 @@ public class ReviewServiceImpl implements ReviewService {
         log.info("Отзыв с id '{}' был удален.", id);
     }
 
+    /**
+     * Получение списка отзывов о фильме. Если идентификатор фильма не был передан, то выводится список всех отзывов.
+     *
+     * @param filmId идентификатор фильма.
+     * @param count  количество отзывов, которое требуется вывести. По умолчанию 10.
+     * @return список отзывов.
+     */
     @Override
     public List<ReviewDto> getReviewsByFilmId(final Long filmId, final int count) {
         if (filmId == null) {
@@ -74,6 +103,13 @@ public class ReviewServiceImpl implements ReviewService {
         }
     }
 
+    /**
+     * Добавление лайка отзыву.
+     *
+     * @param id     идентификатор отзыва.
+     * @param userId идентификатор пользователя, который ставит лайк.
+     * @return отзыв с добавленным лайком.
+     */
     @Override
     public ReviewDto addLikeToReview(final long id, final long userId) {
         findReviewAndUserInDb(id, userId);
@@ -82,6 +118,13 @@ public class ReviewServiceImpl implements ReviewService {
         return toDto(reviewStorage.findById(id));
     }
 
+    /**
+     * Добавление дизлайка отзыву.
+     *
+     * @param id     идентификатор отзыва.
+     * @param userId идентификатор пользователя, который ставит дизлайк.
+     * @return отзыв с добавленным дизлайком.
+     */
     @Override
     public ReviewDto addDislikeToReview(long id, long userId) {
         findReviewAndUserInDb(id, userId);
@@ -90,6 +133,13 @@ public class ReviewServiceImpl implements ReviewService {
         return toDto(reviewStorage.findById(id));
     }
 
+    /**
+     * Удаление лайка у отзыва.
+     *
+     * @param id идентификатор отзыва.
+     * @param userId идентификатор пользователя, который удаляет лайк.
+     * @return отзыв с удаленным лайком.
+     */
     @Override
     public ReviewDto deleteLikeFromReview(long id, long userId) {
         findReviewAndUserInDb(id, userId);
@@ -98,6 +148,13 @@ public class ReviewServiceImpl implements ReviewService {
         return toDto(reviewStorage.findById(id));
     }
 
+    /**
+     * Удаление дизлайка у отзыва.
+     *
+     * @param id идентификатор отзыва.
+     * @param userId идентификатор пользователя, который удаляет дизлайк.
+     * @return отзыв с удаленным дизлайком.
+     */
     @Override
     public ReviewDto deleteDislikeFromReview(long id, long userId) {
         findReviewAndUserInDb(id, userId);
