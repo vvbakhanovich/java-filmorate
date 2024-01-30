@@ -43,10 +43,10 @@ public class ReviewController {
         return reviewService.getReviewsByFilmId(filmId, count);
     }
 
-//    @PutMapping("/{id}/like/{userId}")
-//    public ReviewDto addLikeToReview(@PathVariable long id, @PathVariable long userId) {
-//        return reviewService.addLikeToReview(id, userId);
-//    }
+    @PutMapping("/{id}/like/{userId}")
+    public ReviewDto addLikeToReview(@PathVariable long id, @PathVariable long userId) {
+        return reviewService.addLikeToReview(id, userId);
+    }
 //
 //    @PutMapping("/{id}/dislike/{userId}")
 //    public ReviewDto addDislikeToReview(@PathVariable long id, @PathVariable long userId) {
