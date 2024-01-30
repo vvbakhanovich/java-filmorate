@@ -7,8 +7,12 @@ import ru.yandex.practicum.filmorate.dao.FilmStorage;
 import ru.yandex.practicum.filmorate.dao.ReviewStorage;
 import ru.yandex.practicum.filmorate.dao.UserStorage;
 import ru.yandex.practicum.filmorate.dto.ReviewDto;
+import ru.yandex.practicum.filmorate.mapper.ReviewMapper;
 import ru.yandex.practicum.filmorate.model.Review;
 import ru.yandex.practicum.filmorate.service.ReviewService;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 import static ru.yandex.practicum.filmorate.mapper.ReviewMapper.toDto;
 import static ru.yandex.practicum.filmorate.mapper.ReviewMapper.toModel;
@@ -50,10 +54,18 @@ public class ReviewServiceImpl implements ReviewService {
     }
 
     @Override
-    public void deleteReview(long id) {
+    public void deleteReview(final long id) {
         reviewStorage.findById(id);
         reviewStorage.remove(id);
         log.info("Отзыв с id '{}' был удален.", id);
+    }
+
+    @Override
+    public List<ReviewDto> getReviewsByFilmId(final long filmId, final int count) {
+        filmStorage.findById(filmId);
+        final List<Review> reviews = reviewStorage.findByFilmIdLimitBy(filmId, count);
+        log.info("Запрос на получение отзывов по фильму с id '{}'.", filmId);
+        return reviews.stream().map(ReviewMapper::toDto).collect(Collectors.toList());
     }
 
     private void findUserAndFilmInDb(ReviewDto updatedReviewDto) {
