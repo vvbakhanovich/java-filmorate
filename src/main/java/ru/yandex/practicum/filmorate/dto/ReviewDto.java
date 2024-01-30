@@ -17,7 +17,7 @@ public class ReviewDto {
     @NotBlank(message = "Содержание отзыва не может быть пустым.")
     private String content;
     @NotNull(message = "Не указана полезность отзыва.")
-    private boolean isPositive;
+    private Boolean isPositive;
     private long useful;
     @NotNull(message = "Не указан идентификатор пользователя.")
     private Long userId;

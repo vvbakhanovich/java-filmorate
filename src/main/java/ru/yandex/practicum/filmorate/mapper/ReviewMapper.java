@@ -22,7 +22,7 @@ public class ReviewMapper {
         return Review.builder()
                 .reviewId(reviewDto.getReviewId())
                 .content(reviewDto.getContent())
-                .isPositive(reviewDto.isPositive())
+                .isPositive(reviewDto.getIsPositive())
                 .useful(reviewDto.getUseful())
                 .filmId(reviewDto.getFilmId())
                 .userId(reviewDto.getUserId())
