@@ -75,6 +75,20 @@ public class ReviewDbStorage implements ReviewStorage {
         }
     }
 
+    @Override
+    public List<Review> findByFilmIdLimitBy(final long filmId, final int count) {
+        final String sql = "SELECT ID, REVIEW_CONTENT, IS_POSITIVE, USEFUL, USER_ID, FILM_ID " +
+                "FROM REVIEW WHERE FILM_ID = ? LIMIT ?";
+        return jdbcTemplate.query(sql, this::mapReview, filmId, count);
+    }
+
+    @Override
+    public List<Review> findAllLimitBy(int count) {
+        final String sql = "SELECT ID, REVIEW_CONTENT, IS_POSITIVE, USEFUL, USER_ID, FILM_ID " +
+                "FROM REVIEW LIMIT ?";
+        return jdbcTemplate.query(sql, this::mapReview, count);
+    }
+
     private Review mapReview(final ResultSet rs, final int rowNum) throws SQLException {
         return Review.builder()
                 .reviewId(rs.getLong("id"))
@@ -84,12 +98,5 @@ public class ReviewDbStorage implements ReviewStorage {
                 .userId(rs.getLong("user_id"))
                 .filmId(rs.getLong("film_id"))
                 .build();
-    }
-
-    @Override
-    public List<Review> findByFilmIdLimitBy(final long filmId, final int count) {
-        final String sql = "SELECT ID, REVIEW_CONTENT, IS_POSITIVE, USEFUL, USER_ID, FILM_ID " +
-                "FROM REVIEW WHERE FILM_ID = ? LIMIT ?";
-        return jdbcTemplate.query(sql, this::mapReview, filmId, count);
     }
 }
