@@ -20,8 +20,8 @@ public class ReviewLikeDbStorage implements ReviewLikeStorage {
     }
 
     @Override
-    public void delete(final long userId, final String type) {
-        final String sql = "DELETE FROM review_like WHERE user_id = ? AND like_type = ?";
-        jdbcTemplate.update(sql, userId);
+    public void delete(final long reviewId, final long userId, final String type) {
+        final String sql = "DELETE FROM review_like WHERE review_id = ? AND user_id = ? AND like_type = ?";
+        jdbcTemplate.update(sql, userId, type);
     }
 }
