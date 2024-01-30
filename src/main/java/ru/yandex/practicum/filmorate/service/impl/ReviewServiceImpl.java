@@ -61,11 +61,17 @@ public class ReviewServiceImpl implements ReviewService {
     }
 
     @Override
-    public List<ReviewDto> getReviewsByFilmId(final long filmId, final int count) {
-        filmStorage.findById(filmId);
-        final List<Review> reviews = reviewStorage.findByFilmIdLimitBy(filmId, count);
-        log.info("Запрос на получение отзывов по фильму с id '{}'.", filmId);
-        return reviews.stream().map(ReviewMapper::toDto).collect(Collectors.toList());
+    public List<ReviewDto> getReviewsByFilmId(final Long filmId, final int count) {
+        if (filmId == null) {
+            final List<Review> reviews = reviewStorage.findAllLimitBy(count);
+            log.info("Запрос на получение отзывов.");
+            return reviews.stream().map(ReviewMapper::toDto).collect(Collectors.toList());
+        } else {
+            filmStorage.findById(filmId);
+            final List<Review> reviews = reviewStorage.findByFilmIdLimitBy(filmId, count);
+            log.info("Запрос на получение отзывов по фильму с id '{}'.", filmId);
+            return reviews.stream().map(ReviewMapper::toDto).collect(Collectors.toList());
+        }
     }
 
     private void findUserAndFilmInDb(ReviewDto updatedReviewDto) {
