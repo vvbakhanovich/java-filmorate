@@ -83,10 +83,16 @@ public class ReviewDbStorage implements ReviewStorage {
     }
 
     @Override
-    public List<Review> findAllLimitBy(int count) {
+    public List<Review> findAllLimitBy(final int count) {
         final String sql = "SELECT ID, REVIEW_CONTENT, IS_POSITIVE, USEFUL, USER_ID, FILM_ID " +
                 "FROM REVIEW LIMIT ?";
         return jdbcTemplate.query(sql, this::mapReview, count);
+    }
+
+    @Override
+    public void addLikeToReview(final long id, final long userId) {
+        final String sql = "UPDATE review SET useful = useful + 1 WHERE id = ?";
+        jdbcTemplate.update(sql, id);
     }
 
     private Review mapReview(final ResultSet rs, final int rowNum) throws SQLException {

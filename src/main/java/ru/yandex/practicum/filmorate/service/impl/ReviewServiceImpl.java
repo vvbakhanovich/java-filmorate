@@ -74,10 +74,17 @@ public class ReviewServiceImpl implements ReviewService {
         }
     }
 
+    @Override
+    public ReviewDto addLikeToReview(final long id, final long userId) {
+        reviewStorage.findById(id);
+        userStorage.findById(userId);
+        reviewStorage.addLikeToReview(id, userId);
+        log.info("Пользователь с id '{}' поставил лайк отзыву с id '{}'", userId, id);
+        return toDto(reviewStorage.findById(id));
+    }
+
     private void findUserAndFilmInDb(ReviewDto updatedReviewDto) {
         userStorage.findById(updatedReviewDto.getUserId());
         filmStorage.findById(updatedReviewDto.getFilmId());
     }
-
-
 }

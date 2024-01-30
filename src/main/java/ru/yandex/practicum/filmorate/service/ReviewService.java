@@ -15,4 +15,6 @@ public interface ReviewService {
     void deleteReview(long id);
 
     List<ReviewDto> getReviewsByFilmId(Long filmId, int count);
+
+    ReviewDto addLikeToReview(long id, long userId);
 }
