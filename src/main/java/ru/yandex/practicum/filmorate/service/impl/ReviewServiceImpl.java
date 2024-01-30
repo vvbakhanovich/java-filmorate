@@ -3,11 +3,13 @@ package ru.yandex.practicum.filmorate.service.impl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import ru.yandex.practicum.filmorate.dao.*;
+import ru.yandex.practicum.filmorate.dao.FilmStorage;
+import ru.yandex.practicum.filmorate.dao.ReviewLikeStorage;
+import ru.yandex.practicum.filmorate.dao.ReviewStorage;
+import ru.yandex.practicum.filmorate.dao.UserStorage;
 import ru.yandex.practicum.filmorate.dto.ReviewDto;
 import ru.yandex.practicum.filmorate.mapper.ReviewMapper;
 import ru.yandex.practicum.filmorate.model.Review;
-import ru.yandex.practicum.filmorate.model.ReviewLike;
 import ru.yandex.practicum.filmorate.service.ReviewService;
 
 import java.util.List;
@@ -15,7 +17,8 @@ import java.util.stream.Collectors;
 
 import static ru.yandex.practicum.filmorate.mapper.ReviewMapper.toDto;
 import static ru.yandex.practicum.filmorate.mapper.ReviewMapper.toModel;
-import static ru.yandex.practicum.filmorate.model.ReviewLike.*;
+import static ru.yandex.practicum.filmorate.model.ReviewLike.DISLIKE;
+import static ru.yandex.practicum.filmorate.model.ReviewLike.LIKE;
 
 @Service
 @RequiredArgsConstructor
