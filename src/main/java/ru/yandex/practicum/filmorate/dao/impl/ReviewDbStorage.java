@@ -52,10 +52,8 @@ public class ReviewDbStorage implements ReviewStorage {
 
     @Override
     public void update(final Review review) {
-        final String sql = "UPDATE review SET review_content = ?, is_positive = ?, useful = ? " +
-                "WHERE id = ?";
-        final int update = jdbcTemplate.update(sql, review.getContent(), review.isPositive(), review.getUseful(),
-                review.getReviewId());
+        final String sql = "UPDATE review SET review_content = ?, is_positive = ? WHERE id = ?";
+        final int update = jdbcTemplate.update(sql, review.getContent(), review.isPositive(), review.getReviewId());
         if (update != 1) {
             throw new NotFoundException("Отзыв с id '" + review.getReviewId() + "' не найден.");
         }
