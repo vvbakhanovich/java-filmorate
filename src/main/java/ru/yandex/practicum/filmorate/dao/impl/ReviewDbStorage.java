@@ -95,13 +95,13 @@ public class ReviewDbStorage implements ReviewStorage {
     }
 
     @Override
-    public void addLikeToReview(final long id, final long userId) {
+    public void addLikeToReview(final long id) {
         final String sql = "UPDATE review SET useful = useful + 1 WHERE id = ?";
         jdbcTemplate.update(sql, id);
     }
 
     @Override
-    public void addDislikeToReview(long id, long userId) {
+    public void addDislikeToReview(long id) {
         final String sql = "UPDATE review SET useful = useful - 1 WHERE id = ?";
         jdbcTemplate.update(sql, id);
     }
