@@ -19,6 +19,9 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
+import java.util.stream.Collectors;
+
+import static java.util.function.Function.identity;
 
 @Repository
 @RequiredArgsConstructor
@@ -126,32 +129,8 @@ public class FilmDbStorage implements FilmStorage {
         final Map<Long, Film> filmIdMap = new HashMap<>();
 
         while (rs.next()) {
-
-            Long filmId = rs.getLong(1);
-            film = filmIdMap.get(filmId);
-            if (film == null) {
-                film = Film.builder()
-                        .id(filmId)
-                        .name(rs.getString("title"))
-                        .description(rs.getString("description"))
-                        .releaseDate(rs.getDate("release_date").toLocalDate())
-                        .duration(rs.getInt("duration"))
-                        .mpa(new Mpa(rs.getInt("mpa_id"), rs.getString("rating_name")))
-                        .build();
-                film.setLikes(rs.getLong("likes"));
-                filmIdMap.put(filmId, film);
-            }
-
-            final int genre_id = rs.getInt("genre_id");
-            if (genre_id == 0) {
-                film.getGenres().addAll(Collections.emptyList());
-                continue;
-            }
-
-            final Genre genre = new Genre();
-            genre.setId(genre_id);
-            genre.setName(rs.getString("genre_name"));
-            film.getGenres().add(genre);
+            film = resultSetToFilm(rs, filmIdMap);
+            setGenresToFilm(rs, film);
         }
 
         return film;
@@ -162,34 +141,52 @@ public class FilmDbStorage implements FilmStorage {
         final Map<Long, Film> filmIdMap = new LinkedHashMap<>();
 
         while (rs.next()) {
-
-            Long filmId = rs.getLong(1);
-            Film film = filmIdMap.get(filmId);
-            if (film == null) {
-                film = Film.builder()
-                        .id(filmId)
-                        .name(rs.getString("title"))
-                        .description(rs.getString("description"))
-                        .releaseDate(rs.getDate("release_date").toLocalDate())
-                        .duration(rs.getInt("duration"))
-                        .mpa(new Mpa(rs.getInt("mpa_id"), rs.getString("rating_name")))
-                        .build();
-                film.setLikes(rs.getLong("likes"));
-                filmIdMap.put(filmId, film);
-            }
-
-            final int genre_id = rs.getInt("genre_id");
-            if (genre_id == 0) {
-                film.getGenres().addAll(Collections.emptyList());
-                continue;
-            }
-
-            final Genre genre = new Genre();
-            genre.setId(genre_id);
-            genre.setName(rs.getString("genre_name"));
-            film.getGenres().add(genre);
+            Film film = resultSetToFilm(rs, filmIdMap);
+            setGenresToFilm(rs, film);
         }
 
         return filmIdMap.values();
+    }
+
+    private void setGenresToFilm(ResultSet rs, Film film) throws SQLException {
+        final int genre_id = rs.getInt("genre_id");
+        if (genre_id == 0) {
+            film.getGenres().addAll(Collections.emptyList());
+            return;
+        }
+
+        final Genre genre = new Genre();
+        genre.setId(genre_id);
+        genre.setName(rs.getString("genre_name"));
+        film.getGenres().add(genre);
+    }
+
+    private Collection<Film> extractToFilmListWithoutGenres(ResultSet rs) throws SQLException, DataAccessException {
+
+        final Map<Long, Film> filmIdMap = new LinkedHashMap<>();
+
+        while (rs.next()) {
+            resultSetToFilm(rs, filmIdMap);
+        }
+
+        return filmIdMap.values();
+    }
+
+    private Film resultSetToFilm(ResultSet rs, Map<Long, Film> filmIdMap) throws SQLException {
+        Long filmId = rs.getLong(1);
+        Film film = filmIdMap.get(filmId);
+        if (film == null) {
+            film = Film.builder()
+                    .id(filmId)
+                    .name(rs.getString("title"))
+                    .description(rs.getString("description"))
+                    .releaseDate(rs.getDate("release_date").toLocalDate())
+                    .duration(rs.getInt("duration"))
+                    .mpa(new Mpa(rs.getInt("mpa_id"), rs.getString("rating_name")))
+                    .build();
+            film.setLikes(rs.getLong("likes"));
+            filmIdMap.put(filmId, film);
+        }
+        return film;
     }
 }
