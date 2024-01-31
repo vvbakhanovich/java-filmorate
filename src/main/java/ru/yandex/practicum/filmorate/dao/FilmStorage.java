@@ -7,7 +7,9 @@ import java.util.List;
 import java.util.Set;
 
 public interface FilmStorage extends Dao<Film> {
+
     Collection<Film> findMostLikedFilmsLimitBy(int count);
+
     List<Film> findFilmsByIds(Set<Long> filmIds);
-    
+
 }
