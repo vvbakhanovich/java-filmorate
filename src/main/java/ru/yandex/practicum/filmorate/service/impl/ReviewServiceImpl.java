@@ -3,10 +3,8 @@ package ru.yandex.practicum.filmorate.service.impl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import ru.yandex.practicum.filmorate.dao.FilmStorage;
-import ru.yandex.practicum.filmorate.dao.ReviewLikeStorage;
-import ru.yandex.practicum.filmorate.dao.ReviewStorage;
-import ru.yandex.practicum.filmorate.dao.UserStorage;
+import org.springframework.transaction.annotation.Transactional;
+import ru.yandex.practicum.filmorate.dao.*;
 import ru.yandex.practicum.filmorate.dto.ReviewDto;
 import ru.yandex.practicum.filmorate.mapper.ReviewMapper;
 import ru.yandex.practicum.filmorate.model.Review;
@@ -65,7 +63,6 @@ public class ReviewServiceImpl implements ReviewService {
      * @return обновленный отзыв.
      */
     @Override
-
     public ReviewDto updateReview(final ReviewDto updatedReviewDto) {
         findUserAndFilmInDb(updatedReviewDto);
         final Review updatedReview = toModel(updatedReviewDto);
@@ -81,6 +78,7 @@ public class ReviewServiceImpl implements ReviewService {
      * @param id идентификатор отзыва.
      */
     @Override
+    @Transactional
     public void deleteReview(final long id) {
         reviewStorage.remove(id);
         log.info("Отзыв с id '{}' был удален.", id);
@@ -94,6 +92,7 @@ public class ReviewServiceImpl implements ReviewService {
      * @return список отзывов.
      */
     @Override
+    @Transactional
     public List<ReviewDto> getReviewsByFilmId(final Long filmId, final int count) {
         if (filmId == null) {
             final List<Review> reviews = reviewStorage.findAllLimitBy(count);
@@ -115,6 +114,7 @@ public class ReviewServiceImpl implements ReviewService {
      * @return отзыв с добавленным лайком.
      */
     @Override
+    @Transactional
     public ReviewDto addLikeToReview(final long id, final long userId) {
         findReviewAndUserInDb(id, userId);
         reviewStorage.addLikeToReview(id);
@@ -131,6 +131,7 @@ public class ReviewServiceImpl implements ReviewService {
      * @return отзыв с добавленным дизлайком.
      */
     @Override
+    @Transactional
     public ReviewDto addDislikeToReview(long id, long userId) {
         findReviewAndUserInDb(id, userId);
         reviewStorage.addDislikeToReview(id);
@@ -142,11 +143,12 @@ public class ReviewServiceImpl implements ReviewService {
     /**
      * Удаление лайка у отзыва.
      *
-     * @param id идентификатор отзыва.
+     * @param id     идентификатор отзыва.
      * @param userId идентификатор пользователя, который удаляет лайк.
      * @return отзыв с удаленным лайком.
      */
     @Override
+    @Transactional
     public ReviewDto deleteLikeFromReview(long id, long userId) {
         findReviewAndUserInDb(id, userId);
         reviewStorage.addDislikeToReview(id);
@@ -158,11 +160,12 @@ public class ReviewServiceImpl implements ReviewService {
     /**
      * Удаление дизлайка у отзыва.
      *
-     * @param id идентификатор отзыва.
+     * @param id     идентификатор отзыва.
      * @param userId идентификатор пользователя, который удаляет дизлайк.
      * @return отзыв с удаленным дизлайком.
      */
     @Override
+    @Transactional
     public ReviewDto deleteDislikeFromReview(long id, long userId) {
         findReviewAndUserInDb(id, userId);
         reviewStorage.addLikeToReview(id);
