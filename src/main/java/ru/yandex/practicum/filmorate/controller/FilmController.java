@@ -48,6 +48,14 @@ public class FilmController {
         return filmService.removeLike(id, userId);
     }
 
+    @GetMapping("/common")
+    public Collection<FilmDto> getCommonFilms(
+            @RequestParam long userId,
+            @RequestParam long friendId){
+        return filmService.getCommonFilms(userId, friendId);
+
+    }
+
     @GetMapping("/popular")
     public Collection<FilmDto> getMostPopularFilms(@RequestParam(required = false, defaultValue = "10") int count) {
         return filmService.getMostPopularFilms(count);
