@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
@@ -199,4 +200,75 @@ public class FilmDbStorage implements FilmStorage {
         film.setLikes(rs.getLong("likes"));
         return film;
     }
+
+    private Collection<Film> extractToFilmList(ResultSet rs) throws SQLException, DataAccessException {
+
+        final Map<Long, Film> filmIdMap = new LinkedHashMap<>();
+
+        while (rs.next()) {
+
+            Long filmId = rs.getLong(1);
+            Film film = filmIdMap.get(filmId);
+            if (film == null) {
+                film = Film.builder()
+                        .id(filmId)
+                        .name(rs.getString("title"))
+                        .description(rs.getString("description"))
+                        .releaseDate(rs.getDate("release_date").toLocalDate())
+                        .duration(rs.getInt("duration"))
+                        .mpa(new Mpa(rs.getInt("mpa_id"), rs.getString("rating_name")))
+                        .build();
+                film.setLikes(rs.getLong("likes"));
+                filmIdMap.put(filmId, film);
+            }
+
+            final int genre_id = rs.getInt("genre_id");
+            if (genre_id == 0) {
+                film.getGenres().addAll(Collections.emptyList());
+                continue;
+            }
+
+            final Genre genre = new Genre();
+            genre.setId(genre_id);
+            genre.setName(rs.getString("genre_name"));
+            film.getGenres().add(genre);
+        }
+
+        return filmIdMap.values();
+    }
+    @Override
+    public List<Film> findFilmsByIds(Set<Long> filmIds) {
+        if (filmIds.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        String placeholders = String.join(",", Collections.nCopies(filmIds.size(), "?"));
+
+        String sql = "SELECT f.ID, f.TITLE, f.DESCRIPTION, f.RELEASE_DATE, f.DURATION, f.MPA_ID, " +
+                "m.RATING_NAME, COUNT(fl.USER_ID) AS LIKES " +
+                "FROM FILM f " +
+                "LEFT JOIN MPA m ON f.MPA_ID = m.ID " +
+                "LEFT JOIN film_like fl ON f.ID = fl.FILM_ID " +
+                "WHERE f.ID IN (" + placeholders + ") " +
+                "GROUP BY f.ID, m.RATING_NAME " +
+                "ORDER BY LIKES DESC";
+
+        Object[] idsArray = filmIds.toArray(new Object[0]);
+
+        return jdbcTemplate.query(sql, idsArray, new RowMapper<Film>() {
+            @Override
+            public Film mapRow(ResultSet rs, int rowNum) throws SQLException {
+                Film film = new Film();
+                film.setId(rs.getLong("ID"));
+                film.setName(rs.getString("TITLE"));
+                film.setDescription(rs.getString("DESCRIPTION"));
+                film.setReleaseDate(rs.getDate("RELEASE_DATE").toLocalDate());
+                film.setDuration(rs.getInt("DURATION"));
+                film.setMpa(new Mpa(rs.getInt("MPA_ID"), rs.getString("RATING_NAME")));
+                film.setLikes(rs.getLong("LIKES"));
+                return film;
+            }
+        });
+    }
+
 }
