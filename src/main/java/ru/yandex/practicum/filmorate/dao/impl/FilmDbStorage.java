@@ -110,17 +110,19 @@ public class FilmDbStorage implements FilmStorage {
 
     public Collection<Film> findMostLikedFilmsLimitBy(final int count) {
         final String sql = "SELECT " +
-                "f.ID, f.TITLE, f.DESCRIPTION, f.RELEASE_DATE, f.DURATION, f.MPA_ID, m.RATING_NAME, fg.GENRE_ID, g.GENRE_NAME, COUNT(fl.USER_ID) AS likes " +
+                "f.ID, f.TITLE, f.DESCRIPTION, f.RELEASE_DATE, f.DURATION, f.MPA_ID, m.RATING_NAME, COUNT(fl.USER_ID) AS likes " +
                 "FROM " +
                 "FILM f LEFT JOIN MPA m ON f.MPA_ID = m.ID " +
-                "LEFT JOIN FILM_GENRE fg ON f.ID = fg.FILM_ID " +
-                "LEFT JOIN GENRE g ON fg.GENRE_ID = g.ID " +
                 "LEFT JOIN film_like fl on f.id = fl.film_id " +
-                "GROUP BY f.id, m.rating_name, fg.genre_id, g.genre_name " +
+                "GROUP BY f.id, m.rating_name " +
                 "ORDER BY COUNT(fl.USER_ID) DESC " +
                 "LIMIT ?";
 
-        return jdbcTemplate.query(sql, this::extractToFilmList, count);
+        Collection<Film> films = jdbcTemplate.query(sql, this::extractToFilmListWithoutGenres, count);
+        Map<Long, Film> filmMap = films.stream().collect(Collectors.toMap(Film::getId, identity()));
+        Map<Long, List<Genre>> filmIdGenreMap = filmGenreStorage.findGenresInIdList(filmMap.keySet());
+        filmIdGenreMap.forEach((id, genres) -> filmMap.get(id).getGenres().addAll(genres));
+        return new ArrayList<>(filmMap.values());
     }
 
     private Film extractToFilm(ResultSet rs) throws SQLException, DataAccessException {
