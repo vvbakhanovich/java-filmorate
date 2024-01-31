@@ -18,4 +18,6 @@ public interface FilmService {
     FilmDto removeLike(long filmId, long userId);
 
     Collection<FilmDto> getMostPopularFilms(final int count);
+
+    Collection<FilmDto> getCommonFilms(long userId, long friendId);
 }

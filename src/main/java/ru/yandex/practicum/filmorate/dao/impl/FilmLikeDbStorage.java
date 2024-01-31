@@ -9,8 +9,10 @@ import ru.yandex.practicum.filmorate.dao.FilmLikeStorage;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Set;
 
 @Repository
 @RequiredArgsConstructor
@@ -47,6 +49,12 @@ public class FilmLikeDbStorage implements FilmLikeStorage {
     public void remove(long filmId, long userId) {
         final String sql = "DELETE FROM film_like WHERE film_id = ? AND user_id = ?";
         jdbcTemplate.update(sql, filmId, userId);
+    }
+
+    @Override
+    public Set<Long> findLikedFilmsByUser(long userId) {
+        final String sql = "SELECT film_id FROM film_like WHERE user_id = ?";
+        return new HashSet<>(jdbcTemplate.queryForList(sql, Long.class, userId));
     }
 
     private Map<Long, Long> mapRowToIdCount(ResultSet rs) throws SQLException {
