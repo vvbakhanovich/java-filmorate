@@ -193,6 +193,7 @@ public class FilmDbStorage implements FilmStorage {
 
         return filmIdMap.values();
     }
+
     @Override
     public List<Film> findFilmsByIds(Set<Long> filmIds) {
         if (filmIds.isEmpty()) {
