@@ -10,4 +10,6 @@ public interface FilmLikeStorage {
     Map<Long, Long> findAll();
 
     void remove(long filmId, long userId);
+
+    void removeAllLikesByFilmId(long filmId);
 }

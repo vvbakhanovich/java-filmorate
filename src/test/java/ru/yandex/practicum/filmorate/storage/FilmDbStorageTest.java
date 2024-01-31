@@ -286,4 +286,37 @@ public class FilmDbStorageTest {
                 .usingRecursiveComparison()
                 .isEqualTo(film);
     }
+
+    @Test
+    @DisplayName("Тест удаление фильма")
+    void testDeleteFilm() {
+        Film newFilm = filmDbStorage.add(film);
+        filmDbStorage.remove(newFilm.getId());
+
+        String formattedResponse = String.format("Фильм с id '%s' не найден.", newFilm.getId());
+        NotFoundException e = assertThrows(NotFoundException.class, () -> filmDbStorage.findById(newFilm.getId()));
+        assertEquals(formattedResponse, e.getMessage());
+    }
+
+    @Test
+    @DisplayName("Тест удаление несуществующего фильма")
+    void testDeleteNotExistingUser() {
+        int filmId = 999;
+        String formattedResponse = String.format("Фильм с id '%s' не найден.", filmId);
+        NotFoundException e = assertThrows(NotFoundException.class, () -> filmDbStorage.findById(filmId));
+        assertEquals(formattedResponse, e.getMessage());
+    }
+
+    @Test
+    @DisplayName("Тест удаление всех лайков с фильма")
+    void testDeleteAllLikesFromFilm() {
+        Film newFilm = filmDbStorage.add(film);
+        User newUser = userStorage.add(user);
+
+        filmLikeStorage.add(newFilm.getId(), newUser.getId());
+        filmLikeStorage.removeAllLikesByFilmId(newFilm.getId());
+        Film updatedFilm = filmDbStorage.findById(newFilm.getId());
+        long updatedLikes = updatedFilm.getLikes();
+        assertEquals(0, updatedLikes);
+    }
 }

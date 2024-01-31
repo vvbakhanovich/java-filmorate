@@ -3,6 +3,7 @@ package ru.yandex.practicum.filmorate.service.impl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import ru.yandex.practicum.filmorate.dao.FilmLikeStorage;
 import ru.yandex.practicum.filmorate.dao.FilmStorage;
 import ru.yandex.practicum.filmorate.dao.UserStorage;
@@ -112,6 +113,18 @@ public class FilmServiceImpl implements FilmService {
         filmLikeStorage.remove(filmId, userId);
         log.info("Пользователь с id {} удалил лайк фильма с id {}", userId, filmId);
         return toDto(filmStorage.findById(filmId));
+    }
+
+    /**
+     * Удаление фильма.
+     *
+     * @param filmId идентификатор фильма, который будет удален
+     */
+    @Override
+    @Transactional
+    public void removeFilm(long filmId) {
+        filmLikeStorage.removeAllLikesByFilmId(filmId);
+        filmStorage.remove(filmId);
     }
 
     /**

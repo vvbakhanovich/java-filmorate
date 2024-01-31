@@ -151,6 +151,16 @@ public class UserServiceImpl implements UserService {
         log.info("Пользователи с id {} и {} перестали быть друзьями", userId, friendId);
     }
 
+    /**
+     * Удаление пользователя.
+     *
+     * @param userId идентификатор пользователя, который будет удален
+     */
+    @Override
+    public void removeUser(long userId) {
+        userStorage.remove(userId);
+    }
+
     private UserDto validateUserName(final UserDto userDto) {
         final String validatedName = userDto.getName() == null || userDto.getName().isBlank() ?
                 userDto.getLogin() : userDto.getName();

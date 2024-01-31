@@ -6,6 +6,7 @@ import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.dao.FilmLikeStorage;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -47,6 +48,15 @@ public class FilmLikeDbStorage implements FilmLikeStorage {
     public void remove(long filmId, long userId) {
         final String sql = "DELETE FROM film_like WHERE film_id = ? AND user_id = ?";
         jdbcTemplate.update(sql, filmId, userId);
+    }
+
+    @Override
+    public void removeAllLikesByFilmId(long filmId) {
+        final String sql = "DELETE FROM film_like WHERE film_id = ?";
+        int amount = jdbcTemplate.update(sql, filmId);
+        if (amount != 1) {
+            throw new NotFoundException("Фильм с id '" + filmId + "' не найден.");
+        }
     }
 
     private Map<Long, Long> mapRowToIdCount(ResultSet rs) throws SQLException {
