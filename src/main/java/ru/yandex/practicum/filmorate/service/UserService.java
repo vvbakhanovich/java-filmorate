@@ -21,4 +21,6 @@ public interface UserService {
     Collection<UserDto> findCommonFriends(long userId, long otherUserId);
 
     void removeFriend(long userId, long friendId);
+
+    void removeUser(long userId);
 }
