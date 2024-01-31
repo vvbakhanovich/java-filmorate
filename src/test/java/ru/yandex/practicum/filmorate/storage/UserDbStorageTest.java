@@ -11,14 +11,17 @@ import org.springframework.test.annotation.DirtiesContext;
 import ru.yandex.practicum.filmorate.dao.*;
 import ru.yandex.practicum.filmorate.dao.impl.*;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.mapper.FilmMapper;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Friendship;
 import ru.yandex.practicum.filmorate.model.Mpa;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.service.impl.UserServiceImpl;
 
 import java.time.LocalDate;
 import java.util.Collection;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -34,6 +37,7 @@ class UserDbStorageTest {
 
     private final JdbcTemplate jdbcTemplate;
     private UserStorage userStorage;
+    private UserServiceImpl userService;
     private FriendshipStorage friendshipStorage;
     private FilmGenreStorage filmGenreStorage;
     private FilmLikeStorage filmLikeStorage;
@@ -41,6 +45,8 @@ class UserDbStorageTest {
     private User user;
     private User updatedUser;
     private User anotherUser;
+    private Film filmOne;
+    private Film filmTwo;
 
 
     @BeforeEach
@@ -50,6 +56,7 @@ class UserDbStorageTest {
         filmDbStorage = new FilmDbStorage(jdbcTemplate, filmGenreStorage);
         userStorage = new UserDbStorage(jdbcTemplate, filmDbStorage);
         friendshipStorage = new FriendshipDbStorage(jdbcTemplate);
+        userService = new UserServiceImpl(userStorage, filmDbStorage, friendshipStorage);
         user = User.builder()
                 .id(1)
                 .email("email")
@@ -70,6 +77,26 @@ class UserDbStorageTest {
                 .login("another_login")
                 .name("another_name")
                 .birthday(LocalDate.now())
+                .build();
+
+        Mpa mpa = new Mpa(1, "G");
+
+        filmOne = Film.builder()
+                .id(1)
+                .name("film")
+                .description("film description")
+                .releaseDate(LocalDate.of(2020, 12, 12))
+                .duration(123)
+                .mpa(mpa)
+                .build();
+
+        filmTwo = Film.builder()
+                .id(2)
+                .name("film two")
+                .description("film two description")
+                .releaseDate(LocalDate.of(2020, 12, 12))
+                .duration(123)
+                .mpa(mpa)
                 .build();
     }
 
@@ -322,31 +349,10 @@ class UserDbStorageTest {
     }
 
     @Test
-    @DisplayName("Тест получения списка рекомендаций фильмов")
+    @DisplayName("Тест получения списка рекомендаций фильмов, когда рекомендации есть.")
     void testGetRecommendationsList() {
         userStorage.add(user);
         userStorage.add(anotherUser);
-
-        Mpa mpa = new Mpa(1, "G");
-
-
-        Film filmOne = Film.builder()
-                .id(1)
-                .name("film")
-                .description("film description")
-                .releaseDate(LocalDate.of(2020, 12, 12))
-                .duration(123)
-                .mpa(mpa)
-                .build();
-
-        Film filmTwo = Film.builder()
-                .id(2)
-                .name("film two")
-                .description("film two description")
-                .releaseDate(LocalDate.of(2020, 12, 12))
-                .duration(123)
-                .mpa(mpa)
-                .build();
 
         filmDbStorage.add(filmOne);
         filmDbStorage.add(filmTwo);
@@ -355,7 +361,8 @@ class UserDbStorageTest {
         filmLikeStorage.add(filmOne.getId(), anotherUser.getId());
         filmLikeStorage.add(filmTwo.getId(), anotherUser.getId());
 
-        Collection<Film> filmRecommendations = userStorage.showRecommendations(user.getId());
+        Collection<Film> filmRecommendations = userService.showRecommendations(user.getId()).stream()
+                .map(FilmMapper::toModel).collect(Collectors.toList());
 
         filmTwo.setLikes(1);
 
@@ -363,5 +370,40 @@ class UserDbStorageTest {
                 .isNotNull()
                 .isNotEmpty()
                 .containsExactlyElementsOf(List.of(filmTwo));
+    }
+
+    @Test
+    @DisplayName("Тест получения списка рекомендаций фильмов, когда лайки совпадают.")
+    void testGetRecommendationsListSimilarLikes() {
+        userStorage.add(user);
+        userStorage.add(anotherUser);
+
+        filmDbStorage.add(filmOne);
+
+        filmLikeStorage.add(filmOne.getId(), user.getId());
+        filmLikeStorage.add(filmOne.getId(), anotherUser.getId());
+
+        Collection<Film> filmRecommendations = userService.showRecommendations(user.getId()).stream()
+                .map(FilmMapper::toModel).collect(Collectors.toList());
+
+        assertThat(filmRecommendations)
+                .isNotNull()
+                .isEmpty();
+    }
+
+    @Test
+    @DisplayName("Тест получения списка рекомендаций фильмов, когда лайков еще нет.")
+    void testGetRecommendationsListNoLikes() {
+        userStorage.add(user);
+        userStorage.add(anotherUser);
+
+        filmDbStorage.add(filmOne);
+
+        Collection<Film> filmRecommendations = userService.showRecommendations(user.getId()).stream()
+                .map(FilmMapper::toModel).collect(Collectors.toList());
+
+        assertThat(filmRecommendations)
+                .isNotNull()
+                .isEmpty();
     }
 }

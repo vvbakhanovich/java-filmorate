@@ -3,18 +3,19 @@ package ru.yandex.practicum.filmorate.service.impl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.dao.FilmStorage;
 import ru.yandex.practicum.filmorate.dao.FriendshipStorage;
 import ru.yandex.practicum.filmorate.dao.UserStorage;
 import ru.yandex.practicum.filmorate.dto.FilmDto;
 import ru.yandex.practicum.filmorate.dto.UserDto;
 import ru.yandex.practicum.filmorate.mapper.FilmMapper;
 import ru.yandex.practicum.filmorate.mapper.UserMapper;
+import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Friendship;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.UserService;
 
-import java.util.ArrayList;
-import java.util.Collection;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static ru.yandex.practicum.filmorate.model.FriendshipStatus.ACKNOWLEDGED;
@@ -26,6 +27,7 @@ import static ru.yandex.practicum.filmorate.model.FriendshipStatus.NOT_ACKNOWLED
 public class UserServiceImpl implements UserService {
 
     private final UserStorage userStorage;
+    private final FilmStorage filmDbStorage;
 
     private final FriendshipStorage friendshipStorage;
 
@@ -153,10 +155,45 @@ public class UserServiceImpl implements UserService {
         log.info("Пользователи с id {} и {} перестали быть друзьями", userId, friendId);
     }
 
+    /**
+     * Создание рекомендаций пользователю фильмов, которые ему могут понравиться. Для подготовки рекомендаций
+     * выгружаем данные из таблицы film_like, находим пользователей с максимальным количеством одинаковых с нашим
+     * пользователем лайков и выбираем у них для рекомендации, которые они тоже залайкали, но наш пользователь
+     * в запросе их еще не видел
+     *
+     * @param id идентификатор пользователя
+     * @return коллекцию FilmDto
+     */
+
     @Override
     public Collection<FilmDto> showRecommendations(long id) {
         log.info("Получение списка рекомендаций фильмов для пользователя с id {}.", id);
-        return userStorage.showRecommendations(id).stream().map(FilmMapper::toDto).collect(Collectors.toList());
+
+        Map<Long, Set<Long>> usersLikes = userStorage.showRecommendations();
+        int maxLikes = 0;
+        Set<Long> recommendations = new HashSet<>();
+        Set<Long> userLikedFilms = usersLikes.get(id);
+        for (Long user : usersLikes.keySet()) {
+            if (user != id) {
+                Set<Long> likedFilms = usersLikes.get(user);
+                Set<Long> currentUserLikedFilms = new HashSet<>(userLikedFilms);
+                currentUserLikedFilms.retainAll(likedFilms);
+                if (currentUserLikedFilms.size() > maxLikes && currentUserLikedFilms.size() < likedFilms.size()) {
+                    recommendations.clear();
+                    maxLikes = currentUserLikedFilms.size();
+                    likedFilms.removeAll(currentUserLikedFilms);
+                    recommendations.addAll(likedFilms);
+                } else if (currentUserLikedFilms.size() == maxLikes) {
+                    likedFilms.removeAll(currentUserLikedFilms);
+                    recommendations.addAll(likedFilms);
+                }
+            }
+        }
+        Collection<Film> filmsRecommendation = new ArrayList<>();
+        for (Long filmId : recommendations) {
+            filmsRecommendation.add(filmDbStorage.findById(filmId));
+        }
+        return filmsRecommendation.stream().map(FilmMapper::toDto).collect(Collectors.toList());
     }
 
     private UserDto validateUserName(final UserDto userDto) {

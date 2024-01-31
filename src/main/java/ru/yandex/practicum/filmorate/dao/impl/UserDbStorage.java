@@ -10,10 +10,8 @@ import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.dao.FilmStorage;
 import ru.yandex.practicum.filmorate.dao.UserStorage;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
-import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Friendship;
 import ru.yandex.practicum.filmorate.model.User;
-
 import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -113,41 +111,27 @@ public class UserDbStorage implements UserStorage {
     }
 
     @Override
-    public Collection<Film> showRecommendations(long id) {
-        String filmsIdsSql = "SELECT film_id FROM film_like WHERE user_id = ?";
-        Set<Long> userLikedFilms = Set.copyOf(jdbcTemplate.query(filmsIdsSql, new Object[]{id},
-                (rs, rowNum) -> Long.valueOf(rs.getInt("film_id"))));
-        Collection<User> allUsers = findAll();
-        int maxLikes = 0;
-
-        Set<Long> recommendations = new HashSet<>();
-
-        for (User user : allUsers) {
-            if (user.getId() != id) {
-                final String idsSql = "SELECT film_id FROM film_like WHERE user_id = ?";
-                Set<Long> likedFilms = new HashSet<>(Set.copyOf(jdbcTemplate.query(idsSql, new Object[]{user.getId()},
-                        (rs, rowNum) -> Long.valueOf(rs.getInt("film_id")))));
-                Set<Long> currentUserLikedFilms = new HashSet<>(userLikedFilms);
-                currentUserLikedFilms.retainAll(likedFilms);
-
-                if (currentUserLikedFilms.size() > maxLikes) {
-                    if (currentUserLikedFilms.size() < likedFilms.size()) {
-                        recommendations.clear();
-                        maxLikes = currentUserLikedFilms.size();
-                        likedFilms.removeAll(currentUserLikedFilms);
-                        recommendations.addAll(likedFilms);
-                    }
-                } else if (currentUserLikedFilms.size() == maxLikes) {
-                    likedFilms.removeAll(currentUserLikedFilms);
-                    recommendations.addAll(likedFilms);
-                }
+    public Map<Long, Set<Long>> showRecommendations() {
+        String filmsIdsSql = "SELECT user_id, film_id FROM film_like";
+        List<List<Long>> userLikedFilms = jdbcTemplate.query(filmsIdsSql, (resultSet, rowNum) -> {
+            List<Long> likes = new ArrayList<>();
+            likes.add(resultSet.getLong("user_id"));
+            likes.add(resultSet.getLong("film_id"));
+            return likes;
+        });
+        Map<Long, Set<Long>> result = new HashMap<>();
+        for (List userLikes : userLikedFilms) {
+            if (result.get(userLikes.get(0)) == null) {
+                Set<Long> films = new HashSet<>();
+                films.add((Long) userLikes.get(1));
+                result.put((Long) userLikes.get(0), films);
+            } else {
+                Set<Long> films = result.get(userLikes.get(0));
+                films.add((Long) userLikes.get(1));
+                result.put((Long) userLikes.get(0), films);
             }
         }
-        Collection<Film> filmsRecommendation = new ArrayList<>();
-        for (Long filmId : recommendations) {
-            filmsRecommendation.add(filmDbStorage.findById(filmId));
-        }
-        return filmsRecommendation;
+        return result;
     }
 
     private User extractToUser(ResultSet rs) throws SQLException, DataAccessException {
