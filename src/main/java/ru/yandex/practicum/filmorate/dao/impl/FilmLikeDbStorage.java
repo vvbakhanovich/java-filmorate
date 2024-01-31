@@ -49,6 +49,7 @@ public class FilmLikeDbStorage implements FilmLikeStorage {
         jdbcTemplate.update(sql, filmId, userId);
     }
 
+
     private Map<Long, Long> mapRowToIdCount(ResultSet rs) throws SQLException {
         final Map<Long, Long> result = new LinkedHashMap<>();
         while (rs.next()) {
