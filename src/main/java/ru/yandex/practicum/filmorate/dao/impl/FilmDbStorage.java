@@ -76,16 +76,14 @@ public class FilmDbStorage implements FilmStorage {
     @Override
     public Collection<Film> findAll() {
         final String sql = "SELECT " +
-                "f.ID, f.TITLE, f.DESCRIPTION, f.RELEASE_DATE, f.DURATION, f.MPA_ID, m.RATING_NAME, fg.GENRE_ID, g.GENRE_NAME, COUNT(fl.USER_ID) AS likes " +
+                "f.ID, f.TITLE, f.DESCRIPTION, f.RELEASE_DATE, f.DURATION, f.MPA_ID, m.RATING_NAME, COUNT(fl.USER_ID) AS likes " +
                 "FROM " +
                 "FILM f LEFT JOIN MPA m ON f.MPA_ID = m.ID " +
-                "LEFT JOIN FILM_GENRE fg ON f.ID = fg.FILM_ID " +
-                "LEFT JOIN GENRE g ON fg.GENRE_ID = g.ID " +
                 "LEFT JOIN film_like fl on f.id = fl.film_id " +
-                "GROUP BY f.id, m.rating_name, fg.genre_id, g.genre_name";
+                "GROUP BY f.id, m.rating_name";
 
-        return jdbcTemplate.query(sql, this::extractToFilmList);
-
+        Collection<Film> films = jdbcTemplate.query(sql, this::extractToFilmListWithoutGenres);
+        return setGenresForFilms(films);
     }
 
     @Override
@@ -100,11 +98,14 @@ public class FilmDbStorage implements FilmStorage {
                 "GROUP BY f.id, m.rating_name, fg.genre_id, g.genre_name " +
                 "HAVING f.ID = ?";
 
-        final Film film = jdbcTemplate.query(sql, this::extractToFilm, filmId);
+        final Film film = jdbcTemplate.query(sql, this::extractToFilmWithoutGenres, filmId);
 
         if (film == null) {
             throw new NotFoundException("Фильм с id '" + filmId + "' не найден.");
         }
+
+        List<Genre> genres = filmGenreStorage.findAllById(filmId);
+        film.getGenres().addAll(genres);
         return film;
     }
 
@@ -119,48 +120,26 @@ public class FilmDbStorage implements FilmStorage {
                 "LIMIT ?";
 
         Collection<Film> films = jdbcTemplate.query(sql, this::extractToFilmListWithoutGenres, count);
+        return setGenresForFilms(films);
+    }
+
+    private List<Film> setGenresForFilms(Collection<Film> films) {
         Map<Long, Film> filmMap = films.stream().collect(Collectors.toMap(Film::getId, identity()));
         Map<Long, List<Genre>> filmIdGenreMap = filmGenreStorage.findGenresInIdList(filmMap.keySet());
         filmIdGenreMap.forEach((id, genres) -> filmMap.get(id).getGenres().addAll(genres));
         return new ArrayList<>(filmMap.values());
     }
 
-    private Film extractToFilm(ResultSet rs) throws SQLException, DataAccessException {
+    private Film extractToFilmWithoutGenres(ResultSet rs) throws SQLException, DataAccessException {
 
         Film film = null;
         final Map<Long, Film> filmIdMap = new HashMap<>();
 
         while (rs.next()) {
             film = resultSetToFilm(rs, filmIdMap);
-            setGenresToFilm(rs, film);
         }
 
         return film;
-    }
-
-    private Collection<Film> extractToFilmList(ResultSet rs) throws SQLException, DataAccessException {
-
-        final Map<Long, Film> filmIdMap = new LinkedHashMap<>();
-
-        while (rs.next()) {
-            Film film = resultSetToFilm(rs, filmIdMap);
-            setGenresToFilm(rs, film);
-        }
-
-        return filmIdMap.values();
-    }
-
-    private void setGenresToFilm(ResultSet rs, Film film) throws SQLException {
-        final int genre_id = rs.getInt("genre_id");
-        if (genre_id == 0) {
-            film.getGenres().addAll(Collections.emptyList());
-            return;
-        }
-
-        final Genre genre = new Genre();
-        genre.setId(genre_id);
-        genre.setName(rs.getString("genre_name"));
-        film.getGenres().add(genre);
     }
 
     private Collection<Film> extractToFilmListWithoutGenres(ResultSet rs) throws SQLException, DataAccessException {

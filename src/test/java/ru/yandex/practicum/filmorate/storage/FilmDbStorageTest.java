@@ -286,4 +286,29 @@ public class FilmDbStorageTest {
                 .usingRecursiveComparison()
                 .isEqualTo(film);
     }
+
+    @Test
+    @DisplayName("Тест на получение самых популярных фильмов с несколькими жанрами")
+    void testMostPopularFilmsWithSeveralGenres() {
+        Genre genre1 = new Genre(1, "Комедия");
+        Genre genre2 = new Genre(6, "Боевик");
+        Genre genre3 = new Genre(2, "Драма");
+
+        userStorage.add(user);
+        film.getGenres().add(genre1);
+        film.getGenres().add(genre2);
+        film.getGenres().add(genre3);
+        filmDbStorage.add(film);
+        filmLikeStorage.add(film.getId(),user.getId());
+        filmDbStorage.add(updatedFilm);
+
+        film.setLikes(1);
+
+        Collection<Film> popularFilms = filmDbStorage.findMostLikedFilmsLimitBy(1);
+
+        assertThat(popularFilms)
+                .isNotNull()
+                .isNotEmpty()
+                .isEqualTo(List.of(film));
+    }
 }
