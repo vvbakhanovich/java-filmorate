@@ -8,12 +8,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.JdbcTest;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.annotation.DirtiesContext;
-import ru.yandex.practicum.filmorate.dao.FriendshipStorage;
-import ru.yandex.practicum.filmorate.dao.UserStorage;
-import ru.yandex.practicum.filmorate.dao.impl.FriendshipDbStorage;
-import ru.yandex.practicum.filmorate.dao.impl.UserDbStorage;
+import ru.yandex.practicum.filmorate.dao.*;
+import ru.yandex.practicum.filmorate.dao.impl.*;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Friendship;
+import ru.yandex.practicum.filmorate.model.Mpa;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.time.LocalDate;
@@ -35,6 +35,9 @@ class UserDbStorageTest {
     private final JdbcTemplate jdbcTemplate;
     private UserStorage userStorage;
     private FriendshipStorage friendshipStorage;
+    private FilmGenreStorage filmGenreStorage;
+    private FilmLikeStorage filmLikeStorage;
+    private FilmStorage filmDbStorage;
     private User user;
     private User updatedUser;
     private User anotherUser;
@@ -42,7 +45,10 @@ class UserDbStorageTest {
 
     @BeforeEach
     void setUp() {
-        userStorage = new UserDbStorage(jdbcTemplate);
+        filmLikeStorage = new FilmLikeDbStorage(jdbcTemplate);
+        filmGenreStorage = new FilmGenreDbStorage(jdbcTemplate);
+        filmDbStorage = new FilmDbStorage(jdbcTemplate, filmGenreStorage);
+        userStorage = new UserDbStorage(jdbcTemplate, filmDbStorage);
         friendshipStorage = new FriendshipDbStorage(jdbcTemplate);
         user = User.builder()
                 .id(1)
@@ -313,5 +319,49 @@ class UserDbStorageTest {
         assertThat(friends)
                 .isNotNull()
                 .isEmpty();
+    }
+
+    @Test
+    @DisplayName("Тест получения списка рекомендаций фильмов")
+    void testGetRecommendationsList() {
+        userStorage.add(user);
+        userStorage.add(anotherUser);
+
+        Mpa mpa = new Mpa(1, "G");
+
+
+        Film filmOne = Film.builder()
+                .id(1)
+                .name("film")
+                .description("film description")
+                .releaseDate(LocalDate.of(2020, 12, 12))
+                .duration(123)
+                .mpa(mpa)
+                .build();
+
+        Film filmTwo = Film.builder()
+                .id(2)
+                .name("film two")
+                .description("film two description")
+                .releaseDate(LocalDate.of(2020, 12, 12))
+                .duration(123)
+                .mpa(mpa)
+                .build();
+
+        filmDbStorage.add(filmOne);
+        filmDbStorage.add(filmTwo);
+
+        filmLikeStorage.add(filmOne.getId(), user.getId());
+        filmLikeStorage.add(filmOne.getId(), anotherUser.getId());
+        filmLikeStorage.add(filmTwo.getId(), anotherUser.getId());
+
+        Collection<Film> filmRecommendations = userStorage.showRecommendations(user.getId());
+
+        filmTwo.setLikes(1);
+
+        assertThat(filmRecommendations)
+                .isNotNull()
+                .isNotEmpty()
+                .containsExactlyElementsOf(List.of(filmTwo));
     }
 }

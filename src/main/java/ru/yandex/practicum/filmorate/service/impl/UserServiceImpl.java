@@ -5,7 +5,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.dao.FriendshipStorage;
 import ru.yandex.practicum.filmorate.dao.UserStorage;
+import ru.yandex.practicum.filmorate.dto.FilmDto;
 import ru.yandex.practicum.filmorate.dto.UserDto;
+import ru.yandex.practicum.filmorate.mapper.FilmMapper;
 import ru.yandex.practicum.filmorate.mapper.UserMapper;
 import ru.yandex.practicum.filmorate.model.Friendship;
 import ru.yandex.practicum.filmorate.model.User;
@@ -149,6 +151,12 @@ public class UserServiceImpl implements UserService {
         userStorage.findById(friendId);
         friendshipStorage.remove(userId, friendId);
         log.info("Пользователи с id {} и {} перестали быть друзьями", userId, friendId);
+    }
+
+    @Override
+    public Collection<FilmDto> showRecommendations(long id) {
+        log.info("Получение списка рекомендаций фильмов для пользователя с id {}.", id);
+        return userStorage.showRecommendations(id).stream().map(FilmMapper::toDto).collect(Collectors.toList());
     }
 
     private UserDto validateUserName(final UserDto userDto) {

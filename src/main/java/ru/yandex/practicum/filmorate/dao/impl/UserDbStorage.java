@@ -7,8 +7,10 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
+import ru.yandex.practicum.filmorate.dao.FilmStorage;
 import ru.yandex.practicum.filmorate.dao.UserStorage;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Friendship;
 import ru.yandex.practicum.filmorate.model.User;
 
@@ -24,6 +26,7 @@ import java.util.*;
 public class UserDbStorage implements UserStorage {
 
     private final JdbcTemplate jdbcTemplate;
+    private final FilmStorage filmDbStorage;
 
     @Override
     public User add(final User user) {
@@ -109,6 +112,43 @@ public class UserDbStorage implements UserStorage {
         return jdbcTemplate.query(sql, this::extractToUserList, userId, anotherUserId);
     }
 
+    @Override
+    public Collection<Film> showRecommendations(long id) {
+        String filmsIdsSql = "SELECT film_id FROM film_like WHERE user_id = ?";
+        Set<Long> userLikedFilms = Set.copyOf(jdbcTemplate.query(filmsIdsSql, new Object[]{id},
+                (rs, rowNum) -> Long.valueOf(rs.getInt("film_id"))));
+        Collection<User> allUsers = findAll();
+        int maxLikes = 0;
+
+        Set<Long> recommendations = new HashSet<>();
+
+        for (User user : allUsers) {
+            if (user.getId() != id) {
+                final String idsSql = "SELECT film_id FROM film_like WHERE user_id = ?";
+                Set<Long> likedFilms = new HashSet<>(Set.copyOf(jdbcTemplate.query(idsSql, new Object[]{user.getId()},
+                        (rs, rowNum) -> Long.valueOf(rs.getInt("film_id")))));
+                Set<Long> currentUserLikedFilms = new HashSet<>(userLikedFilms);
+                currentUserLikedFilms.retainAll(likedFilms);
+
+                if (currentUserLikedFilms.size() > maxLikes) {
+                    if (currentUserLikedFilms.size() < likedFilms.size()) {
+                        recommendations.clear();
+                        maxLikes = currentUserLikedFilms.size();
+                        likedFilms.removeAll(currentUserLikedFilms);
+                        recommendations.addAll(likedFilms);
+                    }
+                } else if (currentUserLikedFilms.size() == maxLikes) {
+                    likedFilms.removeAll(currentUserLikedFilms);
+                    recommendations.addAll(likedFilms);
+                }
+            }
+        }
+        Collection<Film> filmsRecommendation = new ArrayList<>();
+        for (Long filmId : recommendations) {
+            filmsRecommendation.add(filmDbStorage.findById(filmId));
+        }
+        return filmsRecommendation;
+    }
 
     private User extractToUser(ResultSet rs) throws SQLException, DataAccessException {
 

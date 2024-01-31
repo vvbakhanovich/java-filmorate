@@ -50,7 +50,7 @@ public class FilmDbStorageTest {
         filmLikeStorage = new FilmLikeDbStorage(jdbcTemplate);
         filmGenreStorage = new FilmGenreDbStorage(jdbcTemplate);
         filmDbStorage = new FilmDbStorage(jdbcTemplate, filmGenreStorage);
-        userStorage = new UserDbStorage(jdbcTemplate);
+        userStorage = new UserDbStorage(jdbcTemplate, filmDbStorage);
 
         Mpa mpa = new Mpa(1, "G");
 
