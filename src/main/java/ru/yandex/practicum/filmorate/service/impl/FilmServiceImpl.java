@@ -127,27 +127,29 @@ public class FilmServiceImpl implements FilmService {
 
     /**
      * Получение списка общих понравившихся фильмов между двумя пользователями.
-     * Метод ищет фильмы, которые нравятся обоим пользователям, и возвращает их
-     * в порядке убывания популярности, определяемой количеством лайков.
+     * Этот метод идентифицирует фильмы, которые были отмечены как понравившиеся обоим пользователям,
+     * и возвращает их список, отсортированный по убыванию количества лайков
      *
-     * @param userId идентификатор первого пользователя.
-     * @param friendId идентификатор второго пользователя.
-     * @return список фильмов, которые нравятся обоим пользователям, упорядоченный
-     * по убыванию популярности.
+     * @param userId   идентификатор первого пользователя.
+     * @param friendId идентификатор второго пользователя
+     * @return список DTO фильмов, которые лайкнуты обоими пользователями. .
+     * Если общих лайкнутых фильмов нет, возвращается пустой список.
      */
     @Override
     public Collection<FilmDto> getCommonFilms(long userId, long friendId) {
+        Set<Long> userLikedFilmIds = filmLikeStorage.findLikedFilmsByUser(userId);
+        Set<Long> friendLikedFilmIds = filmLikeStorage.findLikedFilmsByUser(friendId);
 
-        Set<Long> userFilms = filmLikeStorage.findLikedFilmsByUser(userId);
-        Set<Long> friendFilms = filmLikeStorage.findLikedFilmsByUser(friendId);
+        userLikedFilmIds.retainAll(friendLikedFilmIds);
 
-        userFilms.retainAll(friendFilms);
+        if (userLikedFilmIds.isEmpty()) {
+            return Collections.emptyList();
+        }
 
-        return userFilms.stream()
-                .map(filmId -> filmStorage.findById(filmId))
-                .filter(Objects::nonNull)
-                .map(FilmMapper::toDto)
-                .sorted(Comparator.comparingLong(FilmDto::getLikes).reversed())
-                .collect(Collectors.toList());
+        List<Film> commonFilms = filmStorage.findFilmsByIds(userLikedFilmIds);
+        return commonFilms.stream().map(FilmMapper::toDto).collect(Collectors.toList());
     }
+
+
+
 }
