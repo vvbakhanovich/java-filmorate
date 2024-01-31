@@ -15,5 +15,5 @@ public interface FilmGenreStorage {
 
     void deleteAllById(long filmId);
 
-    void batchUpdate(long filmId, List<Genre> genres);
+    void batchUpdate(long filmId, Set<Genre> genres);
 }

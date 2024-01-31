@@ -49,13 +49,14 @@ public class FilmGenreDbStorage implements FilmGenreStorage {
     }
 
     @Override
-    public void batchUpdate(final long filmId, final List<Genre> genres) {
-        final String sql = "MERGE INTO film_genre (film_id, genre_id) VALUES (?, ?)";
+    public void batchUpdate(final long filmId, final Set<Genre> genres) {
+        final List<Genre> genreList = new ArrayList<>(genres);
+        final String sql = "INSERT INTO film_genre (film_id, genre_id) VALUES (?, ?)";
         jdbcTemplate.batchUpdate(sql, new BatchPreparedStatementSetter() {
             @Override
             public void setValues(PreparedStatement ps, int i) throws SQLException {
                 ps.setLong(1, filmId);
-                ps.setLong(2, genres.get(i).getId());
+                ps.setLong(2, genreList.get(i).getId());
             }
 
             @Override
