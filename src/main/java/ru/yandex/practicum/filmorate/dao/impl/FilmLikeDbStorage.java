@@ -2,6 +2,7 @@ package ru.yandex.practicum.filmorate.dao.impl;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataAccessException;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
@@ -9,8 +10,7 @@ import ru.yandex.practicum.filmorate.dao.FilmLikeStorage;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.*;
 
 @Repository
 @RequiredArgsConstructor
@@ -49,6 +49,11 @@ public class FilmLikeDbStorage implements FilmLikeStorage {
         jdbcTemplate.update(sql, filmId, userId);
     }
 
+    @Override
+    public Map<Long, Set<Long>> getUsersAndFilmLikes() {
+        String filmsIdsSql = "SELECT user_id, film_id FROM film_like";
+        return jdbcTemplate.query(filmsIdsSql, this::extractToMap);
+    }
 
     private Map<Long, Long> mapRowToIdCount(ResultSet rs) throws SQLException {
         final Map<Long, Long> result = new LinkedHashMap<>();
@@ -56,5 +61,19 @@ public class FilmLikeDbStorage implements FilmLikeStorage {
             result.put(rs.getLong("film_id"), rs.getLong("likes"));
         }
         return result;
+    }
+
+    private Map<Long, Set<Long>> extractToMap(ResultSet rs) throws SQLException, DataAccessException {
+        final Map<Long, Set<Long>> userFilmLikesMap = new HashMap<>();
+        while (rs.next()) {
+            final Long userId = rs.getLong("user_id");
+            Set<Long> filmLikes = userFilmLikesMap.get(userId);
+            if (filmLikes == null) {
+                filmLikes = new HashSet<>();
+            }
+            filmLikes.add(rs.getLong("film_id"));
+            userFilmLikesMap.put(userId, filmLikes);
+        }
+        return userFilmLikesMap;
     }
 }

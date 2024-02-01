@@ -4,6 +4,7 @@ package ru.yandex.practicum.filmorate.controller;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+import ru.yandex.practicum.filmorate.dto.FilmDto;
 import ru.yandex.practicum.filmorate.dto.UserDto;
 import ru.yandex.practicum.filmorate.service.UserService;
 
@@ -61,6 +62,11 @@ public class UserController {
     @DeleteMapping("/{id}")
     public void removeUser(@PathVariable long id) {
         userService.removeUser(id);
+    }
+
+    @GetMapping("/{id}/recommendations")
+    public Collection<FilmDto> showRecommendations(@PathVariable long id) {
+        return userService.showRecommendations(id);
     }
 
 }

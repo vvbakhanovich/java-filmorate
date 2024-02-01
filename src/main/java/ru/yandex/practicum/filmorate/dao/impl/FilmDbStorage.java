@@ -122,6 +122,21 @@ public class FilmDbStorage implements FilmStorage {
         return setGenresForFilms(films);
     }
 
+    public Collection<Film> findFilmsByIds(Set<Long> filmIds) {
+        final String ids = String.join(",", Collections.nCopies(filmIds.size(), "?"));
+        final String sql = String.format(
+                "SELECT " +
+                        "f.ID, f.TITLE, f.DESCRIPTION, f.RELEASE_DATE, f.DURATION, f.MPA_ID, m.RATING_NAME, COUNT(fl.USER_ID) AS likes " +
+                        "FROM " +
+                        "FILM f LEFT JOIN MPA m ON f.MPA_ID = m.ID " +
+                        "LEFT JOIN film_like fl on f.id = fl.film_id " +
+                        "WHERE f.ID IN (%s)" +
+                        "GROUP BY f.id, m.rating_name ", ids);
+
+        Collection<Film> films = jdbcTemplate.query(sql, this::mapToFilm, filmIds.toArray());
+        return setGenresForFilms(films);
+    }
+
     private List<Film> setGenresForFilms(Collection<Film> films) {
         Map<Long, Film> filmMap = films.stream().collect(Collectors.toMap(Film::getId, identity()));
         Map<Long, List<Genre>> filmIdGenreMap = filmGenreStorage.findGenresInIdList(filmMap.keySet());

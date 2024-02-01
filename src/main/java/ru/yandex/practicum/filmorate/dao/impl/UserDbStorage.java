@@ -109,7 +109,6 @@ public class UserDbStorage implements UserStorage {
         return jdbcTemplate.query(sql, this::extractToUserList, userId, anotherUserId);
     }
 
-
     private User extractToUser(ResultSet rs) throws SQLException, DataAccessException {
 
         User user = null;

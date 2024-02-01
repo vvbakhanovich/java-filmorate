@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.service;
 
+import ru.yandex.practicum.filmorate.dto.FilmDto;
 import ru.yandex.practicum.filmorate.dto.UserDto;
 
 import java.util.Collection;
@@ -23,4 +24,6 @@ public interface UserService {
     void removeFriend(long userId, long friendId);
 
     void removeUser(long userId);
+
+    Collection<FilmDto> showRecommendations(long id);
 }
