@@ -50,13 +50,19 @@ public class FilmDirectorDbStorage implements FilmDirectorStorage {
     }
 
     @Override
-    public Map<Long, List<Director>> findDirectorsInIdList(Set<Long> filmIds) {
+    public Map<Long, List<Director>> findDirectorsInIdList(final Set<Long> filmIds) {
         final String ids = String.join(",", Collections.nCopies(filmIds.size(), "?"));
         final String sql = String.format(
                 "SELECT fd.film_id, fd.director_id, d.director_name FROM film_director fd JOIN director d ON fd.director_id = d.id" +
                         " WHERE fd.film_id IN (%s)", ids);
 
         return jdbcTemplate.query(sql, this::extractToMap, filmIds.toArray());
+    }
+
+    @Override
+    public List<Long> findFilmsByDirectorId(final long directorId) {
+        final String sql = "SELECT film_id FROM film_director WHERE director_id = ?";
+        return jdbcTemplate.query(sql, (rs, rowNum) -> rs.getLong("film_id"), directorId);
     }
 
     @Override
