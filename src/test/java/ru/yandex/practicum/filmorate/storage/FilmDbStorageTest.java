@@ -303,7 +303,7 @@ public class FilmDbStorageTest {
     void testDeleteNotExistingUser() {
         int filmId = 999;
         String formattedResponse = String.format("Фильм с id '%s' не найден.", filmId);
-        NotFoundException e = assertThrows(NotFoundException.class, () -> filmDbStorage.findById(filmId));
+        NotFoundException e = assertThrows(NotFoundException.class, () -> filmDbStorage.remove(filmId));
         assertEquals(formattedResponse, e.getMessage());
     }
 

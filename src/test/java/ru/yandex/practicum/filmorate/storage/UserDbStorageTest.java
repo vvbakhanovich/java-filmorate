@@ -331,7 +331,7 @@ class UserDbStorageTest {
     void testDeleteNotExistingUser() {
         int userId = 999;
         String formattedResponse = String.format("Пользователь с id '%s' не найден.", userId);
-        NotFoundException e = assertThrows(NotFoundException.class, () -> userStorage.findById(userId));
+        NotFoundException e = assertThrows(NotFoundException.class, () -> userStorage.remove(userId));
         assertEquals(formattedResponse, e.getMessage());
     }
 }
