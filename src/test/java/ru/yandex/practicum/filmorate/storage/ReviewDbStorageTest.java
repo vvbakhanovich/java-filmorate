@@ -8,14 +8,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.JdbcTest;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.annotation.DirtiesContext;
-import ru.yandex.practicum.filmorate.dao.FilmGenreStorage;
-import ru.yandex.practicum.filmorate.dao.FilmStorage;
-import ru.yandex.practicum.filmorate.dao.ReviewStorage;
-import ru.yandex.practicum.filmorate.dao.UserStorage;
-import ru.yandex.practicum.filmorate.dao.impl.FilmDbStorage;
-import ru.yandex.practicum.filmorate.dao.impl.FilmGenreDbStorage;
-import ru.yandex.practicum.filmorate.dao.impl.ReviewDbStorage;
-import ru.yandex.practicum.filmorate.dao.impl.UserDbStorage;
+import ru.yandex.practicum.filmorate.dao.*;
+import ru.yandex.practicum.filmorate.dao.impl.*;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Mpa;
 import ru.yandex.practicum.filmorate.model.Review;
@@ -49,7 +43,8 @@ class ReviewDbStorageTest {
     public void setUp() {
         reviewStorage = new ReviewDbStorage(jdbcTemplate);
         FilmGenreStorage filmGenreStorage = new FilmGenreDbStorage(jdbcTemplate);
-        filmStorage = new FilmDbStorage(jdbcTemplate, filmGenreStorage);
+        FilmDirectorStorage filmDirectorStorage = new FilmDirectorDbStorage(jdbcTemplate);
+        filmStorage = new FilmDbStorage(jdbcTemplate, filmGenreStorage, filmDirectorStorage);
         userStorage = new UserDbStorage(jdbcTemplate);
         Mpa mpa = new Mpa(1, "G");
 
