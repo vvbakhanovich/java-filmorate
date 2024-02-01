@@ -346,6 +346,26 @@ class UserDbStorageTest {
     }
 
     @Test
+    @DisplayName("Тест удаление пользователя")
+    void testDeleteUser() {
+        User newUser = userStorage.add(user);
+        userStorage.remove(newUser.getId());
+
+        String formattedResponse = String.format("Пользователь с id '%s' не найден.", newUser.getId());
+        NotFoundException e = assertThrows(NotFoundException.class, () -> userStorage.findById(newUser.getId()));
+        assertEquals(formattedResponse, e.getMessage());
+    }
+
+    @Test
+    @DisplayName("Тест удаление несуществующего пользователя")
+    void testDeleteNotExistingUser() {
+        int userId = 999;
+        String formattedResponse = String.format("Пользователь с id '%s' не найден.", userId);
+        NotFoundException e = assertThrows(NotFoundException.class, () -> userStorage.remove(userId));
+        assertEquals(formattedResponse, e.getMessage());
+    }
+
+    @Test
     @DisplayName("Тест получения мапы с ключами userId и сетом с списком айдишников залайканных фильмов.")
     void testGetRecommendationsList() {
         userStorage.add(user);

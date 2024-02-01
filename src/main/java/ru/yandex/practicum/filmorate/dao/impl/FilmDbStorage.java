@@ -56,7 +56,10 @@ public class FilmDbStorage implements FilmStorage {
     @Override
     public void remove(final long id) {
         final String sql = "DELETE FROM film WHERE id = ?";
-        jdbcTemplate.update(sql, id);
+        int amount = jdbcTemplate.update(sql, id);
+        if (amount != 1) {
+            throw new NotFoundException("Фильм с id '" + id + "' не найден.");
+        }
     }
 
     @Override
@@ -69,7 +72,6 @@ public class FilmDbStorage implements FilmStorage {
         }
 
         filmGenreStorage.deleteAllById(film.getId());
-
         filmGenreStorage.batchUpdate(film.getId(), film.getGenres());
     }
 

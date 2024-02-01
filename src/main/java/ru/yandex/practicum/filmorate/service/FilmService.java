@@ -17,5 +17,7 @@ public interface FilmService {
 
     FilmDto removeLike(long filmId, long userId);
 
+    void removeFilm(long filmId);
+
     Collection<FilmDto> getMostPopularFilms(final int count);
 }

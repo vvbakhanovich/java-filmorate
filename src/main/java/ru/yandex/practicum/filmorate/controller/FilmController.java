@@ -52,5 +52,10 @@ public class FilmController {
     public Collection<FilmDto> getMostPopularFilms(@RequestParam(required = false, defaultValue = "10") int count) {
         return filmService.getMostPopularFilms(count);
     }
+
+    @DeleteMapping("/{id}")
+    public void removeFilm(@PathVariable long id) {
+        filmService.removeFilm(id);
+    }
 }
 

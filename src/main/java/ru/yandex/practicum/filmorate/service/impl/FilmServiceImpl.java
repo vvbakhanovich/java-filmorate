@@ -115,6 +115,16 @@ public class FilmServiceImpl implements FilmService {
     }
 
     /**
+     * Удаление фильма.
+     *
+     * @param filmId идентификатор фильма, который будет удален
+     */
+    @Override
+    public void removeFilm(long filmId) {
+        filmStorage.remove(filmId);
+    }
+
+    /**
      * Получение списка самых популярных фильмов. Под популярностью понимается количество лайков у фильма. Чем больше
      * лайков, тем популярнее фильм.
      *

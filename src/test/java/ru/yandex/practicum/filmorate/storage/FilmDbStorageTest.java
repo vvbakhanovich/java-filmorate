@@ -288,6 +288,26 @@ public class FilmDbStorageTest {
     }
 
     @Test
+    @DisplayName("Тест удаление фильма")
+    void testDeleteFilm() {
+        Film newFilm = filmDbStorage.add(film);
+        filmDbStorage.remove(newFilm.getId());
+
+        String formattedResponse = String.format("Фильм с id '%s' не найден.", newFilm.getId());
+        NotFoundException e = assertThrows(NotFoundException.class, () -> filmDbStorage.findById(newFilm.getId()));
+        assertEquals(formattedResponse, e.getMessage());
+    }
+
+    @Test
+    @DisplayName("Тест удаление несуществующего фильма")
+    void testDeleteNotExistingUser() {
+        int filmId = 999;
+        String formattedResponse = String.format("Фильм с id '%s' не найден.", filmId);
+        NotFoundException e = assertThrows(NotFoundException.class, () -> filmDbStorage.remove(filmId));
+        assertEquals(formattedResponse, e.getMessage());
+    }
+
+    @Test
     @DisplayName("Тест на получение самых популярных фильмов с несколькими жанрами")
     void testMostPopularFilmsWithSeveralGenres() {
         Genre genre1 = new Genre(1, "Комедия");

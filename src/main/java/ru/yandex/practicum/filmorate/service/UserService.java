@@ -23,5 +23,7 @@ public interface UserService {
 
     void removeFriend(long userId, long friendId);
 
+    void removeUser(long userId);
+
     Collection<FilmDto> showRecommendations(long id);
 }
