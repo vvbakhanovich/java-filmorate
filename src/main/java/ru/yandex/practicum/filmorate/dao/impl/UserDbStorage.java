@@ -7,11 +7,11 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
-import ru.yandex.practicum.filmorate.dao.FilmStorage;
 import ru.yandex.practicum.filmorate.dao.UserStorage;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Friendship;
 import ru.yandex.practicum.filmorate.model.User;
+
 import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -24,7 +24,6 @@ import java.util.*;
 public class UserDbStorage implements UserStorage {
 
     private final JdbcTemplate jdbcTemplate;
-    private final FilmStorage filmDbStorage;
 
     @Override
     public User add(final User user) {
@@ -108,30 +107,6 @@ public class UserDbStorage implements UserStorage {
                         "FROM FILMORATE_USER fu LEFT JOIN FRIENDSHIP f ON fu.ID = f.USER_ID " +
                         "LEFT JOIN FRIENDSHIP_STATUS fs ON f.FRIENDSHIP_STATUS_ID = fs.ID WHERE fu.ID IN (%s)", commonFriendIdsSql);
         return jdbcTemplate.query(sql, this::extractToUserList, userId, anotherUserId);
-    }
-
-    @Override
-    public Map<Long, Set<Long>> showRecommendations() {
-        String filmsIdsSql = "SELECT user_id, film_id FROM film_like";
-        List<List<Long>> userLikedFilms = jdbcTemplate.query(filmsIdsSql, (resultSet, rowNum) -> {
-            List<Long> likes = new ArrayList<>();
-            likes.add(resultSet.getLong("user_id"));
-            likes.add(resultSet.getLong("film_id"));
-            return likes;
-        });
-        Map<Long, Set<Long>> result = new HashMap<>();
-        for (List userLikes : userLikedFilms) {
-            if (result.get(userLikes.get(0)) == null) {
-                Set<Long> films = new HashSet<>();
-                films.add((Long) userLikes.get(1));
-                result.put((Long) userLikes.get(0), films);
-            } else {
-                Set<Long> films = result.get(userLikes.get(0));
-                films.add((Long) userLikes.get(1));
-                result.put((Long) userLikes.get(0), films);
-            }
-        }
-        return result;
     }
 
     private User extractToUser(ResultSet rs) throws SQLException, DataAccessException {

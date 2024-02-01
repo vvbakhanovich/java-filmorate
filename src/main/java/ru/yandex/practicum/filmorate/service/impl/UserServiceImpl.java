@@ -3,6 +3,7 @@ package ru.yandex.practicum.filmorate.service.impl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.dao.FilmLikeStorage;
 import ru.yandex.practicum.filmorate.dao.FilmStorage;
 import ru.yandex.practicum.filmorate.dao.FriendshipStorage;
 import ru.yandex.practicum.filmorate.dao.UserStorage;
@@ -27,9 +28,9 @@ import static ru.yandex.practicum.filmorate.model.FriendshipStatus.NOT_ACKNOWLED
 public class UserServiceImpl implements UserService {
 
     private final UserStorage userStorage;
-    private final FilmStorage filmDbStorage;
-
+    private final FilmStorage filmStorage;
     private final FriendshipStorage friendshipStorage;
+    private final FilmLikeStorage filmLikeStorage;
 
     /**
      * Сохранение пользователя в БД.
@@ -168,8 +169,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public Collection<FilmDto> showRecommendations(long id) {
         log.info("Получение списка рекомендаций фильмов для пользователя с id {}.", id);
-
-        Map<Long, Set<Long>> usersLikes = userStorage.showRecommendations();
+        Map<Long, Set<Long>> usersLikes = filmLikeStorage.usersAndFilmLikes();
         int maxLikes = 0;
         Set<Long> recommendations = new HashSet<>();
         Set<Long> userLikedFilms = usersLikes.get(id);
@@ -189,10 +189,7 @@ public class UserServiceImpl implements UserService {
                 }
             }
         }
-        Collection<Film> filmsRecommendation = new ArrayList<>();
-        for (Long filmId : recommendations) {
-            filmsRecommendation.add(filmDbStorage.findById(filmId));
-        }
+        Collection<Film> filmsRecommendation = filmStorage.findFilmsByIds(recommendations);
         return filmsRecommendation.stream().map(FilmMapper::toDto).collect(Collectors.toList());
     }
 
