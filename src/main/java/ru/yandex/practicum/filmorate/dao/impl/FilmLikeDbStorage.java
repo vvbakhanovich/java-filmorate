@@ -49,18 +49,18 @@ public class FilmLikeDbStorage implements FilmLikeStorage {
         jdbcTemplate.update(sql, filmId, userId);
     }
 
+    @Override
+    public Map<Long, Set<Long>> getUsersAndFilmLikes() {
+        String filmsIdsSql = "SELECT user_id, film_id FROM film_like";
+        return jdbcTemplate.query(filmsIdsSql, this::extractToMap);
+    }
+
     private Map<Long, Long> mapRowToIdCount(ResultSet rs) throws SQLException {
         final Map<Long, Long> result = new LinkedHashMap<>();
         while (rs.next()) {
             result.put(rs.getLong("film_id"), rs.getLong("likes"));
         }
         return result;
-    }
-
-    @Override
-    public Map<Long, Set<Long>> usersAndFilmLikes() {
-        String filmsIdsSql = "SELECT user_id, film_id FROM film_like";
-        return jdbcTemplate.query(filmsIdsSql, this::extractToMap);
     }
 
     private Map<Long, Set<Long>> extractToMap(ResultSet rs) throws SQLException, DataAccessException {

@@ -169,7 +169,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public Collection<FilmDto> showRecommendations(long id) {
         log.info("Получение списка рекомендаций фильмов для пользователя с id {}.", id);
-        Map<Long, Set<Long>> usersLikes = filmLikeStorage.usersAndFilmLikes();
+        Map<Long, Set<Long>> usersLikes = filmLikeStorage.getUsersAndFilmLikes();
         int maxLikes = 0;
         Set<Long> recommendations = new HashSet<>();
         Set<Long> userLikedFilms = usersLikes.get(id);

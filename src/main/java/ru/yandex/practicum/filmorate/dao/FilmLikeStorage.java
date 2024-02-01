@@ -12,5 +12,5 @@ public interface FilmLikeStorage {
 
     void remove(long filmId, long userId);
 
-    Map<Long, Set<Long>> usersAndFilmLikes();
+    Map<Long, Set<Long>> getUsersAndFilmLikes();
 }

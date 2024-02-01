@@ -358,14 +358,14 @@ class UserDbStorageTest {
         filmLikeStorage.add(filmOne.getId(), anotherUser.getId());
         filmLikeStorage.add(filmTwo.getId(), anotherUser.getId());
 
-        Map<Long, Set<Long>> filmRecommendations = filmLikeStorage.usersAndFilmLikes();
+        Map<Long, Set<Long>> filmRecommendations = filmLikeStorage.getUsersAndFilmLikes();
 
-        assertThat(filmRecommendations.get(new Long(1)))
+        assertThat(filmRecommendations.get(1L))
                 .isNotNull()
                 .isNotEmpty()
                 .containsExactlyElementsOf(Set.of(filmOne.getId()));
 
-        assertThat(filmRecommendations.get(new Long(2)))
+        assertThat(filmRecommendations.get(2L))
                 .isNotNull()
                 .isNotEmpty()
                 .containsExactlyElementsOf(Set.of(filmOne.getId(), filmTwo.getId()));
@@ -378,7 +378,7 @@ class UserDbStorageTest {
         userStorage.add(anotherUser);
         filmDbStorage.add(filmOne);
 
-        Map<Long, Set<Long>> filmRecommendations = filmLikeStorage.usersAndFilmLikes();
+        Map<Long, Set<Long>> filmRecommendations = filmLikeStorage.getUsersAndFilmLikes();
 
         assertThat(filmRecommendations)
                 .isNotNull()
