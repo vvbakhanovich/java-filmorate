@@ -363,12 +363,12 @@ class UserDbStorageTest {
         assertThat(filmRecommendations.get(1L))
                 .isNotNull()
                 .isNotEmpty()
-                .containsExactlyElementsOf(Set.of(filmOne.getId()));
+                .containsExactly(filmOne.getId());
 
         assertThat(filmRecommendations.get(2L))
                 .isNotNull()
                 .isNotEmpty()
-                .containsExactlyElementsOf(Set.of(filmOne.getId(), filmTwo.getId()));
+                .containsExactly(filmOne.getId(), filmTwo.getId());
     }
 
     @Test
