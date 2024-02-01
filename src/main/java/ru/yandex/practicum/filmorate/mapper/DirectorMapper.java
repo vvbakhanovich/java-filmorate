@@ -14,7 +14,7 @@ public class DirectorMapper {
                 .build();
     }
 
-    public static Director toDto(DirectorDto directorDto) {
+    public static Director toModel(DirectorDto directorDto) {
         return Director.builder()
                 .id(directorDto.getId())
                 .name(directorDto.getName())
