@@ -20,4 +20,6 @@ public interface FilmService {
     void removeFilm(long filmId);
 
     Collection<FilmDto> getMostPopularFilms(final int count);
+
+    Collection<FilmDto> getFilmsFromDirector(long directorId, String sortBy);
 }
