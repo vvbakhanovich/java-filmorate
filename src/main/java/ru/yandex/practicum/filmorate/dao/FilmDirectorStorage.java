@@ -15,5 +15,7 @@ public interface FilmDirectorStorage {
 
     Map<Long, List<Director>> findDirectorsInIdList(Set<Long> filmIds);
 
+    List<Long> findFilmsByDirectorId(long directorId);
+
     List<Director> findAllById(long filmId);
 }
