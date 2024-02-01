@@ -8,17 +8,17 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.JdbcTest;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.annotation.DirtiesContext;
-import ru.yandex.practicum.filmorate.dao.FriendshipStorage;
-import ru.yandex.practicum.filmorate.dao.UserStorage;
-import ru.yandex.practicum.filmorate.dao.impl.FriendshipDbStorage;
-import ru.yandex.practicum.filmorate.dao.impl.UserDbStorage;
+import ru.yandex.practicum.filmorate.dao.*;
+import ru.yandex.practicum.filmorate.dao.impl.*;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Friendship;
+import ru.yandex.practicum.filmorate.model.Mpa;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.service.impl.UserServiceImpl;
 
 import java.time.LocalDate;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -34,16 +34,26 @@ class UserDbStorageTest {
 
     private final JdbcTemplate jdbcTemplate;
     private UserStorage userStorage;
+    private UserServiceImpl userService;
     private FriendshipStorage friendshipStorage;
+    private FilmGenreStorage filmGenreStorage;
+    private FilmLikeStorage filmLikeStorage;
+    private FilmStorage filmDbStorage;
     private User user;
     private User updatedUser;
     private User anotherUser;
+    private Film filmOne;
+    private Film filmTwo;
 
 
     @BeforeEach
     void setUp() {
+        filmLikeStorage = new FilmLikeDbStorage(jdbcTemplate);
+        filmGenreStorage = new FilmGenreDbStorage(jdbcTemplate);
+        filmDbStorage = new FilmDbStorage(jdbcTemplate, filmGenreStorage);
         userStorage = new UserDbStorage(jdbcTemplate);
         friendshipStorage = new FriendshipDbStorage(jdbcTemplate);
+        userService = new UserServiceImpl(userStorage, filmDbStorage, friendshipStorage, filmLikeStorage);
         user = User.builder()
                 .id(1)
                 .email("email")
@@ -64,6 +74,26 @@ class UserDbStorageTest {
                 .login("another_login")
                 .name("another_name")
                 .birthday(LocalDate.now())
+                .build();
+
+        Mpa mpa = new Mpa(1, "G");
+
+        filmOne = Film.builder()
+                .id(1)
+                .name("film")
+                .description("film description")
+                .releaseDate(LocalDate.of(2020, 12, 12))
+                .duration(123)
+                .mpa(mpa)
+                .build();
+
+        filmTwo = Film.builder()
+                .id(2)
+                .name("film two")
+                .description("film two description")
+                .releaseDate(LocalDate.of(2020, 12, 12))
+                .duration(123)
+                .mpa(mpa)
                 .build();
     }
 
@@ -311,6 +341,46 @@ class UserDbStorageTest {
         Collection<User> friends = userStorage.findFriendsByUserId(user.getId());
 
         assertThat(friends)
+                .isNotNull()
+                .isEmpty();
+    }
+
+    @Test
+    @DisplayName("Тест получения мапы с ключами userId и сетом с списком айдишников залайканных фильмов.")
+    void testGetRecommendationsList() {
+        userStorage.add(user);
+        userStorage.add(anotherUser);
+
+        filmDbStorage.add(filmOne);
+        filmDbStorage.add(filmTwo);
+
+        filmLikeStorage.add(filmOne.getId(), user.getId());
+        filmLikeStorage.add(filmOne.getId(), anotherUser.getId());
+        filmLikeStorage.add(filmTwo.getId(), anotherUser.getId());
+
+        Map<Long, Set<Long>> filmRecommendations = filmLikeStorage.getUsersAndFilmLikes();
+
+        assertThat(filmRecommendations.get(1L))
+                .isNotNull()
+                .isNotEmpty()
+                .containsExactly(filmOne.getId());
+
+        assertThat(filmRecommendations.get(2L))
+                .isNotNull()
+                .isNotEmpty()
+                .containsExactly(filmOne.getId(), filmTwo.getId());
+    }
+
+    @Test
+    @DisplayName("Тест получения мапы с ключами userId и сетом с списком айдишников залайканных фильмов, когда лайков нет.")
+    void testGetRecommendationsListNoLikes() {
+        userStorage.add(user);
+        userStorage.add(anotherUser);
+        filmDbStorage.add(filmOne);
+
+        Map<Long, Set<Long>> filmRecommendations = filmLikeStorage.getUsersAndFilmLikes();
+
+        assertThat(filmRecommendations)
                 .isNotNull()
                 .isEmpty();
     }
