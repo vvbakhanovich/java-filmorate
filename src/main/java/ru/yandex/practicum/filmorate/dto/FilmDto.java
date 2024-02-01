@@ -13,8 +13,7 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Positive;
 import javax.validation.constraints.Size;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.LinkedHashSet;
 
 @Data
 @AllArgsConstructor
@@ -31,6 +30,6 @@ public class FilmDto {
     @Positive(message = "Продолжительность должна быть больше нуля")
     private int duration; //продолжительность фильма
     private Mpa mpa; //возрастной рейтинг
-    private final List<Genre> genres = new ArrayList<>(); //жанры
+    private final LinkedHashSet<Genre> genres = new LinkedHashSet<>(); //жанры
     private long likes; //количество лайков от пользователей
 }
