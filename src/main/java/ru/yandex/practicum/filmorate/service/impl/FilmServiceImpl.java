@@ -170,7 +170,7 @@ public class FilmServiceImpl implements FilmService {
             return Collections.emptyList();
         }
 
-        List<Film> commonFilms = filmStorage.findFilmsByIds(userLikedFilmIds);
+        Collection<Film> commonFilms = filmStorage.findFilmsByIds(userLikedFilmIds);
         return commonFilms.stream().map(FilmMapper::toDto).collect(Collectors.toList());
     }
 
