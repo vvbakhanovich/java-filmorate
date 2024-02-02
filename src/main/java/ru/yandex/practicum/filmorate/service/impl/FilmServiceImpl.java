@@ -15,6 +15,7 @@ import ru.yandex.practicum.filmorate.service.FilmService;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import static ru.yandex.practicum.filmorate.mapper.FilmMapper.toDto;
@@ -24,6 +25,10 @@ import static ru.yandex.practicum.filmorate.mapper.FilmMapper.toModel;
 @RequiredArgsConstructor
 @Slf4j
 public class FilmServiceImpl implements FilmService {
+    public static final Map<String, String> ALLOWED_SORTING = Map.of(
+            "likes", "COUNT(fl.USER_ID) DESC",
+            "year", "f.RELEASE_DATE"
+    );
 
     private final FilmStorage filmStorage;
 
@@ -155,8 +160,12 @@ public class FilmServiceImpl implements FilmService {
     @Override
     @Transactional
     public Collection<FilmDto> getFilmsFromDirector(final long directorId, final String sortBy) {
+        if (!ALLOWED_SORTING.containsKey(sortBy)) {
+            throw new IllegalArgumentException("Поле сортировки '" + sortBy + "' не поддерживается.");
+        }
+
         directorStorage.findById(directorId);
-        return filmStorage.findFilmsFromDirector(directorId, sortBy).stream()
+        return filmStorage.findFilmsFromDirector(directorId, ALLOWED_SORTING.get(sortBy)).stream()
                 .map(FilmMapper::toDto).collect(Collectors.toList());
     }
 }

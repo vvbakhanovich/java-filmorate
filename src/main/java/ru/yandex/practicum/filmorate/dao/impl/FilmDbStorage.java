@@ -138,15 +138,6 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public Collection<Film> findFilmsFromDirector(long directorId, String sortBy) {
-        final Map<String, String> allowedSorting = Map.of(
-                "likes", "COUNT(fl.USER_ID) DESC",
-                "year", "f.RELEASE_DATE"
-        );
-
-        if (!allowedSorting.containsKey(sortBy)) {
-            throw new IllegalArgumentException("Поле сортировки '" + sortBy + "' не поддерживается.");
-        }
-
         List<Long> filmsByDirectorId = filmDirectorStorage.findFilmsByDirectorId(directorId);
         final String ids = String.join(",", Collections.nCopies(filmsByDirectorId.size(), "?"));
         final String sql = String.format(
@@ -157,7 +148,7 @@ public class FilmDbStorage implements FilmStorage {
                         "LEFT JOIN film_like fl on f.id = fl.film_id " +
                         "GROUP BY f.id, m.rating_name " +
                         "HAVING f.id IN (%s)" +
-                        "ORDER BY %s", ids, allowedSorting.get(sortBy));
+                        "ORDER BY %s", ids, sortBy);
         List<Film> directorFilms = jdbcTemplate.query(sql, this::mapToFilm, filmsByDirectorId.toArray());
         setGenresForFilms(directorFilms);
         setDirectorsForFilms(directorFilms);

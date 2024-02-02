@@ -12,6 +12,7 @@ import ru.yandex.practicum.filmorate.dao.*;
 import ru.yandex.practicum.filmorate.dao.impl.*;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.*;
+import ru.yandex.practicum.filmorate.service.impl.FilmServiceImpl;
 
 import java.time.LocalDate;
 import java.util.Collection;
@@ -351,7 +352,8 @@ public class FilmDbStorageTest {
         filmDbStorage.add(film);
         filmDbStorage.add(film2);
 
-        Collection<Film> films = filmDbStorage.findFilmsFromDirector(director.getId(), "year");
+        Collection<Film> films = filmDbStorage.findFilmsFromDirector(director.getId(),
+                                                                     FilmServiceImpl.ALLOWED_SORTING.get("year"));
 
         assertThat(films)
                 .isNotNull()
@@ -374,7 +376,8 @@ public class FilmDbStorageTest {
         filmLikeStorage.add(1, 1);
 
 
-        Collection<Film> films = filmDbStorage.findFilmsFromDirector(director.getId(), "likes");
+        Collection<Film> films = filmDbStorage.findFilmsFromDirector(director.getId(),
+                                                                     FilmServiceImpl.ALLOWED_SORTING.get("likes"));
 
         assertThat(films)
                 .isNotNull()
@@ -388,7 +391,8 @@ public class FilmDbStorageTest {
     public void findFilmsByDirectorUnknownId() {
 
         directorStorage.add(director);
-        Collection<Film> films = filmDbStorage.findFilmsFromDirector(director.getId(), "year");
+        Collection<Film> films = filmDbStorage.findFilmsFromDirector(director.getId(),
+                                                                     FilmServiceImpl.ALLOWED_SORTING.get("year"));
 
         assertThat(films)
                 .isNotNull()
