@@ -201,7 +201,7 @@ public class FilmDbStorage implements FilmStorage {
         return film;
     }
 
-    private Collection<Film> extractToFilmList(ResultSet rs) throws SQLException, DataAccessException {
+    private Collection<Film> extractToFilmList(ResultSet rs) throws SQLException {
 
         final Map<Long, Film> filmIdMap = new LinkedHashMap<>();
 
@@ -237,7 +237,7 @@ public class FilmDbStorage implements FilmStorage {
         return filmIdMap.values();
     }
     @Override
-    public List<Film> findFilmsByIds(Set<Long> filmIds) {
+    public List<Film> findFilmsByIdsOrderByLikes(Set<Long> filmIds) {
         if (filmIds.isEmpty()) {
             return Collections.emptyList();
         }
