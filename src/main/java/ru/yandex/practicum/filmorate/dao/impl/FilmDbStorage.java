@@ -137,8 +137,8 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     @Override
-    public Collection<Film> findFilmsFromDirector(long directorId, String sortBy) {
-        List<Long> filmsByDirectorId = filmDirectorStorage.findFilmsByDirectorId(directorId);
+    public Collection<Film> findFilmsFromDirectorOrderByYear(final long directorId) {
+        final List<Long> filmsByDirectorId = filmDirectorStorage.findFilmsByDirectorId(directorId);
         final String ids = String.join(",", Collections.nCopies(filmsByDirectorId.size(), "?"));
         final String sql = String.format(
                 "SELECT " +
@@ -148,8 +148,28 @@ public class FilmDbStorage implements FilmStorage {
                         "LEFT JOIN film_like fl on f.id = fl.film_id " +
                         "GROUP BY f.id, m.rating_name " +
                         "HAVING f.id IN (%s)" +
-                        "ORDER BY %s", ids, sortBy);
-        List<Film> directorFilms = jdbcTemplate.query(sql, this::mapToFilm, filmsByDirectorId.toArray());
+                        "ORDER BY f.release_date", ids);
+        final List<Film> directorFilms = jdbcTemplate.query(sql, this::mapToFilm, filmsByDirectorId.toArray());
+        setGenresForFilms(directorFilms);
+        setDirectorsForFilms(directorFilms);
+
+        return directorFilms;
+    }
+
+    @Override
+    public Collection<Film> findFilmsFromDirectorOrderByLikes(final long directorId) {
+        final List<Long> filmsByDirectorId = filmDirectorStorage.findFilmsByDirectorId(directorId);
+        final String ids = String.join(",", Collections.nCopies(filmsByDirectorId.size(), "?"));
+        final String sql = String.format(
+                "SELECT " +
+                        "f.ID, f.TITLE, f.DESCRIPTION, f.RELEASE_DATE, f.DURATION, f.MPA_ID, m.RATING_NAME, COUNT(fl.USER_ID) AS likes " +
+                        "FROM " +
+                        "FILM f LEFT JOIN MPA m ON f.MPA_ID = m.ID " +
+                        "LEFT JOIN film_like fl on f.id = fl.film_id " +
+                        "GROUP BY f.id, m.rating_name " +
+                        "HAVING f.id IN (%s)" +
+                        "ORDER BY likes DESC", ids);
+        final List<Film> directorFilms = jdbcTemplate.query(sql, this::mapToFilm, filmsByDirectorId.toArray());
         setGenresForFilms(directorFilms);
         setDirectorsForFilms(directorFilms);
 
