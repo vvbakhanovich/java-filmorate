@@ -62,7 +62,7 @@ public class FilmDirectorDbStorage implements FilmDirectorStorage {
     @Override
     public List<Long> findFilmsByDirectorId(final long directorId) {
         final String sql = "SELECT film_id FROM film_director WHERE director_id = ?";
-        return jdbcTemplate.query(sql, (rs, rowNum) -> rs.getLong("film_id"), directorId);
+        return jdbcTemplate.queryForList(sql, Long.class, directorId);
     }
 
     @Override
