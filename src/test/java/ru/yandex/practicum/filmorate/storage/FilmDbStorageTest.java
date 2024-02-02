@@ -352,8 +352,7 @@ public class FilmDbStorageTest {
         filmDbStorage.add(film);
         filmDbStorage.add(film2);
 
-        Collection<Film> films = filmDbStorage.findFilmsFromDirector(director.getId(),
-                                                                     FilmServiceImpl.ALLOWED_SORTING.get("year"));
+        Collection<Film> films = filmDbStorage.findFilmsFromDirectorOrderByYear(director.getId());
 
         assertThat(films)
                 .isNotNull()
@@ -374,10 +373,11 @@ public class FilmDbStorageTest {
         filmDbStorage.add(film);
         filmDbStorage.add(film2);
         filmLikeStorage.add(1, 1);
+        System.out.println(film.getId());
+        System.out.println(film2.getId());
 
 
-        Collection<Film> films = filmDbStorage.findFilmsFromDirector(director.getId(),
-                                                                     FilmServiceImpl.ALLOWED_SORTING.get("likes"));
+        Collection<Film> films = filmDbStorage.findFilmsFromDirectorOrderByLikes(director.getId());
 
         assertThat(films)
                 .isNotNull()
@@ -389,10 +389,8 @@ public class FilmDbStorageTest {
     @Test
     @DisplayName("Тест получения пустого списка, когда у режиссера нет фильмов.")
     public void findFilmsByDirectorUnknownId() {
-
         directorStorage.add(director);
-        Collection<Film> films = filmDbStorage.findFilmsFromDirector(director.getId(),
-                                                                     FilmServiceImpl.ALLOWED_SORTING.get("year"));
+        Collection<Film> films = filmDbStorage.findFilmsFromDirectorOrderByYear(director.getId());
 
         assertThat(films)
                 .isNotNull()
