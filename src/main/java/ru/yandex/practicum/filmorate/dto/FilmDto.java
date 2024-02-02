@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Mpa;
 import ru.yandex.practicum.filmorate.validation.PastDate;
@@ -31,5 +32,6 @@ public class FilmDto {
     private int duration; //продолжительность фильма
     private Mpa mpa; //возрастной рейтинг
     private final LinkedHashSet<Genre> genres = new LinkedHashSet<>(); //жанры
+    private final LinkedHashSet<Director> directors = new LinkedHashSet<>(); //режиссеры
     private long likes; //количество лайков от пользователей
 }

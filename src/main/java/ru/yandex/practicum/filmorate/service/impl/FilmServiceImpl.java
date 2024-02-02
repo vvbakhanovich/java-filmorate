@@ -3,6 +3,8 @@ package ru.yandex.practicum.filmorate.service.impl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import ru.yandex.practicum.filmorate.dao.DirectorStorage;
 import ru.yandex.practicum.filmorate.dao.FilmLikeStorage;
 import ru.yandex.practicum.filmorate.dao.FilmStorage;
 import ru.yandex.practicum.filmorate.dao.UserStorage;
@@ -13,6 +15,7 @@ import ru.yandex.practicum.filmorate.service.FilmService;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import static ru.yandex.practicum.filmorate.mapper.FilmMapper.toDto;
@@ -23,11 +26,18 @@ import static ru.yandex.practicum.filmorate.mapper.FilmMapper.toModel;
 @Slf4j
 public class FilmServiceImpl implements FilmService {
 
+    public static final Map<String, String> ALLOWED_SORTS = Map.of(
+            "year", "f.release_date",
+            "likes", "likes DESC"
+    );
+
     private final FilmStorage filmStorage;
 
     private final UserStorage userStorage;
 
     private final FilmLikeStorage filmLikeStorage;
+
+    private final DirectorStorage directorStorage;
 
     /**
      * Добавление фильма в БД.
@@ -36,6 +46,7 @@ public class FilmServiceImpl implements FilmService {
      * @return фильм с присвоенным идентификатором.
      */
     @Override
+    @Transactional
     public FilmDto addFilm(final FilmDto filmDto) {
         final Film film = toModel(filmDto);
         final Film addedFilm = filmStorage.add(film);
@@ -50,6 +61,7 @@ public class FilmServiceImpl implements FilmService {
      * @return обновленный фильм.
      */
     @Override
+    @Transactional
     public FilmDto updateFilm(final FilmDto updatedFilmDto) {
         final Film updatedFilm = toModel(updatedFilmDto);
         final long filmId = updatedFilmDto.getId();
@@ -76,6 +88,7 @@ public class FilmServiceImpl implements FilmService {
      * @return найденный фильм.
      */
     @Override
+    @Transactional
     public FilmDto getFilmById(final long filmId) {
         filmStorage.findById(filmId);
         log.info("Фильм с id {} найден.", filmId);
@@ -85,11 +98,12 @@ public class FilmServiceImpl implements FilmService {
     /**
      * Постановка лайка фильму от пользователя.
      *
-     * @param filmId идентификатор фильма, которму ставится лайк.
+     * @param filmId идентификатор фильма, которому ставится лайк.
      * @param userId идентификатор пользователя, который ставит лайк.
      * @return фильм, которому поставили лайк.
      */
     @Override
+    @Transactional
     public FilmDto likeFilm(final long filmId, final long userId) {
         filmStorage.findById(filmId);
         userStorage.findById(userId);
@@ -102,10 +116,11 @@ public class FilmServiceImpl implements FilmService {
      * Удаление лайка у фильма.
      *
      * @param filmId идентификатор фильма, у которого требуется удалить лайк.
-     * @param userId идентфикатор пользователя лайк которого требуется удалить.
+     * @param userId идентификатор пользователя лайк которого требуется удалить.
      * @return фильм, у которого удалили лайк.
      */
     @Override
+    @Transactional
     public FilmDto removeLike(final long filmId, final long userId) {
         filmStorage.findById(filmId);
         userStorage.findById(userId);
@@ -134,5 +149,24 @@ public class FilmServiceImpl implements FilmService {
     @Override
     public Collection<FilmDto> getMostPopularFilms(final int count) {
         return filmStorage.findMostLikedFilmsLimitBy(count).stream().map(FilmMapper::toDto).collect(Collectors.toList());
+    }
+
+    /**
+     * Получение списка фильмов режиссера, отсортированных по количеству лайков или году выпуска.
+     *
+     * @param directorId идентификатор режиссера.
+     * @param sortBy     поле сортировки.
+     * @return список фильмов режиссера.
+     */
+    @Override
+    @Transactional
+    public Collection<FilmDto> getFilmsFromDirector(final long directorId, final String sortBy) {
+        if (!ALLOWED_SORTS.containsKey(sortBy)) {
+            throw new IllegalArgumentException("Поле сортировки '" + sortBy + "' не поддерживается.");
+        }
+        directorStorage.findById(directorId);
+        return filmStorage.findFilmsFromDirectorOrderBy(directorId, ALLOWED_SORTS.get(sortBy)).stream()
+                .map(FilmMapper::toDto)
+                .collect(Collectors.toList());
     }
 }

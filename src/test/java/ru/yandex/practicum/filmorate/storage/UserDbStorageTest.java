@@ -47,7 +47,8 @@ class UserDbStorageTest {
     void setUp() {
         filmLikeStorage = new FilmLikeDbStorage(jdbcTemplate);
         filmGenreStorage = new FilmGenreDbStorage(jdbcTemplate);
-        filmDbStorage = new FilmDbStorage(jdbcTemplate, filmGenreStorage);
+        FilmDirectorStorage filmDirectorStorage = new FilmDirectorDbStorage(jdbcTemplate);
+        filmDbStorage = new FilmDbStorage(jdbcTemplate, filmGenreStorage, filmDirectorStorage);
         userStorage = new UserDbStorage(jdbcTemplate);
         friendshipStorage = new FriendshipDbStorage(jdbcTemplate);
         userService = new UserServiceImpl(userStorage, filmDbStorage, friendshipStorage, filmLikeStorage);
