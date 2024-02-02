@@ -10,7 +10,5 @@ public interface FilmStorage extends Dao<Film> {
 
     Collection<Film> findFilmsByIds(Set<Long> filmIds);
 
-    Collection<Film> findFilmsFromDirectorOrderByLikes(long directorId);
-
-    Collection<Film> findFilmsFromDirectorOrderByYear(long directorId);
+    Collection<Film> findFilmsFromDirectorOrderBy(long directorId, String sortBy);
 }
