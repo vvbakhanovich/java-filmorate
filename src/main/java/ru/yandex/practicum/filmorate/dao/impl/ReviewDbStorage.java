@@ -9,6 +9,8 @@ import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.dao.ReviewStorage;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.model.EventType;
+import ru.yandex.practicum.filmorate.model.Operation;
 import ru.yandex.practicum.filmorate.model.Review;
 
 import java.sql.PreparedStatement;
@@ -41,24 +43,38 @@ public class ReviewDbStorage implements ReviewStorage {
 
         review.setReviewId(Objects.requireNonNull(keyHolder.getKey(), "Не удалось добавить отзыв.").longValue());
 
+        final String sqlFeedUpdate = "INSERT INTO feed_events (event_type, operation, entity_id, user_id) VALUES (?, ?, ?, ?)";
+        jdbcTemplate.update(sqlFeedUpdate, EventType.REVIEW.name(), Operation.ADD.name(), review.getReviewId(), review.getUserId());
+
         return review;
     }
 
     @Override
     public void remove(final long id) {
-        final String sql = "DELETE FROM review WHERE id = ?";
-        int update = jdbcTemplate.update(sql, id);
-        if (update != 1) {
+        long userId;
+        try {
+            userId = findById(id).getUserId();
+        } catch (NullPointerException e) {
             throw new NotFoundException("Отзыв с id '" +  id + "' не найден.");
         }
+        final String sql = "DELETE FROM review WHERE id = ?";
+        int update = jdbcTemplate.update(sql, id);
+
+        final String sqlFeedUpdate = "INSERT INTO feed_events (event_type, operation, entity_id, user_id) VALUES (?, ?, ?, ?)";
+        jdbcTemplate.update(sqlFeedUpdate, EventType.REVIEW.name(), Operation.REMOVE.name(), id, userId);
+
     }
 
     @Override
     public void update(final Review review) {
         final String sql = "UPDATE review SET review_content = ?, is_positive = ? WHERE id = ?";
         final int update = jdbcTemplate.update(sql, review.getContent(), review.isPositive(), review.getReviewId());
+        Review updatedReview = findById(review.getReviewId());
         if (update != 1) {
             throw new NotFoundException("Отзыв с id '" + review.getReviewId() + "' не найден.");
+        } else {
+            final String sqlFeedUpdate = "INSERT INTO feed_events (event_type, operation, entity_id, user_id) VALUES (?, ?, ?, ?)";
+            jdbcTemplate.update(sqlFeedUpdate, EventType.REVIEW.name(), Operation.UPDATE.name(), updatedReview.getReviewId(), updatedReview.getUserId());
         }
     }
 

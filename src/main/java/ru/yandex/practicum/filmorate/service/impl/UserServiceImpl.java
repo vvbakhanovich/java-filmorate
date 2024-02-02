@@ -7,8 +7,10 @@ import ru.yandex.practicum.filmorate.dao.FilmLikeStorage;
 import ru.yandex.practicum.filmorate.dao.FilmStorage;
 import ru.yandex.practicum.filmorate.dao.FriendshipStorage;
 import ru.yandex.practicum.filmorate.dao.UserStorage;
+import ru.yandex.practicum.filmorate.dto.FeedDto;
 import ru.yandex.practicum.filmorate.dto.FilmDto;
 import ru.yandex.practicum.filmorate.dto.UserDto;
+import ru.yandex.practicum.filmorate.mapper.FeedMapper;
 import ru.yandex.practicum.filmorate.mapper.FilmMapper;
 import ru.yandex.practicum.filmorate.mapper.UserMapper;
 import ru.yandex.practicum.filmorate.model.Film;
@@ -201,6 +203,20 @@ public class UserServiceImpl implements UserService {
         }
         Collection<Film> filmsRecommendation = filmStorage.findFilmsByIds(recommendations);
         return filmsRecommendation.stream().map(FilmMapper::toDto).collect(Collectors.toList());
+    }
+
+    /**
+     * Выгразка ленты пользователя. Запрос выгружает историй действий пользователя:
+     * кого он добавлял в друзья и удалял из друзей
+     * что лайкал
+     * какие писал и удалял отзывы
+     * @param id идентификатор пользоваетеля
+     * @return коллекция FeedDto
+     */
+
+    @Override
+    public Collection<FeedDto> getFeed(long id) {
+        return userStorage.getFeed(id).stream().map(FeedMapper::toDto).collect(Collectors.toList());
     }
 
     private UserDto validateUserName(final UserDto userDto) {

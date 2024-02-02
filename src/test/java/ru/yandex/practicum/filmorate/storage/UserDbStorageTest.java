@@ -11,10 +11,7 @@ import org.springframework.test.annotation.DirtiesContext;
 import ru.yandex.practicum.filmorate.dao.*;
 import ru.yandex.practicum.filmorate.dao.impl.*;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
-import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.Friendship;
-import ru.yandex.practicum.filmorate.model.Mpa;
-import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.model.*;
 import ru.yandex.practicum.filmorate.service.impl.UserServiceImpl;
 
 import java.time.LocalDate;
@@ -403,5 +400,83 @@ class UserDbStorageTest {
         assertThat(filmRecommendations)
                 .isNotNull()
                 .isEmpty();
+    }
+
+    @Test
+    @DisplayName("Тест получение ленты пользователя.")
+    void testGetFeed() {
+        userStorage.add(user);
+        userStorage.add(anotherUser);
+        filmDbStorage.add(filmOne);
+        filmLikeStorage.add(filmOne.getId(), user.getId());
+        friendshipStorage.add(user.getId(), anotherUser.getId(), NOT_ACKNOWLEDGED.getId());
+
+        Feed feedLike = Feed.builder()
+                .entityId(filmOne.getId())
+                .eventType(EventType.LIKE)
+                .operation(Operation.ADD)
+                .userId(user.getId())
+                .build();
+
+        Feed feedFriend = Feed.builder()
+                .entityId(anotherUser.getId())
+                .eventType(EventType.FRIEND)
+                .operation(Operation.ADD)
+                .userId(user.getId())
+                .build();
+
+        List<Feed> feed = (List<Feed>) userStorage.getFeed(1L);
+
+        assertThat(feed.get(0).getUserId())
+                .isNotNull()
+                .isEqualTo(user.getId());
+
+        assertThat(feed.get(0).getEntityId())
+                .isNotNull()
+                .isEqualTo(filmOne.getId());
+
+        assertThat(feed.get(0).getEventType())
+                .isNotNull()
+                .isEqualTo(EventType.LIKE);
+
+        assertThat(feed.get(0).getOperation())
+                .isNotNull()
+                .isEqualTo(Operation.ADD);
+
+        assertThat(feed.get(1).getUserId())
+                .isNotNull()
+                .isEqualTo(user.getId());
+
+        assertThat(feed.get(1).getEntityId())
+                .isNotNull()
+                .isEqualTo(anotherUser.getId());
+
+        assertThat(feed.get(1).getEventType())
+                .isNotNull()
+                .isEqualTo(EventType.FRIEND);
+
+        assertThat(feed.get(1).getOperation())
+                .isNotNull()
+                .isEqualTo(Operation.ADD);
+    }
+
+    @Test
+    @DisplayName("Тест получение пустой ленты пользователя.")
+    void testGetEmptyFeed() {
+        userStorage.add(user);
+        userStorage.add(anotherUser);
+        filmDbStorage.add(filmOne);
+
+        Collection<Feed> feed = userStorage.getFeed(1L);
+
+        assertThat(feed)
+                .isNotNull()
+                .isEmpty();
+    }
+
+    @Test
+    @DisplayName("Тест получение пустой ленты на несуществующего поьзователяпользователя.")
+    void testGetNoUserFeed() {
+        assertThrows(NotFoundException.class, () -> userStorage.getFeed(1L));
     }
 }
