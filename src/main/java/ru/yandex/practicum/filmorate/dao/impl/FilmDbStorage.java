@@ -9,10 +9,12 @@ import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.dao.FilmGenreStorage;
 import ru.yandex.practicum.filmorate.dao.FilmStorage;
+import ru.yandex.practicum.filmorate.dto.FilmSearchDto;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Mpa;
+import ru.yandex.practicum.filmorate.model.SearchBy;
 
 import java.sql.Date;
 import java.sql.PreparedStatement;
@@ -108,6 +110,7 @@ public class FilmDbStorage implements FilmStorage {
         }
     }
 
+    @Override
     public Collection<Film> findMostLikedFilmsLimitBy(final int count) {
         final String sql = "SELECT " +
                 "f.ID, f.TITLE, f.DESCRIPTION, f.RELEASE_DATE, f.DURATION, f.MPA_ID, m.RATING_NAME, COUNT(fl.USER_ID) AS likes " +
@@ -134,6 +137,35 @@ public class FilmDbStorage implements FilmStorage {
                         "GROUP BY f.id, m.rating_name ", ids);
 
         Collection<Film> films = jdbcTemplate.query(sql, this::mapToFilm, filmIds.toArray());
+        return setGenresForFilms(films);
+    }
+
+    @Override
+    public Collection<Film> searchFilms(FilmSearchDto search) {
+        StringBuilder sql = new StringBuilder("SELECT " +
+                "f.ID, f.TITLE, f.DESCRIPTION, f.RELEASE_DATE, f.DURATION, f.MPA_ID, m.RATING_NAME, COUNT(fl.USER_ID) AS likes " +
+                "FROM " +
+                "FILM f LEFT JOIN MPA m ON f.MPA_ID = m.ID " +
+                "LEFT JOIN film_like fl on f.id = fl.film_id " +
+                "where ");
+
+        if (search.getBy().contains(String.valueOf(SearchBy.TITLE))) {
+            sql.append("f.TITLE ilike '%")
+                    .append(search.getQuery())
+                    .append("%' ");
+        }
+        if (search.getBy().size() == 2) {
+            sql.append("OR ");
+        }
+        if (search.getBy().contains(String.valueOf(SearchBy.DIRECTOR))) {
+            sql.append("f.DIRECTOR ilike '%")
+                    .append(search.getQuery())
+                    .append("%' ");
+        }
+        sql.append("GROUP BY f.id, m.rating_name ORDER BY COUNT(fl.USER_ID) DESC");
+
+
+        Collection<Film> films = jdbcTemplate.query(sql.toString(), this::mapToFilm);
         return setGenresForFilms(films);
     }
 

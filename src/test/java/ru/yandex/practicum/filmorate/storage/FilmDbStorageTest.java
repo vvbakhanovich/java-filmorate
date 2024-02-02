@@ -2,6 +2,7 @@ package ru.yandex.practicum.filmorate.storage;
 
 import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,11 +17,9 @@ import ru.yandex.practicum.filmorate.dao.impl.FilmDbStorage;
 import ru.yandex.practicum.filmorate.dao.impl.FilmGenreDbStorage;
 import ru.yandex.practicum.filmorate.dao.impl.FilmLikeDbStorage;
 import ru.yandex.practicum.filmorate.dao.impl.UserDbStorage;
+import ru.yandex.practicum.filmorate.dto.FilmSearchDto;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
-import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.Genre;
-import ru.yandex.practicum.filmorate.model.Mpa;
-import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.model.*;
 
 import java.time.LocalDate;
 import java.util.Collection;
@@ -319,7 +318,7 @@ public class FilmDbStorageTest {
         film.getGenres().add(genre2);
         film.getGenres().add(genre3);
         filmDbStorage.add(film);
-        filmLikeStorage.add(film.getId(),user.getId());
+        filmLikeStorage.add(film.getId(), user.getId());
         filmDbStorage.add(updatedFilm);
 
         film.setLikes(1);
@@ -330,5 +329,73 @@ public class FilmDbStorageTest {
                 .isNotNull()
                 .isNotEmpty()
                 .isEqualTo(List.of(film));
+    }
+
+    @Test
+    @DisplayName("Тест поиск фильма по названию")
+    void testSearchFilmByTitle() {
+        Film newFilm = filmDbStorage.add(film);
+        FilmSearchDto query = FilmSearchDto.builder()
+                .by(List.of(SearchBy.TITLE.toString()))
+                .query(newFilm.getName())
+                .build();
+        Collection<Film> films = filmDbStorage.searchFilms(query);
+
+        assertThat(films)
+                .isNotNull()
+                .isNotEmpty()
+                .isEqualTo(List.of(film));
+    }
+
+    @Test
+    @DisplayName("Тест поиск фильма по режиссеру")
+    @Disabled
+    void testSearchFilmByDirector() {
+        Film newFilm = filmDbStorage.add(film);
+        FilmSearchDto query = FilmSearchDto.builder()
+                .by(List.of(SearchBy.DIRECTOR.toString()))
+                .query(newFilm.getName()) // поменять на директора
+                .build();
+        Collection<Film> films = filmDbStorage.searchFilms(query);
+
+        assertThat(films)
+                .isNotNull()
+                .isNotEmpty()
+                .isEqualTo(List.of(film));
+    }
+
+    @Test
+    @DisplayName("Тест поиск фильма по частичному названию")
+    void testSearchFilmByPartialTitle() {
+        Film newFilm = filmDbStorage.add(updatedFilm);
+        FilmSearchDto query = FilmSearchDto.builder()
+                .by(List.of(SearchBy.TITLE.toString()))
+                .query(newFilm.getName().substring(0, 3))
+                .build();
+        Collection<Film> films = filmDbStorage.searchFilms(query);
+
+        assertThat(films)
+                .isNotNull()
+                .isNotEmpty()
+                .isEqualTo(List.of(updatedFilm));
+    }
+
+    @Test
+    @DisplayName("Тест поиск фильмов по частичному названию фильма и режиссера")
+    @Disabled
+    void testSearchFilmBylTitleAndDirector() {
+        Film newFilm = filmDbStorage.add(updatedFilm);
+        Film newFilm2 = filmDbStorage.add(film);
+        FilmSearchDto query = FilmSearchDto.builder()
+                .by(SearchBy.getStringValues())
+                .query(newFilm.getName().substring(0, 3))
+                .build();
+        Collection<Film> films = filmDbStorage.searchFilms(query);
+
+        assertThat(films)
+                .isNotNull()
+                .isNotEmpty()
+                .hasSize(2)
+                .isEqualTo(List.of(updatedFilm, film));
     }
 }

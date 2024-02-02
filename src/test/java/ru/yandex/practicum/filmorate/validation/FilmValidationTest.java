@@ -6,8 +6,10 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import ru.yandex.practicum.filmorate.dto.FilmDto;
+import ru.yandex.practicum.filmorate.dto.FilmSearchDto;
 
 import java.time.LocalDate;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -144,5 +146,40 @@ public class FilmValidationTest {
                 () -> assertTrue(dtoHasErrorMessage(filmDto, "Введите более позднюю дату.")),
                 () -> assertTrue(dtoHasErrorMessage(filmDto, "Продолжительность должна быть больше нуля"))
         );
+    }
+
+    @Test
+    @DisplayName("Проверка невозможности добавить фильм с пустым названием")
+    public void searchWithNullByField() {
+        FilmSearchDto query = FilmSearchDto.builder()
+                .by(null)
+                .query("name")
+                .build();
+
+        assertTrue(dtoHasErrorMessage(query, "Нужно указать хотя бы 1 поле для поиска"));
+    }
+
+    @Test
+    @DisplayName("Проверка невозможности добавить фильм с пустым названием")
+    public void checkMaxSizeInSearch() {
+        List<String> search = List.of("1", "2", "3");
+        FilmSearchDto query = FilmSearchDto.builder()
+                .by(search)
+                .query("name")
+                .build();
+
+        assertTrue(dtoHasErrorMessage(query, "Нужно указать не более 2 полей для поиска"));
+    }
+
+    @Test
+    @DisplayName("Проверка невозможности добавить фильм с пустым названием")
+    public void checkEmptyQueryInSearch() {
+        List<String> search = List.of("1");
+        FilmSearchDto query = FilmSearchDto.builder()
+                .by(search)
+                .query(null)
+                .build();
+
+        assertTrue(dtoHasErrorMessage(query, "Необходимо указать текст для поиска"));
     }
 }

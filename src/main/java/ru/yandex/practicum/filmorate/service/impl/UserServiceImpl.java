@@ -134,8 +134,8 @@ public class UserServiceImpl implements UserService {
      */
     @Override
     public Collection<UserDto> findCommonFriends(final long userId, final long otherUserId) {
-        final User user = userStorage.findById(userId);
-        final User otherUser = userStorage.findById(otherUserId);
+        userStorage.findById(userId);
+        userStorage.findById(otherUserId);
         return userStorage.findCommonFriends(userId, otherUserId).stream()
                 .map(UserMapper::toDto)
                 .collect(Collectors.toList());

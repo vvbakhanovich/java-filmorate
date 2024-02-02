@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.dto.FilmDto;
+import ru.yandex.practicum.filmorate.dto.FilmSearchDto;
 import ru.yandex.practicum.filmorate.service.FilmService;
 
 import javax.validation.Valid;
@@ -56,6 +57,11 @@ public class FilmController {
     @DeleteMapping("/{id}")
     public void removeFilm(@PathVariable long id) {
         filmService.removeFilm(id);
+    }
+
+    @GetMapping("/search")
+    public Collection<FilmDto> searchFilms(@Valid FilmSearchDto search) {
+        return filmService.searchFilms(search);
     }
 }
 
