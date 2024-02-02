@@ -9,6 +9,8 @@ import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.dao.ReviewStorage;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.model.EventType;
+import ru.yandex.practicum.filmorate.model.Operation;
 import ru.yandex.practicum.filmorate.model.Review;
 
 import java.sql.PreparedStatement;
@@ -40,6 +42,7 @@ public class ReviewDbStorage implements ReviewStorage {
         }, keyHolder);
 
         review.setReviewId(Objects.requireNonNull(keyHolder.getKey(), "Не удалось добавить отзыв.").longValue());
+
         return review;
     }
 
