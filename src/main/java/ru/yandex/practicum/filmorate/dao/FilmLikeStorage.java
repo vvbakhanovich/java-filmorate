@@ -14,6 +14,5 @@ public interface FilmLikeStorage {
 
     Set<Long> findLikedFilmsByUser(long userId);
 
-
     Map<Long, Set<Long>> getUsersAndFilmLikes();
 }

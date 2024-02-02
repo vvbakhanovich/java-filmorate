@@ -56,7 +56,6 @@ public class FilmLikeDbStorage implements FilmLikeStorage {
         return new HashSet<>(filmIds);
     }
 
-
     @Override
     public Map<Long, Set<Long>> getUsersAndFilmLikes() {
         String filmsIdsSql = "SELECT user_id, film_id FROM film_like";

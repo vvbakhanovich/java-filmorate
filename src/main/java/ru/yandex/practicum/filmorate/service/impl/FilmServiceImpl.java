@@ -13,9 +13,6 @@ import ru.yandex.practicum.filmorate.mapper.FilmMapper;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Map;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -173,26 +170,10 @@ public class FilmServiceImpl implements FilmService {
             return Collections.emptyList();
         }
 
-        Collection<Film> commonFilms = filmStorage.findFilmsByIdsOrderByLikes(userLikedFilmIds);
+        List<Film> commonFilms = filmStorage.findFilmsByIds(userLikedFilmIds);
         return commonFilms.stream().map(FilmMapper::toDto).collect(Collectors.toList());
     }
 
-    /**
-     * Получение списка фильмов режиссера, отсортированных по количеству лайков или году выпуска.
-     *
-     * @param directorId идентификатор режиссера.
-     * @param sortBy     поле сортировки.
-     * @return список фильмов режиссера.
-     */
-    @Override
-    @Transactional
-    public Collection<FilmDto> getFilmsFromDirector(final long directorId, final String sortBy) {
-        if (!ALLOWED_SORTS.containsKey(sortBy)) {
-            throw new IllegalArgumentException("Поле сортировки '" + sortBy + "' не поддерживается.");
-        }
-        directorStorage.findById(directorId);
-        return filmStorage.findFilmsFromDirectorOrderBy(directorId, ALLOWED_SORTS.get(sortBy)).stream()
-                .map(FilmMapper::toDto)
-                .collect(Collectors.toList());
-    }
+
+
 }
