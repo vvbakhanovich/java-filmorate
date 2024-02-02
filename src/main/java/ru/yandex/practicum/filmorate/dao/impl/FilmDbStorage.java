@@ -238,7 +238,7 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     @Override
-    public List<Film> findFilmsByIdsOrderByLikes(Set<Long> filmIds) {
+    public Collection<Film> findFilmsByIdsOrderByLikes(Set<Long> filmIds) {
         if (filmIds.isEmpty()) {
             return Collections.emptyList();
         }
@@ -271,41 +271,4 @@ public class FilmDbStorage implements FilmStorage {
             }
         });
     }
-
-
-    @Override
-    public List<Film> findFilmsByIds(Set<Long> filmIds) {
-        if (filmIds.isEmpty()) {
-            return Collections.emptyList();
-        }
-
-        String placeholders = String.join(",", Collections.nCopies(filmIds.size(), "?"));
-
-        String sql = "SELECT f.ID, f.TITLE, f.DESCRIPTION, f.RELEASE_DATE, f.DURATION, f.MPA_ID, " +
-                "m.RATING_NAME, COUNT(fl.USER_ID) AS LIKES " +
-                "FROM FILM f " +
-                "LEFT JOIN MPA m ON f.MPA_ID = m.ID " +
-                "LEFT JOIN film_like fl ON f.ID = fl.FILM_ID " +
-                "WHERE f.ID IN (" + placeholders + ") " +
-                "GROUP BY f.ID, m.RATING_NAME " +
-                "ORDER BY LIKES DESC";
-
-        Object[] idsArray = filmIds.toArray(new Object[0]);
-
-        return jdbcTemplate.query(sql, idsArray, new RowMapper<Film>() {
-            @Override
-            public Film mapRow(ResultSet rs, int rowNum) throws SQLException {
-                Film film = new Film();
-                film.setId(rs.getLong("ID"));
-                film.setName(rs.getString("TITLE"));
-                film.setDescription(rs.getString("DESCRIPTION"));
-                film.setReleaseDate(rs.getDate("RELEASE_DATE").toLocalDate());
-                film.setDuration(rs.getInt("DURATION"));
-                film.setMpa(new Mpa(rs.getInt("MPA_ID"), rs.getString("RATING_NAME")));
-                film.setLikes(rs.getLong("LIKES"));
-                return film;
-            }
-        });
-    }
-
 }

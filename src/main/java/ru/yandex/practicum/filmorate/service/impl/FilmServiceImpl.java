@@ -176,4 +176,22 @@ public class FilmServiceImpl implements FilmService {
 
 
 
+    /**
+     * Получение списка фильмов режиссера, отсортированных по количеству лайков или году выпуска.
+     *
+     * @param directorId идентификатор режиссера.
+     * @param sortBy     поле сортировки.
+     * @return список фильмов режиссера.
+     */
+    @Override
+    @Transactional
+    public Collection<FilmDto> getFilmsFromDirector(final long directorId, final String sortBy) {
+        if (!ALLOWED_SORTS.containsKey(sortBy)) {
+            throw new IllegalArgumentException("Поле сортировки '" + sortBy + "' не поддерживается.");
+        }
+        directorStorage.findById(directorId);
+        return filmStorage.findFilmsFromDirectorOrderBy(directorId, ALLOWED_SORTS.get(sortBy)).stream()
+                .map(FilmMapper::toDto)
+                .collect(Collectors.toList());
+    }
 }
