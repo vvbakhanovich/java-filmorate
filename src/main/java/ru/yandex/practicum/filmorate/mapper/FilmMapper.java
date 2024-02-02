@@ -18,6 +18,7 @@ public class FilmMapper {
                 .likes(film.getLikes())
                 .build();
         filmDto.getGenres().addAll(film.getGenres());
+        filmDto.getDirectors().addAll(film.getDirectors());
         return filmDto;
     }
 
@@ -32,6 +33,7 @@ public class FilmMapper {
                 .likes(filmDto.getLikes())
                 .build();
         film.getGenres().addAll(filmDto.getGenres());
+        film.getDirectors().addAll(filmDto.getDirectors());
         return film;
     }
 }
