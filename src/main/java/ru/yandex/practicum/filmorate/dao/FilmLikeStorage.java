@@ -4,7 +4,7 @@ import java.util.Map;
 import java.util.Set;
 
 public interface FilmLikeStorage {
-    void add(long filmId, long userId);
+    void add(long filmId, long userId, int rating);
 
     Long getCountById(long filmId);
 

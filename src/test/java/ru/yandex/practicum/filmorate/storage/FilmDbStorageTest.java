@@ -232,7 +232,7 @@ public class FilmDbStorageTest {
 
         Film storedFilm = filmDbStorage.findById(film.getId());
 
-        long likes = storedFilm.getLikes();
+        long likes = storedFilm.getRating();
 
         assertEquals(1, likes);
     }
@@ -245,13 +245,13 @@ public class FilmDbStorageTest {
 
         filmLikeStorage.add(film.getId(), user.getId());
         Film storedFilm = filmDbStorage.findById(film.getId());
-        long likes = storedFilm.getLikes();
+        long likes = storedFilm.getRating();
 
         assertEquals(1, likes);
 
         filmLikeStorage.remove(film.getId(), user.getId());
         Film updatedFilm = filmDbStorage.findById(film.getId());
-        long updatedLikes = updatedFilm.getLikes();
+        long updatedLikes = updatedFilm.getRating();
 
         assertEquals(0, updatedLikes);
     }
@@ -269,7 +269,7 @@ public class FilmDbStorageTest {
         filmDbStorage.add(film);
         filmLikeStorage.add(film.getId(), user.getId());
 
-        film.setLikes(1);
+        film.setRating(1);
 
         assertThat(filmDbStorage.findAll())
                 .isNotNull()
@@ -290,7 +290,7 @@ public class FilmDbStorageTest {
         filmDbStorage.add(film);
         filmLikeStorage.add(film.getId(), user.getId());
 
-        film.setLikes(1);
+        film.setRating(1);
 
         assertThat(filmDbStorage.findById(film.getId()))
                 .isNotNull()
@@ -333,7 +333,7 @@ public class FilmDbStorageTest {
         filmLikeStorage.add(film.getId(), user.getId());
         filmDbStorage.add(updatedFilm);
 
-        film.setLikes(1);
+        film.setRating(1);
 
         Collection<Film> popularFilms = filmDbStorage.findMostLikedFilmsLimitBy(1);
 
@@ -367,7 +367,7 @@ public class FilmDbStorageTest {
     public void findFilmsByDirectorSortByLikes() {
         film.getDirectors().add(director);
         film2.getDirectors().add(director);
-        film.setLikes(1);
+        film.setRating(1);
 
         userStorage.add(user);
         directorStorage.add(director);

@@ -10,9 +10,7 @@ import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Mpa;
 import ru.yandex.practicum.filmorate.validation.PastDate;
 
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.Positive;
-import javax.validation.constraints.Size;
+import javax.validation.constraints.*;
 import java.time.LocalDate;
 import java.util.LinkedHashSet;
 
@@ -33,5 +31,5 @@ public class FilmDto {
     private Mpa mpa; //возрастной рейтинг
     private final LinkedHashSet<Genre> genres = new LinkedHashSet<>(); //жанры
     private final LinkedHashSet<Director> directors = new LinkedHashSet<>(); //режиссеры
-    private long likes; //количество лайков от пользователей
+    private double rating; //рейтинг фильма
 }
