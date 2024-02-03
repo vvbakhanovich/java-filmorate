@@ -22,5 +22,5 @@ public class Film {
     private Mpa mpa; //возрастной рейтинг
     private final LinkedHashSet<Genre> genres = new LinkedHashSet<>(); //жанры
     private final LinkedHashSet<Director> directors = new LinkedHashSet<>(); //режиссеры
-    private long likes; //количество лайков от пользователей
+    private double rating; //количество лайков от пользователей
 }

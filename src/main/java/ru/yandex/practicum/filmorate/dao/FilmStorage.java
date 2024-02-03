@@ -4,6 +4,7 @@ import ru.yandex.practicum.filmorate.dto.FilmSearchDto;
 import ru.yandex.practicum.filmorate.model.Film;
 
 import java.util.Collection;
+import java.util.Map;
 import java.util.Set;
 
 public interface FilmStorage extends Dao<Film> {
@@ -17,4 +18,6 @@ public interface FilmStorage extends Dao<Film> {
     Collection<Film> findMostLikedFilms(int count, Integer genreId, Integer year);
 
     Collection<Film> findCommonFilms(long userId, long friendId);
+
+    Map<Long, Set<Film>> findAllFilmsLikedByUsers();
 }

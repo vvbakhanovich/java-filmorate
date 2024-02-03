@@ -180,27 +180,44 @@ public class UserServiceImpl implements UserService {
     public Collection<FilmDto> showRecommendations(long id) {
         log.info("Получение списка рекомендаций фильмов для пользователя с id {}.", id);
         Map<Long, Set<Long>> usersLikes = filmLikeStorage.getUsersAndFilmLikes();
+        Map<Long, Set<Film>> usersLikedFilms = filmStorage.findAllFilmsLikedByUsers();
         int maxLikes = 0;
-        Set<Long> recommendations = new HashSet<>();
-        Set<Long> userLikedFilms = usersLikes.get(id);
-        for (Long user : usersLikes.keySet()) {
-            if (user != id) {
-                Set<Long> likedFilms = usersLikes.get(user);
-                Set<Long> currentUserLikedFilms = new HashSet<>(userLikedFilms);
-                currentUserLikedFilms.retainAll(likedFilms);
-                if (currentUserLikedFilms.size() > maxLikes && currentUserLikedFilms.size() < likedFilms.size()) {
+        Set<Film> recommendations = new HashSet<>();
+        Set<Film> userLikedFilms = usersLikedFilms.get(id);
+        for (Long userId : usersLikes.keySet()) {
+            if (userId != id) {
+                Set<Film> sameFilms = new HashSet<>();
+                Set<Film> anotherUserLikedFilms = usersLikedFilms.get(userId);
+                Set<Film> currentUserLikedFilms = new HashSet<>(userLikedFilms);
+                for (Film film : anotherUserLikedFilms) {
+                    if (currentUserLikedFilms.stream().noneMatch(f -> f.getId() == film.getId())) {
+                        continue;
+                    }
+                    Film sameFilm = currentUserLikedFilms.stream().filter(f -> f.getId() == film.getId()).findFirst().get();
+                    if ((film.getRating() > 5 && sameFilm.getRating() > 5) || (film.getRating() < 6 && sameFilm.getRating() < 6)) {
+                        sameFilms.add(film);
+                    }
+                }
+                if (sameFilms.size() > maxLikes && sameFilms.size() < anotherUserLikedFilms.size()) {
                     recommendations.clear();
-                    maxLikes = currentUserLikedFilms.size();
-                    likedFilms.removeAll(currentUserLikedFilms);
-                    recommendations.addAll(likedFilms);
+                    maxLikes = sameFilms.size();
+                    anotherUserLikedFilms.removeAll(sameFilms);
+                    recommendations.addAll(anotherUserLikedFilms);
                 } else if (currentUserLikedFilms.size() == maxLikes) {
-                    likedFilms.removeAll(currentUserLikedFilms);
-                    recommendations.addAll(likedFilms);
+                    anotherUserLikedFilms.removeAll(sameFilms);
+                    recommendations.addAll(anotherUserLikedFilms);
                 }
             }
         }
-        Collection<Film> filmsRecommendation = filmStorage.findFilmsByIds(recommendations);
-        return filmsRecommendation.stream().map(FilmMapper::toDto).collect(Collectors.toList());
+        if (recommendations.isEmpty()) {
+            return Collections.emptyList();
+        }
+        Set<Long> recommendedFilmsId = recommendations.stream()
+                .filter(film -> film.getRating() > 5)
+                .map(Film::getId)
+                .collect(Collectors.toSet());
+
+        return filmStorage.findFilmsByIds(recommendedFilmsId).stream().map(FilmMapper::toDto).collect(Collectors.toList());
     }
 
     /**

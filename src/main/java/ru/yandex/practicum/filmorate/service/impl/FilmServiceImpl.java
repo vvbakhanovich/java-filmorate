@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.service.impl;
 
+import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -14,9 +15,7 @@ import ru.yandex.practicum.filmorate.model.Operation;
 import ru.yandex.practicum.filmorate.model.SearchBy;
 import ru.yandex.practicum.filmorate.service.FilmService;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static ru.yandex.practicum.filmorate.mapper.FilmMapper.toDto;
@@ -29,7 +28,7 @@ public class FilmServiceImpl implements FilmService {
 
     public static final Map<String, String> ALLOWED_SORTS = Map.of(
             "year", "f.release_date",
-            "likes", "likes DESC"
+            "rating", "rating DESC"
     );
 
     private final FilmStorage filmStorage;
@@ -107,10 +106,10 @@ public class FilmServiceImpl implements FilmService {
      */
     @Override
     @Transactional
-    public FilmDto likeFilm(final long filmId, final long userId) {
+    public FilmDto likeFilm(final long filmId, final long userId, final int rating) {
         filmStorage.findById(filmId);
         userStorage.findById(userId);
-        filmLikeStorage.add(filmId, userId);
+        filmLikeStorage.add(filmId, userId, rating);
         log.info("Пользователь с id {} поставил лайк фильму с id {}", userId, filmId);
         eventStorage.addEvent(EventType.LIKE.name(), Operation.ADD.name(), filmId, userId);
         return toDto(filmStorage.findById(filmId));

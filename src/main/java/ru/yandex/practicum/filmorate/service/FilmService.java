@@ -14,7 +14,7 @@ public interface FilmService {
 
     FilmDto getFilmById(long filmId);
 
-    FilmDto likeFilm(long filmId, long userId);
+    FilmDto likeFilm(long filmId, long userId, int rating);
 
     FilmDto removeLike(long filmId, long userId);
 

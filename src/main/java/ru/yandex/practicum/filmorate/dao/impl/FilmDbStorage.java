@@ -2,6 +2,7 @@ package ru.yandex.practicum.filmorate.dao.impl;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataAccessException;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
@@ -83,7 +84,7 @@ public class FilmDbStorage implements FilmStorage {
     @Override
     public Collection<Film> findAll() {
         final String sql = "SELECT " +
-                "f.ID, f.TITLE, f.DESCRIPTION, f.RELEASE_DATE, f.DURATION, f.MPA_ID, m.RATING_NAME, COUNT(fl.USER_ID) AS likes " +
+                "f.ID, f.TITLE, f.DESCRIPTION, f.RELEASE_DATE, f.DURATION, f.MPA_ID, m.RATING_NAME, CAST (AVG (fl.RATING) AS DECIMAL(3,1)) AS rating " +
                 "FROM " +
                 "FILM f LEFT JOIN MPA m ON f.MPA_ID = m.ID " +
                 "LEFT JOIN film_like fl on f.id = fl.film_id " +
@@ -98,7 +99,7 @@ public class FilmDbStorage implements FilmStorage {
     @Override
     public Film findById(final long filmId) {
         final String sql = "SELECT " +
-                "f.ID, f.TITLE, f.DESCRIPTION, f.RELEASE_DATE, f.DURATION, f.MPA_ID, m.RATING_NAME, COUNT(fl.USER_ID) AS likes " +
+                "f.ID, f.TITLE, f.DESCRIPTION, f.RELEASE_DATE, f.DURATION, f.MPA_ID, m.RATING_NAME, CAST (AVG (fl.RATING) AS DECIMAL(3,1)) AS rating " +
                 "FROM " +
                 "FILM f LEFT JOIN MPA m ON f.MPA_ID = m.ID " +
                 "LEFT JOIN film_like fl on f.id = fl.film_id " +
@@ -145,7 +146,7 @@ public class FilmDbStorage implements FilmStorage {
         final String ids = String.join(",", Collections.nCopies(filmsByDirectorId.size(), "?"));
         final String sql = String.format(
                 "SELECT " +
-                        "f.ID, f.TITLE, f.DESCRIPTION, f.RELEASE_DATE, f.DURATION, f.MPA_ID, m.RATING_NAME, COUNT(fl.USER_ID) AS likes " +
+                        "f.ID, f.TITLE, f.DESCRIPTION, f.RELEASE_DATE, f.DURATION, f.MPA_ID, m.RATING_NAME, CAST (AVG (fl.RATING) AS DECIMAL(3,1)) AS rating " +
                         "FROM " +
                         "FILM f LEFT JOIN MPA m ON f.MPA_ID = m.ID " +
                         "LEFT JOIN film_like fl on f.id = fl.film_id " +
@@ -165,7 +166,7 @@ public class FilmDbStorage implements FilmStorage {
         final String ids = String.join(",", Collections.nCopies(filmIds.size(), "?"));
         final String sql = String.format(
                 "SELECT " +
-                        "f.ID, f.TITLE, f.DESCRIPTION, f.RELEASE_DATE, f.DURATION, f.MPA_ID, m.RATING_NAME, COUNT(fl.USER_ID) AS likes " +
+                        "f.ID, f.TITLE, f.DESCRIPTION, f.RELEASE_DATE, f.DURATION, f.MPA_ID, m.RATING_NAME, CAST (AVG (fl.RATING) AS DECIMAL(3,1)) AS rating " +
                         "FROM " +
                         "FILM f LEFT JOIN MPA m ON f.MPA_ID = m.ID " +
                         "LEFT JOIN film_like fl on f.id = fl.film_id " +
@@ -225,6 +226,15 @@ public class FilmDbStorage implements FilmStorage {
         return jdbcTemplate.query(sql, this::mapToFilm, userId, friendId);
     }
 
+    public Map<Long, Set<Film>> findAllFilmsLikedByUsers() {
+        final String sql = "SELECT fl.USER_ID, f.ID, f.TITLE, f.DESCRIPTION, f.RELEASE_DATE, f.DURATION, f.MPA_ID, m.RATING_NAME, fl.RATING " +
+                "FROM " +
+                "FILM f LEFT JOIN MPA m ON f.MPA_ID = m.ID " +
+                "JOIN film_like fl on f.id = fl.film_id " +
+                "GROUP BY f.id, m.rating_name, fl.user_id";
+        return jdbcTemplate.query(sql, this::extractToUserFilmMap);
+    }
+
     private void setGenresForFilms(Collection<Film> films) {
         Map<Long, Film> filmMap = films.stream()
                 .collect(Collectors.toMap(Film::getId, identity()));
@@ -241,14 +251,29 @@ public class FilmDbStorage implements FilmStorage {
 
     private Film mapToFilm(ResultSet rs, int rowNum) throws SQLException {
         Film film = Film.builder()
-                .id(rs.getLong(1))
+                .id(rs.getLong("id"))
                 .name(rs.getString("title"))
                 .description(rs.getString("description"))
                 .releaseDate(rs.getDate("release_date").toLocalDate())
                 .duration(rs.getInt("duration"))
                 .mpa(new Mpa(rs.getInt("mpa_id"), rs.getString("rating_name")))
                 .build();
-        film.setLikes(rs.getLong("likes"));
+        film.setRating(rs.getDouble("rating"));
         return film;
+    }
+
+    private Map<Long, Set<Film>> extractToUserFilmMap(ResultSet rs) throws SQLException, DataAccessException {
+        final Map<Long, Set<Film>> userIdLikedFilmsMap = new HashMap<>();
+        while (rs.next()) {
+            Long userId = rs.getLong("user_id");
+            Set<Film> films = userIdLikedFilmsMap.get(userId);
+            if (films == null) {
+                films = new HashSet<>();
+            }
+            Film film = mapToFilm(rs, rs.getRow());
+            films.add(film);
+            userIdLikedFilmsMap.put(userId, films);
+        }
+        return userIdLikedFilmsMap;
     }
 }

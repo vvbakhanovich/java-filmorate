@@ -21,9 +21,9 @@ public class FilmLikeDbStorage implements FilmLikeStorage {
     private final JdbcTemplate jdbcTemplate;
 
     @Override
-    public void add(final long filmId, final long userId) {
-        final String sql = "INSERT INTO film_like (film_id, user_id) VALUES (?, ?)";
-        jdbcTemplate.update(sql, filmId, userId);
+    public void add(final long filmId, final long userId, final int rating) {
+        final String sql = "INSERT INTO film_like (film_id, user_id, rating) VALUES (?, ?, ?)";
+        jdbcTemplate.update(sql, filmId, userId, rating);
     }
 
     @Override
