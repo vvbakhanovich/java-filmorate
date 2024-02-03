@@ -137,6 +137,21 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     @Override
+    public Collection<Film> findMostLikedFilmsByGenre(final int genreId) {
+        final String sql = "SELECT f.ID, f.TITLE, f.DESCRIPTION, f.RELEASE_DATE, f.DURATION, f.MPA_ID, m.RATING_NAME, COUNT(fl.USER_ID) AS likes " +
+                "FROM FILM_GENRE " +
+                "JOIN film f on FILM_GENRE.FILM_ID = f.ID " +
+                "LEFT JOIN MPA m ON f.MPA_ID = m.ID " +
+                "LEFT JOIN film_like fl on f.id = fl.film_id " +
+                "WHERE GENRE_ID = ? " +
+                "GROUP BY f.ID";
+        Collection<Film> films = jdbcTemplate.query(sql, this::mapToFilm, genreId);
+        setGenresForFilms(films);
+        setDirectorsForFilms(films);
+        return films;
+    }
+
+    @Override
     public Collection<Film> findFilmsFromDirectorOrderBy(final long directorId, final String sortBy) {
         final List<Long> filmsByDirectorId = filmDirectorStorage.findFilmsByDirectorId(directorId);
         final String ids = String.join(",", Collections.nCopies(filmsByDirectorId.size(), "?"));

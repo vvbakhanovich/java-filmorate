@@ -146,9 +146,33 @@ public class FilmServiceImpl implements FilmService {
      * @param count ограничение количества выводимых фильмов
      * @return список фильмов.
      */
+
     @Override
-    public Collection<FilmDto> getMostPopularFilms(final int count) {
-        return filmStorage.findMostLikedFilmsLimitBy(count).stream().map(FilmMapper::toDto).collect(Collectors.toList());
+    public Collection<FilmDto> getMostPopularFilms(final int count, final int genreId, final int year) {
+        if (year == 0 && genreId == 0) {
+            return filmStorage.findMostLikedFilmsLimitBy(count)
+                    .stream()
+                    .map(FilmMapper::toDto)
+                    .collect(Collectors.toList());
+        }
+        if (genreId == 0) {
+            return filmStorage.findMostLikedFilmsLimitBy(count)
+                    .stream()
+                    .filter(film -> film.getReleaseDate().getYear() == year)
+                    .map(FilmMapper::toDto)
+                    .collect(Collectors.toList());
+        }
+        if (year == 0) {
+            return filmStorage.findMostLikedFilmsByGenre(genreId)
+                    .stream()
+                    .map(FilmMapper::toDto)
+                    .collect(Collectors.toList());
+        }
+        return filmStorage.findMostLikedFilmsByGenre(genreId)
+                .stream()
+                .filter(film -> film.getReleaseDate().getYear() == year)
+                .map(FilmMapper::toDto)
+                .collect(Collectors.toList());
     }
 
     /**
