@@ -149,7 +149,7 @@ public class FilmValidationTest {
     }
 
     @Test
-    @DisplayName("Проверка невозможности добавить фильм с пустым названием")
+    @DisplayName("Проверка невозможности выполнить поиск по фильмам без указания поля для поиска")
     public void searchWithNullByField() {
         FilmSearchDto query = FilmSearchDto.builder()
                 .by(null)
@@ -160,7 +160,7 @@ public class FilmValidationTest {
     }
 
     @Test
-    @DisplayName("Проверка невозможности добавить фильм с пустым названием")
+    @DisplayName("Проверка невозможности выполнить поиск по фильмам с указанием 3 и более полей")
     public void checkMaxSizeInSearch() {
         List<String> search = List.of("1", "2", "3");
         FilmSearchDto query = FilmSearchDto.builder()
@@ -172,7 +172,7 @@ public class FilmValidationTest {
     }
 
     @Test
-    @DisplayName("Проверка невозможности добавить фильм с пустым названием")
+    @DisplayName("Проверка невозможности выполнить поиск по фильмам без указания строки для поиска")
     public void checkEmptyQueryInSearch() {
         List<String> search = List.of("1");
         FilmSearchDto query = FilmSearchDto.builder()
