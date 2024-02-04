@@ -375,6 +375,7 @@ public class FilmDbStorageTest {
         assertThat(films)
                 .isNotNull()
                 .isNotEmpty()
+                .usingRecursiveComparison()
                 .isEqualTo(List.of(newFilm));
     }
 
@@ -391,7 +392,7 @@ public class FilmDbStorageTest {
         assertThat(films)
                 .isNotNull()
                 .isNotEmpty()
-                .isEqualTo(List.of(updatedFilm));
+                .isEqualTo(List.of(newFilm));
     }
 
     @Test

@@ -12,11 +12,7 @@ import ru.yandex.practicum.filmorate.dao.FilmGenreStorage;
 import ru.yandex.practicum.filmorate.dao.FilmStorage;
 import ru.yandex.practicum.filmorate.dto.FilmSearchDto;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
-import ru.yandex.practicum.filmorate.model.Director;
-import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.Genre;
-import ru.yandex.practicum.filmorate.model.Mpa;
-import ru.yandex.practicum.filmorate.model.SearchBy;
+import ru.yandex.practicum.filmorate.model.*;
 
 import java.sql.Date;
 import java.sql.PreparedStatement;
@@ -200,13 +196,11 @@ public class FilmDbStorage implements FilmStorage {
                     .append(search.getQuery())
                     .append("%' ");
         }
-        sql.append("GROUP BY f.id, m.rating_name, d.DIRECTOR_NAME ORDER BY COUNT(fl.USER_ID) DESC");
-
+        sql.append("GROUP BY f.id ORDER BY COUNT(fl.USER_ID) DESC");
         Collection<Film> films = jdbcTemplate.query(sql.toString(), this::mapToFilm);
-        LinkedHashSet<Film> unique = new LinkedHashSet<>(films);
-        setDirectorsForFilms(unique);
-        setGenresForFilms(unique);
-        return unique;
+        setDirectorsForFilms(films);
+        setGenresForFilms(films);
+        return films;
     }
 
     private List<Film> setGenresForFilms(Collection<Film> films) {
