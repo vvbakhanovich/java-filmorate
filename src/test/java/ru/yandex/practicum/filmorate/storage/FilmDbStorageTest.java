@@ -9,17 +9,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.JdbcTest;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.annotation.DirtiesContext;
-import ru.yandex.practicum.filmorate.dao.FilmGenreStorage;
-import ru.yandex.practicum.filmorate.dao.FilmLikeStorage;
-import ru.yandex.practicum.filmorate.dao.FilmStorage;
-import ru.yandex.practicum.filmorate.dao.UserStorage;
-import ru.yandex.practicum.filmorate.dao.impl.FilmDbStorage;
-import ru.yandex.practicum.filmorate.dao.impl.FilmGenreDbStorage;
-import ru.yandex.practicum.filmorate.dao.impl.FilmLikeDbStorage;
-import ru.yandex.practicum.filmorate.dao.impl.UserDbStorage;
+import ru.yandex.practicum.filmorate.dao.*;
+import ru.yandex.practicum.filmorate.dao.impl.*;
 import ru.yandex.practicum.filmorate.dto.FilmSearchDto;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.*;
+import ru.yandex.practicum.filmorate.service.impl.FilmServiceImpl;
 
 import java.time.LocalDate;
 import java.util.Collection;
@@ -38,17 +33,22 @@ public class FilmDbStorageTest {
     private FilmStorage filmDbStorage;
     private FilmGenreStorage filmGenreStorage;
     private FilmLikeStorage filmLikeStorage;
+    private DirectorStorage directorStorage;
     private UserStorage userStorage;
 
     private Film film;
+    private Film film2;
     private Film updatedFilm;
     private User user;
+    private Director director;
 
     @BeforeEach
     public void setUp() {
         filmLikeStorage = new FilmLikeDbStorage(jdbcTemplate);
         filmGenreStorage = new FilmGenreDbStorage(jdbcTemplate);
-        filmDbStorage = new FilmDbStorage(jdbcTemplate, filmGenreStorage);
+        directorStorage = new DirectorDbStorage(jdbcTemplate);
+        FilmDirectorStorage filmDirectorStorage = new FilmDirectorDbStorage(jdbcTemplate);
+        filmDbStorage = new FilmDbStorage(jdbcTemplate, filmGenreStorage, filmDirectorStorage);
         userStorage = new UserDbStorage(jdbcTemplate);
 
         Mpa mpa = new Mpa(1, "G");
@@ -58,6 +58,15 @@ public class FilmDbStorageTest {
                 .name("film")
                 .description("film description")
                 .releaseDate(LocalDate.of(2020, 12, 12))
+                .duration(123)
+                .mpa(mpa)
+                .build();
+
+        film2 = Film.builder()
+                .id(2)
+                .name("film")
+                .description("film description")
+                .releaseDate(LocalDate.of(2019, 12, 12))
                 .duration(123)
                 .mpa(mpa)
                 .build();
@@ -72,6 +81,11 @@ public class FilmDbStorageTest {
                 .build();
 
         user = new User(1, "email", "login", "name", LocalDate.now());
+
+        director = Director.builder()
+                .id(1)
+                .name("Director")
+                .build();
     }
 
     @Test
@@ -349,19 +363,20 @@ public class FilmDbStorageTest {
 
     @Test
     @DisplayName("Тест поиск фильма по режиссеру")
-    @Disabled
     void testSearchFilmByDirector() {
+        directorStorage.add(director);
+        film.getDirectors().add(director);
         Film newFilm = filmDbStorage.add(film);
         FilmSearchDto query = FilmSearchDto.builder()
                 .by(List.of(SearchBy.DIRECTOR.toString()))
-                .query(newFilm.getName()) // поменять на директора
+                .query(director.getName())
                 .build();
         Collection<Film> films = filmDbStorage.searchFilms(query);
 
         assertThat(films)
                 .isNotNull()
                 .isNotEmpty()
-                .isEqualTo(List.of(film));
+                .isEqualTo(List.of(newFilm));
     }
 
     @Test
@@ -382,13 +397,35 @@ public class FilmDbStorageTest {
 
     @Test
     @DisplayName("Тест поиск фильмов по частичному названию фильма и режиссера")
-    @Disabled
     void testSearchFilmBylTitleAndDirector() {
-        Film newFilm = filmDbStorage.add(updatedFilm);
-        Film newFilm2 = filmDbStorage.add(film);
+        Director newDirector = Director.builder()
+                .id(1)
+                .name("name")
+                .build();
+        directorStorage.add(newDirector);
+
+        Film filmWithDir = Film.builder()
+                .name("film")
+                .description("film description")
+                .releaseDate(LocalDate.of(2019, 12, 12))
+                .duration(123)
+                .mpa(new Mpa(1, "G"))
+                .build();
+        filmWithDir.getDirectors().add(newDirector);
+        filmWithDir = filmDbStorage.add(filmWithDir);
+
+        Film fimWithName = Film.builder()
+                .name("name")
+                .description("film description")
+                .releaseDate(LocalDate.of(2019, 12, 12))
+                .duration(123)
+                .mpa(new Mpa(1, "G"))
+                .build();
+        fimWithName = filmDbStorage.add(fimWithName);
+
         FilmSearchDto query = FilmSearchDto.builder()
                 .by(SearchBy.getStringValues())
-                .query(newFilm.getName().substring(0, 3))
+                .query(fimWithName.getName().substring(0, 3))
                 .build();
         Collection<Film> films = filmDbStorage.searchFilms(query);
 
@@ -396,6 +433,64 @@ public class FilmDbStorageTest {
                 .isNotNull()
                 .isNotEmpty()
                 .hasSize(2)
-                .isEqualTo(List.of(updatedFilm, film));
+                .usingRecursiveComparison()
+                .isEqualTo(List.of(filmWithDir, fimWithName));
+    }
+
+    @Test
+    @DisplayName("Тест получения фильмов режиссера c сортировкой по году.")
+    public void findFilmsByDirectorSortByYear() {
+        film.getDirectors().add(director);
+        film2.getDirectors().add(director);
+        directorStorage.add(director);
+        filmDbStorage.add(film);
+        filmDbStorage.add(film2);
+
+        Collection<Film> films = filmDbStorage.findFilmsFromDirectorOrderBy(director.getId(),
+                FilmServiceImpl.ALLOWED_SORTS.get("year"));
+
+        assertThat(films)
+                .isNotNull()
+                .isNotEmpty()
+                .usingRecursiveComparison()
+                .isEqualTo(List.of(film2, film));
+    }
+
+    @Test
+    @DisplayName("Тест получения фильмов режиссера c сортировкой по лайкам.")
+    public void findFilmsByDirectorSortByLikes() {
+        film.getDirectors().add(director);
+        film2.getDirectors().add(director);
+        film.setLikes(1);
+
+        userStorage.add(user);
+        directorStorage.add(director);
+        filmDbStorage.add(film);
+        filmDbStorage.add(film2);
+        filmLikeStorage.add(1, 1);
+        System.out.println(film.getId());
+        System.out.println(film2.getId());
+
+
+        Collection<Film> films = filmDbStorage.findFilmsFromDirectorOrderBy(director.getId(),
+                FilmServiceImpl.ALLOWED_SORTS.get("likes"));
+
+        assertThat(films)
+                .isNotNull()
+                .isNotEmpty()
+                .usingRecursiveComparison()
+                .isEqualTo(List.of(film, film2));
+    }
+
+    @Test
+    @DisplayName("Тест получения пустого списка, когда у режиссера нет фильмов.")
+    public void findFilmsByDirectorUnknownId() {
+        directorStorage.add(director);
+        Collection<Film> films = filmDbStorage.findFilmsFromDirectorOrderBy(director.getId(),
+                FilmServiceImpl.ALLOWED_SORTS.get("year"));
+
+        assertThat(films)
+                .isNotNull()
+                .isEmpty();
     }
 }

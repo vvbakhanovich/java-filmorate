@@ -6,6 +6,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.junit.jupiter.MockitoExtension;
+import ru.yandex.practicum.filmorate.dao.DirectorStorage;
 import ru.yandex.practicum.filmorate.dao.FilmLikeStorage;
 import ru.yandex.practicum.filmorate.dao.FilmStorage;
 import ru.yandex.practicum.filmorate.dao.UserStorage;
@@ -35,6 +36,10 @@ class FIlmServiceTest {
     @Mock
     private FilmLikeStorage filmLikeStorage;
 
+    @Mock
+    private DirectorStorage directorStorage;
+
+
     @InjectMocks
     private FilmService filmService;
 
@@ -42,7 +47,7 @@ class FIlmServiceTest {
 
     @BeforeAll
     public void beforeAll() {
-        filmService = new FilmServiceImpl(filmStorage, userStorage, filmLikeStorage);
+        filmService = new FilmServiceImpl(filmStorage, userStorage, filmLikeStorage, directorStorage);
     }
 
     @BeforeEach
