@@ -135,7 +135,6 @@ public class FilmDbStorage implements FilmStorage {
         Collection<Film> films = jdbcTemplate.query(sql, this::mapToFilm, count);
         setGenresForFilms(films);
         setDirectorsForFilms(films);
-
         return films;
     }
 
@@ -204,14 +203,14 @@ public class FilmDbStorage implements FilmStorage {
         sql.append("GROUP BY f.id, m.rating_name, d.DIRECTOR_NAME ORDER BY COUNT(fl.USER_ID) DESC");
 
         Collection<Film> films = jdbcTemplate.query(sql.toString(), this::mapToFilm);
-        films = setDirectorsForFilms(films);
-        setGenresForFilms(films);
-        return films;
+        LinkedHashSet<Film> unique = new LinkedHashSet<>(films);
+        setDirectorsForFilms(unique);
+        setGenresForFilms(unique);
+        return unique;
     }
 
     private List<Film> setGenresForFilms(Collection<Film> films) {
         Map<Long, Film> filmMap = films.stream()
-                .distinct()
                 .collect(Collectors.toMap(Film::getId, identity()));
         Map<Long, List<Genre>> filmIdGenreMap = filmGenreStorage.findGenresInIdList(filmMap.keySet());
         filmIdGenreMap.forEach((id, genres) -> filmMap.get(id).getGenres().addAll(genres));
@@ -220,7 +219,6 @@ public class FilmDbStorage implements FilmStorage {
 
     private List<Film> setDirectorsForFilms(Collection<Film> films) {
         Map<Long, Film> filmMap = films.stream()
-                .distinct()
                 .collect(Collectors.toMap(Film::getId, identity()));
         Map<Long, List<Director>> filmIdDirectorMap = filmDirectorStorage.findDirectorsInIdList(filmMap.keySet());
         filmIdDirectorMap.forEach((id, directors) -> filmMap.get(id).getDirectors().addAll(directors));
