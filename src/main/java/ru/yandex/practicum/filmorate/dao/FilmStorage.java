@@ -6,11 +6,10 @@ import java.util.Collection;
 import java.util.Set;
 
 public interface FilmStorage extends Dao<Film> {
-    Collection<Film> findMostLikedFilmsLimitBy(int count);
-
-    Collection<Film> findMostLikedFilmsByGenre(int genre);
 
     Collection<Film> findFilmsByIds(Set<Long> filmIds);
 
     Collection<Film> findFilmsFromDirectorOrderBy(long directorId, String sortBy);
+
+    Collection<Film> findMostLikedFilms(int count, Integer genreId, Integer year);
 }
