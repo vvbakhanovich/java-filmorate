@@ -143,12 +143,18 @@ public class FilmServiceImpl implements FilmService {
      * Получение списка самых популярных фильмов. Под популярностью понимается количество лайков у фильма. Чем больше
      * лайков, тем популярнее фильм.
      *
-     * @param count ограничение количества выводимых фильмов
+     * @param count   ограничение количества выводимых фильмов
+     * @param genreId ограничение выводимых фильмов по жанру
+     * @param year    ограничение выводимых фильмов по году
      * @return список фильмов.
      */
+
     @Override
-    public Collection<FilmDto> getMostPopularFilms(final int count) {
-        return filmStorage.findMostLikedFilmsLimitBy(count).stream().map(FilmMapper::toDto).collect(Collectors.toList());
+    public Collection<FilmDto> getMostPopularFilms(final int count, final Integer genreId, final Integer year) {
+        return filmStorage.findMostLikedFilms(count, genreId, year)
+                .stream()
+                .map(FilmMapper::toDto)
+                .collect(Collectors.toList());
     }
 
     /**
