@@ -10,14 +10,13 @@ import ru.yandex.practicum.filmorate.dao.FilmStorage;
 import ru.yandex.practicum.filmorate.dao.UserStorage;
 import ru.yandex.practicum.filmorate.dto.FilmDto;
 import ru.yandex.practicum.filmorate.dto.FilmSearchDto;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.mapper.FilmMapper;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.SearchBy;
 import ru.yandex.practicum.filmorate.service.FilmService;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static ru.yandex.practicum.filmorate.mapper.FilmMapper.toDto;
@@ -195,5 +194,23 @@ public class FilmServiceImpl implements FilmService {
         return filmStorage.findFilmsFromDirectorOrderBy(directorId, ALLOWED_SORTS.get(sortBy)).stream()
                 .map(FilmMapper::toDto)
                 .collect(Collectors.toList());
+    }
+
+    @Transactional
+    @Override
+    public Collection<FilmDto> getCommonFilms(long userId, long friendId) {
+        Map<Long, Set<Long>> userLikesMap = filmLikeStorage.getUsersAndFilmLikes();
+
+        Set<Long> userLikedFilmIds = userLikesMap.getOrDefault(userId, Collections.emptySet());
+        Set<Long> friendLikedFilmIds = userLikesMap.getOrDefault(friendId, Collections.emptySet());
+
+        userLikedFilmIds.retainAll(friendLikedFilmIds);
+
+        if (userLikedFilmIds.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        Collection<Film> commonFilms = filmStorage.findFilmsByIdsOrderByLikes(userLikedFilmIds);
+        return commonFilms.stream().map(FilmMapper::toDto).collect(Collectors.toList());
     }
 }
