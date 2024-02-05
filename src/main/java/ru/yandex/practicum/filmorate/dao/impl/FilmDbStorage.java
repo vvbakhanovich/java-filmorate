@@ -118,17 +118,22 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     @Override
-    public Collection<Film> findMostLikedFilmsLimitBy(final int count) {
-        final String sql = "SELECT " +
-                "f.ID, f.TITLE, f.DESCRIPTION, f.RELEASE_DATE, f.DURATION, f.MPA_ID, m.RATING_NAME, COUNT(fl.USER_ID) AS likes " +
-                "FROM " +
-                "FILM f LEFT JOIN MPA m ON f.MPA_ID = m.ID " +
-                "LEFT JOIN film_like fl on f.id = fl.film_id " +
-                "GROUP BY f.id, m.rating_name " +
-                "ORDER BY COUNT(fl.USER_ID) DESC " +
-                "LIMIT ?";
-
-        Collection<Film> films = jdbcTemplate.query(sql, this::mapToFilm, count);
+    public Collection<Film> findMostLikedFilms(final int count, final Integer genreId, final Integer year) {
+        final StringBuilder sql = new StringBuilder(
+                "SELECT f.ID, f.TITLE, f.DESCRIPTION, f.RELEASE_DATE, f.DURATION, f.MPA_ID, m.RATING_NAME, COUNT(fl.USER_ID) AS likes " +
+                        "FROM FILM_GENRE " +
+                        "RIGHT JOIN film f on FILM_GENRE.FILM_ID = f.ID " +
+                        "LEFT JOIN MPA m ON f.MPA_ID = m.ID " +
+                        "LEFT JOIN film_like fl on f.id = fl.film_id " +
+                        "WHERE YEAR(f.RELEASE_DATE) = COALESCE(?, YEAR(f.RELEASE_DATE)) ");
+        Collection<Film> films;
+        if (genreId != null) {
+            sql.append("AND GENRE_ID = ? GROUP BY f.ID ORDER BY COUNT(fl.USER_ID) DESC LIMIT ?");
+            films = jdbcTemplate.query(sql.toString(), this::mapToFilm, year, genreId, count);
+        } else {
+            sql.append("GROUP BY f.ID ORDER BY COUNT(fl.USER_ID) DESC LIMIT ?");
+            films = jdbcTemplate.query(sql.toString(), this::mapToFilm, year, count);
+        }
         setGenresForFilms(films);
         setDirectorsForFilms(films);
         return films;

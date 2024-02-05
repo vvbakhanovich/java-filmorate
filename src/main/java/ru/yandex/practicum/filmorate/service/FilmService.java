@@ -20,9 +20,9 @@ public interface FilmService {
 
     void removeFilm(long filmId);
 
-    Collection<FilmDto> getMostPopularFilms(final int count);
-
     Collection<FilmDto> getFilmsFromDirector(long directorId, String sortBy);
 
     Collection<FilmDto> searchFilms(FilmSearchDto search);
+
+    Collection<FilmDto> getMostPopularFilms(int count, Integer genreId, Integer year);
 }

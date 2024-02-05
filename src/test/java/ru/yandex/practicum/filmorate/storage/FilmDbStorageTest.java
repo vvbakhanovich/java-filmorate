@@ -320,23 +320,64 @@ public class FilmDbStorageTest {
     }
 
     @Test
-    @DisplayName("Тест на получение самых популярных фильмов с несколькими жанрами")
-    void testMostPopularFilmsWithSeveralGenres() {
+    @DisplayName("Тест на получение самых популярных фильмов определенного жанра за указанный год")
+    void testMostPopularFilmsWithSpecifiedGenreAndYear() {
         Genre genre1 = new Genre(1, "Комедия");
         Genre genre2 = new Genre(6, "Боевик");
-        Genre genre3 = new Genre(2, "Драма");
 
         userStorage.add(user);
         film.getGenres().add(genre1);
         film.getGenres().add(genre2);
-        film.getGenres().add(genre3);
+        film.setReleaseDate(LocalDate.of(1999, 1, 1));
         filmDbStorage.add(film);
         filmLikeStorage.add(film.getId(), user.getId());
-        filmDbStorage.add(updatedFilm);
 
         film.setLikes(1);
 
-        Collection<Film> popularFilms = filmDbStorage.findMostLikedFilmsLimitBy(1);
+        Collection<Film> popularFilms = filmDbStorage.findMostLikedFilms(10, 1, 1999);
+
+        assertThat(popularFilms)
+                .isNotNull()
+                .isNotEmpty()
+                .isEqualTo(List.of(film));
+    }
+
+    @Test
+    @DisplayName("Тест на получение самых популярных фильмов за указанный год и без жанров")
+    void testMostPopularFilmsWithSpecifiedYearWithoutGenre() {
+
+        userStorage.add(user);
+        film.setReleaseDate(LocalDate.of(1999, 1, 1));
+        filmDbStorage.add(film);
+        filmLikeStorage.add(film.getId(), user.getId());
+
+        film.setLikes(1);
+
+        Collection<Film> popularFilms = filmDbStorage.findMostLikedFilms(10, null, 1999);
+
+        assertThat(popularFilms)
+                .isNotNull()
+                .isNotEmpty()
+                .isEqualTo(List.of(film));
+    }
+
+    @Test
+    @DisplayName("Тест на получение самых популярных фильмов указанного жанра и без года")
+    void testMostPopularFilmsWithSpecifiedGenreWithoutYear() {
+
+        Genre genre1 = new Genre(1, "Комедия");
+        Genre genre2 = new Genre(6, "Боевик");
+
+        userStorage.add(user);
+        film.getGenres().add(genre1);
+        film.getGenres().add(genre2);
+
+        filmDbStorage.add(film);
+        filmLikeStorage.add(film.getId(), user.getId());
+
+        film.setLikes(1);
+
+        Collection<Film> popularFilms = filmDbStorage.findMostLikedFilms(10, 1, null);
 
         assertThat(popularFilms)
                 .isNotNull()
@@ -435,6 +476,66 @@ public class FilmDbStorageTest {
                 .hasSize(2)
                 .usingRecursiveComparison()
                 .isEqualTo(List.of(filmWithDir, fimWithName));
+    }
+
+    @Test
+    @DisplayName("Тест на получение самых популярных фильмов без указания жанра и года")
+    void testMostPopularFilmsWithoutSpecifiedGenreAndYear() {
+
+        User user2 = new User(2, "email2", "login2", "name2", LocalDate.now());
+        User user3 = new User(3, "email3", "login3", "name3", LocalDate.now());
+
+        userStorage.add(user);
+        userStorage.add(user2);
+        userStorage.add(user3);
+
+        filmDbStorage.add(film);
+        filmDbStorage.add(film2);
+
+        filmLikeStorage.add(film.getId(), user.getId());
+        filmLikeStorage.add(film.getId(), user2.getId());
+        filmLikeStorage.add(film.getId(), user3.getId());
+
+        filmLikeStorage.add(film2.getId(), user.getId());
+        filmLikeStorage.add(film2.getId(), user2.getId());
+
+        film.setLikes(3);
+        film2.setLikes(2);
+
+        Collection<Film> popularFilms = filmDbStorage.findMostLikedFilms(2, null, null);
+
+        assertThat(popularFilms)
+                .isNotNull()
+                .isNotEmpty()
+                .isEqualTo(List.of(film, film2));
+    }
+
+    @Test
+    @DisplayName("Тест на получение самых популярных фильмов без указания жанра и года (один фильм без лайков)")
+    void testMostPopularFilmsWithoutSpecifiedGenreAndYearOneFilmWithoutLikes() {
+
+        User user2 = new User(2, "email2", "login2", "name2", LocalDate.now());
+        User user3 = new User(3, "email3", "login3", "name3", LocalDate.now());
+
+        userStorage.add(user);
+        userStorage.add(user2);
+        userStorage.add(user3);
+
+        filmDbStorage.add(film);
+        filmDbStorage.add(film2);
+
+        filmLikeStorage.add(film.getId(), user.getId());
+        filmLikeStorage.add(film.getId(), user2.getId());
+        filmLikeStorage.add(film.getId(), user3.getId());
+
+        film.setLikes(3);
+
+        Collection<Film> popularFilms = filmDbStorage.findMostLikedFilms(2, null, null);
+
+        assertThat(popularFilms)
+                .isNotNull()
+                .isNotEmpty()
+                .isEqualTo(List.of(film, film2));
     }
 
     @Test
