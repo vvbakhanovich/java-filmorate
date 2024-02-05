@@ -10,11 +10,9 @@ import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.dao.FilmDirectorStorage;
 import ru.yandex.practicum.filmorate.dao.FilmGenreStorage;
 import ru.yandex.practicum.filmorate.dao.FilmStorage;
+import ru.yandex.practicum.filmorate.dto.FilmSearchDto;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
-import ru.yandex.practicum.filmorate.model.Director;
-import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.Genre;
-import ru.yandex.practicum.filmorate.model.Mpa;
+import ru.yandex.practicum.filmorate.model.*;
 
 import java.sql.Date;
 import java.sql.PreparedStatement;
@@ -159,10 +157,10 @@ public class FilmDbStorage implements FilmStorage {
         final List<Film> directorFilms = jdbcTemplate.query(sqlWithSort, this::mapToFilm, filmsByDirectorId.toArray());
         setGenresForFilms(directorFilms);
         setDirectorsForFilms(directorFilms);
-
         return directorFilms;
     }
 
+    @Override
     public Collection<Film> findFilmsByIds(Set<Long> filmIds) {
         final String ids = String.join(",", Collections.nCopies(filmIds.size(), "?"));
         final String sql = String.format(
@@ -175,18 +173,52 @@ public class FilmDbStorage implements FilmStorage {
                         "GROUP BY f.id, m.rating_name ", ids);
 
         Collection<Film> films = jdbcTemplate.query(sql, this::mapToFilm, filmIds.toArray());
+        setDirectorsForFilms(films);
         return setGenresForFilms(films);
     }
 
+    @Override
+    public Collection<Film> searchFilms(FilmSearchDto search) {
+        StringBuilder sql = new StringBuilder("SELECT " +
+                "f.ID, f.TITLE, f.DESCRIPTION, f.RELEASE_DATE, f.DURATION, f.MPA_ID, m.RATING_NAME, COUNT(fl.USER_ID) AS likes, d.DIRECTOR_NAME " +
+                "FROM FILM f " +
+                "LEFT JOIN MPA m ON f.MPA_ID = m.ID " +
+                "LEFT JOIN film_like fl on f.id = fl.film_id " +
+                "left join FILM_DIRECTOR fd on f.id = fd.FILM_ID " +
+                "left join DIRECTOR D on fd.DIRECTOR_ID = D.ID " +
+                "where ");
+
+        if (search.getBy().contains(String.valueOf(SearchBy.TITLE))) {
+            sql.append("f.TITLE ilike '%")
+                    .append(search.getQuery())
+                    .append("%' ");
+        }
+        if (search.getBy().size() == 2) {
+            sql.append("OR ");
+        }
+        if (search.getBy().contains(String.valueOf(SearchBy.DIRECTOR))) {
+            sql.append("d.DIRECTOR_NAME ilike '%")
+                    .append(search.getQuery())
+                    .append("%' ");
+        }
+        sql.append("GROUP BY f.id ORDER BY COUNT(fl.USER_ID) DESC");
+        Collection<Film> films = jdbcTemplate.query(sql.toString(), this::mapToFilm);
+        setDirectorsForFilms(films);
+        setGenresForFilms(films);
+        return films;
+    }
+
     private List<Film> setGenresForFilms(Collection<Film> films) {
-        Map<Long, Film> filmMap = films.stream().collect(Collectors.toMap(Film::getId, identity()));
+        Map<Long, Film> filmMap = films.stream()
+                .collect(Collectors.toMap(Film::getId, identity()));
         Map<Long, List<Genre>> filmIdGenreMap = filmGenreStorage.findGenresInIdList(filmMap.keySet());
         filmIdGenreMap.forEach((id, genres) -> filmMap.get(id).getGenres().addAll(genres));
         return new ArrayList<>(filmMap.values());
     }
 
     private List<Film> setDirectorsForFilms(Collection<Film> films) {
-        Map<Long, Film> filmMap = films.stream().collect(Collectors.toMap(Film::getId, identity()));
+        Map<Long, Film> filmMap = films.stream()
+                .collect(Collectors.toMap(Film::getId, identity()));
         Map<Long, List<Director>> filmIdDirectorMap = filmDirectorStorage.findDirectorsInIdList(filmMap.keySet());
         filmIdDirectorMap.forEach((id, directors) -> filmMap.get(id).getDirectors().addAll(directors));
         return new ArrayList<>(filmMap.values());
