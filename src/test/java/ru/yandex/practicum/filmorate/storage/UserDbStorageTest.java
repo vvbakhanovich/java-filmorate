@@ -12,6 +12,7 @@ import ru.yandex.practicum.filmorate.dao.*;
 import ru.yandex.practicum.filmorate.dao.impl.*;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.*;
+import ru.yandex.practicum.filmorate.service.impl.FilmServiceImpl;
 import ru.yandex.practicum.filmorate.service.impl.UserServiceImpl;
 
 import java.time.LocalDate;
@@ -32,10 +33,13 @@ class UserDbStorageTest {
     private final JdbcTemplate jdbcTemplate;
     private UserStorage userStorage;
     private UserServiceImpl userService;
+    private FilmServiceImpl filmService;
     private FriendshipStorage friendshipStorage;
     private FilmGenreStorage filmGenreStorage;
     private FilmLikeStorage filmLikeStorage;
-    private FilmStorage filmDbStorage;
+    private FilmStorage filmStorage;
+    private EventStorage eventStorage;
+    private DirectorStorage directorStorage;
     private User user;
     private User updatedUser;
     private User anotherUser;
@@ -48,10 +52,12 @@ class UserDbStorageTest {
         filmLikeStorage = new FilmLikeDbStorage(jdbcTemplate);
         filmGenreStorage = new FilmGenreDbStorage(jdbcTemplate);
         FilmDirectorStorage filmDirectorStorage = new FilmDirectorDbStorage(jdbcTemplate);
-        filmDbStorage = new FilmDbStorage(jdbcTemplate, filmGenreStorage, filmDirectorStorage);
+        filmStorage = new FilmDbStorage(jdbcTemplate, filmGenreStorage, filmDirectorStorage);
         userStorage = new UserDbStorage(jdbcTemplate);
+        eventStorage = new EventDbStorage(jdbcTemplate);
         friendshipStorage = new FriendshipDbStorage(jdbcTemplate);
-        userService = new UserServiceImpl(userStorage, filmDbStorage, friendshipStorage, filmLikeStorage);
+        userService = new UserServiceImpl(userStorage, filmStorage, friendshipStorage, filmLikeStorage, eventStorage);
+        filmService = new FilmServiceImpl(filmStorage, userStorage, filmLikeStorage, directorStorage, eventStorage);
         user = User.builder()
                 .id(1)
                 .email("email")
@@ -369,8 +375,8 @@ class UserDbStorageTest {
         userStorage.add(user);
         userStorage.add(anotherUser);
 
-        filmDbStorage.add(filmOne);
-        filmDbStorage.add(filmTwo);
+        filmStorage.add(filmOne);
+        filmStorage.add(filmTwo);
 
         filmLikeStorage.add(filmOne.getId(), user.getId());
         filmLikeStorage.add(filmOne.getId(), anotherUser.getId());
@@ -394,7 +400,7 @@ class UserDbStorageTest {
     void testGetRecommendationsListNoLikes() {
         userStorage.add(user);
         userStorage.add(anotherUser);
-        filmDbStorage.add(filmOne);
+        filmStorage.add(filmOne);
 
         Map<Long, Set<Long>> filmRecommendations = filmLikeStorage.getUsersAndFilmLikes();
 
@@ -408,9 +414,9 @@ class UserDbStorageTest {
     void testGetFeed() {
         userStorage.add(user);
         userStorage.add(anotherUser);
-        filmDbStorage.add(filmOne);
-        filmLikeStorage.add(filmOne.getId(), user.getId());
-        friendshipStorage.add(user.getId(), anotherUser.getId(), NOT_ACKNOWLEDGED.getId());
+        filmStorage.add(filmOne);
+        filmService.likeFilm(filmOne.getId(), user.getId());
+        userService.addFriend(user.getId(), anotherUser.getId());
 
         Feed feedLike = Feed.builder()
                 .entityId(filmOne.getId())
@@ -466,7 +472,7 @@ class UserDbStorageTest {
     void testGetEmptyFeed() {
         userStorage.add(user);
         userStorage.add(anotherUser);
-        filmDbStorage.add(filmOne);
+        filmStorage.add(filmOne);
 
         Collection<Feed> feed = userStorage.getFeed(1L);
 

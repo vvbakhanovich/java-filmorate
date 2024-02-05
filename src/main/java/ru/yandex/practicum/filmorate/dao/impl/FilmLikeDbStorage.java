@@ -7,8 +7,6 @@ import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.dao.FilmLikeStorage;
-import ru.yandex.practicum.filmorate.model.EventType;
-import ru.yandex.practicum.filmorate.model.Operation;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -26,9 +24,6 @@ public class FilmLikeDbStorage implements FilmLikeStorage {
     public void add(final long filmId, final long userId) {
         final String sql = "INSERT INTO film_like (film_id, user_id) VALUES (?, ?)";
         jdbcTemplate.update(sql, filmId, userId);
-
-        final String sqlFeedUpdate = "INSERT INTO feed_events (event_type, operation, entity_id, user_id) VALUES (?, ?, ?, ?)";
-        jdbcTemplate.update(sqlFeedUpdate, EventType.LIKE.name(), Operation.ADD.name(), filmId, userId);
     }
 
     @Override
@@ -52,9 +47,6 @@ public class FilmLikeDbStorage implements FilmLikeStorage {
     public void remove(long filmId, long userId) {
         final String sql = "DELETE FROM film_like WHERE film_id = ? AND user_id = ?";
         jdbcTemplate.update(sql, filmId, userId);
-
-        final String sqlFeedUpdate = "INSERT INTO feed_events (event_type, operation, entity_id, user_id) VALUES (?, ?, ?, ?)";
-        jdbcTemplate.update(sqlFeedUpdate, EventType.LIKE.name(), Operation.REMOVE.name(), filmId, userId);
     }
 
     @Override
