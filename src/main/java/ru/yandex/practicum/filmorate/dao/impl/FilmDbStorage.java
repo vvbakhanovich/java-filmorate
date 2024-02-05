@@ -236,4 +236,42 @@ public class FilmDbStorage implements FilmStorage {
         film.setLikes(rs.getLong("likes"));
         return film;
     }
+
+    @Override
+    public Collection<Film> findFilmsByIdsOrderByLikes(Set<Long> filmIds) {
+        if (filmIds.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        String placeholders = String.join(",", Collections.nCopies(filmIds.size(), "?"));
+        String sql = "SELECT f.ID, f.TITLE, f.DESCRIPTION, f.RELEASE_DATE, f.DURATION, f.MPA_ID, " +
+                "m.RATING_NAME, COUNT(fl.USER_ID) AS LIKES " +
+                "FROM FILM f " +
+                "LEFT JOIN MPA m ON f.MPA_ID = m.ID " +
+                "LEFT JOIN film_like fl ON f.ID = fl.FILM_ID " +
+                "WHERE f.ID IN (" + placeholders + ") " +
+                "GROUP BY f.ID, m.RATING_NAME " +
+                "ORDER BY LIKES DESC";
+
+        Object[] idsArray = filmIds.toArray(new Object[0]);
+
+        List<Film> films = jdbcTemplate.query(sql, idsArray, (rs, rowNum) -> {
+            Mpa mpa = new Mpa(rs.getInt("MPA_ID"), rs.getString("RATING_NAME")); // Использование MpaMapper здесь невозможно, т.к. требуется ResultSet
+            Film film = Film.builder()
+                    .id(rs.getLong("ID"))
+                    .name(rs.getString("TITLE"))
+                    .description(rs.getString("DESCRIPTION"))
+                    .releaseDate(rs.getDate("RELEASE_DATE").toLocalDate())
+                    .duration(rs.getInt("DURATION"))
+                    .mpa(mpa)
+                    .likes(rs.getLong("LIKES"))
+                    .build();
+            return film;
+        });
+
+        setDirectorsForFilms(films);
+        setGenresForFilms(films);
+        return films;
+    }
+
 }

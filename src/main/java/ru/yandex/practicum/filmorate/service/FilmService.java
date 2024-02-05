@@ -25,4 +25,6 @@ public interface FilmService {
     Collection<FilmDto> searchFilms(FilmSearchDto search);
 
     Collection<FilmDto> getMostPopularFilms(int count, Integer genreId, Integer year);
+
+    Collection<FilmDto> getCommonFilms(long userId, long friendId);
 }
