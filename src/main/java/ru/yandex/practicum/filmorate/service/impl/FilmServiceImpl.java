@@ -29,6 +29,7 @@ public class FilmServiceImpl implements FilmService {
 
     public static final Map<String, String> ALLOWED_SORTS = Map.of(
             "year", "f.release_date",
+            "likes", "COUNT(fl.USER_ID) DESC",
             "rating", "rating DESC"
     );
 
