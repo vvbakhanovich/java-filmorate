@@ -121,7 +121,7 @@ public class FilmDbStorage implements FilmStorage {
     @Override
     public Collection<Film> findMostLikedFilms(final int count, final Integer genreId, final Integer year) {
         final StringBuilder sql = new StringBuilder(
-                "SELECT f.ID, f.TITLE, f.DESCRIPTION, f.RELEASE_DATE, f.DURATION, f.MPA_ID, m.RATING_NAME, COUNT(fl.USER_ID) AS likes " +
+                "SELECT f.ID, f.TITLE, f.DESCRIPTION, f.RELEASE_DATE, f.DURATION, f.MPA_ID, m.RATING_NAME, CAST (AVG (fl.RATING) AS DECIMAL(3,1)) AS rating " +
                         "FROM FILM_GENRE " +
                         "RIGHT JOIN film f on FILM_GENRE.FILM_ID = f.ID " +
                         "LEFT JOIN MPA m ON f.MPA_ID = m.ID " +
@@ -216,7 +216,7 @@ public class FilmDbStorage implements FilmStorage {
                 "WHERE fl1.user_id = ? AND fl2.user_id = ? AND fl1.film_id = fl2.film_id";
         final String sql = String.format(
                 "SELECT " +
-                        "f.ID, f.TITLE, f.DESCRIPTION, f.RELEASE_DATE, f.DURATION, f.MPA_ID, m.RATING_NAME, COUNT(fl.USER_ID) AS likes " +
+                        "f.ID, f.TITLE, f.DESCRIPTION, f.RELEASE_DATE, f.DURATION, f.MPA_ID, m.RATING_NAME, CAST (AVG (fl.RATING) AS DECIMAL(3,1)) AS rating " +
                         "FROM " +
                         "FILM f LEFT JOIN MPA m ON f.MPA_ID = m.ID " +
                         "LEFT JOIN film_like fl on f.id = fl.film_id " +
