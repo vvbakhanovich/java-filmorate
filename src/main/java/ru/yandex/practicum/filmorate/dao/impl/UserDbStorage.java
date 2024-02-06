@@ -108,16 +108,6 @@ public class UserDbStorage implements UserStorage {
         return jdbcTemplate.query(sql, this::extractToUserList, userId, anotherUserId);
     }
 
-    @Override
-    public Collection<Feed> getFeed(long id) {
-        User user = findById(id);
-        if (user == null) {
-            throw new NotFoundException("Пользователь с id '" + id + "' не найден.");
-        }
-        final String sql = "SELECT * FROM FEED_EVENTS WHERE USER_ID = ?";
-        return jdbcTemplate.query(sql, this::extractToFeedList, id);
-    }
-
     private User extractToUser(ResultSet rs) throws SQLException, DataAccessException {
 
         User user = null;
