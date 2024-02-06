@@ -67,15 +67,16 @@ public class ReviewServiceImpl implements ReviewService {
      * @return обновленный отзыв.
      */
     @Override
+    @Transactional
     public ReviewDto updateReview(final ReviewDto updatedReviewDto) {
-        findUserAndFilmInDb(updatedReviewDto);
+        final long reviewId = updatedReviewDto.getReviewId();
+        reviewStorage.findById(reviewId);
         final Review updatedReview = toModel(updatedReviewDto);
         reviewStorage.update(updatedReview);
-        final long reviewId = updatedReview.getReviewId();
         log.info("Обновление отзыва с id '{}': {}", reviewId, updatedReview);
-        ReviewDto currentReview = getReviewById(updatedReviewDto.getReviewId());
+        Review currentReview = reviewStorage.findById(reviewId);
         eventStorage.addEvent(EventType.REVIEW.name(), Operation.UPDATE.name(), currentReview.getReviewId(), currentReview.getUserId());
-        return toDto(reviewStorage.findById(reviewId));
+        return toDto(currentReview);
     }
 
     /**

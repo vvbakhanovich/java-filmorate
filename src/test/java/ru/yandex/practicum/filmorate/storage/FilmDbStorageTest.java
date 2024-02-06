@@ -39,6 +39,7 @@ public class FilmDbStorageTest {
     private Film film2;
     private Film updatedFilm;
     private User user;
+    private User user2;
     private Director director;
 
     @BeforeEach
@@ -79,7 +80,21 @@ public class FilmDbStorageTest {
                 .mpa(mpa)
                 .build();
 
-        user = new User(1, "email", "login", "name", LocalDate.now());
+        user = User.builder()
+                .id(1)
+                .email("email")
+                .login("login")
+                .name("name")
+                .birthday(LocalDate.now())
+                .build();
+
+        user2 = User.builder()
+                .id(2)
+                .email("email 2")
+                .login("login 2")
+                .name("name 2")
+                .birthday(LocalDate.now())
+                .build();
 
         director = Director.builder()
                 .id(1)
@@ -591,6 +606,44 @@ public class FilmDbStorageTest {
                 FilmServiceImpl.ALLOWED_SORTS.get("year"));
 
         assertThat(films)
+                .isNotNull()
+                .isEmpty();
+    }
+
+    @Test
+    @DisplayName("Тест получения списка общих фильмов")
+    public void findCommonFilms() {
+        filmDbStorage.add(film);
+        filmDbStorage.add(film2);
+        userStorage.add(user);
+        userStorage.add(user2);
+        filmLikeStorage.add(film.getId(), user.getId());
+        filmLikeStorage.add(film2.getId(), user.getId());
+        filmLikeStorage.add(film.getId(), user2.getId());
+        film.setLikes(2);
+
+        Collection<Film> commonFilms = filmDbStorage.findCommonFilms(user.getId(), user2.getId());
+
+        assertThat(commonFilms)
+                .isNotNull()
+                .isNotEmpty()
+                .usingRecursiveComparison()
+                .isEqualTo(List.of(film));
+    }
+
+    @Test
+    @DisplayName("Тест получения пустого списка общих фильмов")
+    public void findEmptyCommonFilms() {
+        filmDbStorage.add(film);
+        filmDbStorage.add(film2);
+        userStorage.add(user);
+        userStorage.add(user2);
+        filmLikeStorage.add(film.getId(), user.getId());
+        filmLikeStorage.add(film2.getId(), user2.getId());
+
+        Collection<Film> commonFilms = filmDbStorage.findCommonFilms(user.getId(), user2.getId());
+
+        assertThat(commonFilms)
                 .isNotNull()
                 .isEmpty();
     }

@@ -10,11 +10,8 @@ import ru.yandex.practicum.filmorate.dto.FilmSearchDto;
 import ru.yandex.practicum.filmorate.mapper.FilmMapper;
 import ru.yandex.practicum.filmorate.model.EventType;
 import ru.yandex.practicum.filmorate.model.Film;
-
 import ru.yandex.practicum.filmorate.model.Operation;
-
 import ru.yandex.practicum.filmorate.model.SearchBy;
-
 import ru.yandex.practicum.filmorate.service.FilmService;
 
 import java.util.ArrayList;
@@ -166,7 +163,7 @@ public class FilmServiceImpl implements FilmService {
     }
 
     /**
-     * Получение списка самых популярных фильмов c фильтром по названию фильма и режиссера
+     * Поиск фильмов по названию и по режиссеру.
      *
      * @param search query - текст для поиска
      * @param search by - может принимать значения director (поиск по режиссёру), title (поиск по названию),
@@ -199,6 +196,22 @@ public class FilmServiceImpl implements FilmService {
         }
         directorStorage.findById(directorId);
         return filmStorage.findFilmsFromDirectorOrderBy(directorId, ALLOWED_SORTS.get(sortBy)).stream()
+                .map(FilmMapper::toDto)
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * Получение списка общих фильмов с сортировкой по их популярности.
+     *
+     * @param userId   идентификатор первого пользователя.
+     * @param friendId идентификатор второго пользователя.
+     * @return список общих фильмов между пользователями.
+     */
+    @Override
+    public Collection<FilmDto> getCommonFilms(long userId, long friendId) {
+        userStorage.findById(userId);
+        userStorage.findById(friendId);
+        return filmStorage.findCommonFilms(userId, friendId).stream()
                 .map(FilmMapper::toDto)
                 .collect(Collectors.toList());
     }

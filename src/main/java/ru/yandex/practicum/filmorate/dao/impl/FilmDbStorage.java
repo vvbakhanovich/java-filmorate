@@ -174,7 +174,8 @@ public class FilmDbStorage implements FilmStorage {
 
         Collection<Film> films = jdbcTemplate.query(sql, this::mapToFilm, filmIds.toArray());
         setDirectorsForFilms(films);
-        return setGenresForFilms(films);
+        setGenresForFilms(films);
+        return films;
     }
 
     @Override
@@ -208,20 +209,34 @@ public class FilmDbStorage implements FilmStorage {
         return films;
     }
 
-    private List<Film> setGenresForFilms(Collection<Film> films) {
+    @Override
+    public Collection<Film> findCommonFilms(long userId, long friendId) {
+        final String commonFilmsIdsSql = "SELECT fl1.film_id FROM film_like fl1, film_like fl2 " +
+                "WHERE fl1.user_id = ? AND fl2.user_id = ? AND fl1.film_id = fl2.film_id";
+        final String sql = String.format(
+                "SELECT " +
+                        "f.ID, f.TITLE, f.DESCRIPTION, f.RELEASE_DATE, f.DURATION, f.MPA_ID, m.RATING_NAME, COUNT(fl.USER_ID) AS likes " +
+                        "FROM " +
+                        "FILM f LEFT JOIN MPA m ON f.MPA_ID = m.ID " +
+                        "LEFT JOIN film_like fl on f.id = fl.film_id " +
+                        "GROUP BY f.id, m.rating_name " +
+                        "HAVING f.id IN (%s) " +
+                        "ORDER BY likes DESC", commonFilmsIdsSql);
+        return jdbcTemplate.query(sql, this::mapToFilm, userId, friendId);
+    }
+
+    private void setGenresForFilms(Collection<Film> films) {
         Map<Long, Film> filmMap = films.stream()
                 .collect(Collectors.toMap(Film::getId, identity()));
         Map<Long, List<Genre>> filmIdGenreMap = filmGenreStorage.findGenresInIdList(filmMap.keySet());
         filmIdGenreMap.forEach((id, genres) -> filmMap.get(id).getGenres().addAll(genres));
-        return new ArrayList<>(filmMap.values());
     }
 
-    private List<Film> setDirectorsForFilms(Collection<Film> films) {
+    private void setDirectorsForFilms(Collection<Film> films) {
         Map<Long, Film> filmMap = films.stream()
                 .collect(Collectors.toMap(Film::getId, identity()));
         Map<Long, List<Director>> filmIdDirectorMap = filmDirectorStorage.findDirectorsInIdList(filmMap.keySet());
         filmIdDirectorMap.forEach((id, directors) -> filmMap.get(id).getDirectors().addAll(directors));
-        return new ArrayList<>(filmMap.values());
     }
 
     private Film mapToFilm(ResultSet rs, int rowNum) throws SQLException {
