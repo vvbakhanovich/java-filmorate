@@ -12,8 +12,6 @@ import ru.yandex.practicum.filmorate.dao.*;
 import ru.yandex.practicum.filmorate.dao.impl.*;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.*;
-import ru.yandex.practicum.filmorate.model.*;
-import ru.yandex.practicum.filmorate.service.impl.FilmServiceImpl;
 import ru.yandex.practicum.filmorate.service.impl.FilmServiceImpl;
 import ru.yandex.practicum.filmorate.service.impl.UserServiceImpl;
 
@@ -486,6 +484,6 @@ class UserDbStorageTest {
     @Test
     @DisplayName("Тест получение пустой ленты на несуществующего поьзователяпользователя.")
     void testGetNoUserFeed() {
-        assertThrows(NotFoundException.class, () -> eventStorage.getFeed(1L));
+        assertThrows(NotFoundException.class, () -> userService.getFeed(1L));
     }
 }
