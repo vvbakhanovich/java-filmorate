@@ -67,6 +67,7 @@ public class ReviewServiceImpl implements ReviewService {
      * @return обновленный отзыв.
      */
     @Override
+    @Transactional
     public ReviewDto updateReview(final ReviewDto updatedReviewDto) {
         final long reviewId = updatedReviewDto.getReviewId();
         reviewStorage.findById(reviewId);
