@@ -178,24 +178,5 @@ public class UserDbStorage implements UserStorage {
 
         return users;
     }
-
-    private List<Feed> extractToFeedList(ResultSet rs) throws SQLException, DataAccessException {
-
-        final List<Feed> feed = new ArrayList<>();
-
-        while (rs.next()) {
-            Feed currentFeed = Feed.builder()
-                    .entityId(rs.getLong("entity_id"))
-                    .eventType(EventType.valueOf(rs.getString("event_type")))
-                    .eventId(rs.getLong("id"))
-                    .operation(Operation.valueOf(rs.getString("operation")))
-                    .userId(rs.getLong("user_id"))
-                    .timestamp(rs.getTimestamp("publication_time").getTime())
-                    .build();
-            feed.add(currentFeed);
-        }
-
-        return feed;
-    }
 }
 
