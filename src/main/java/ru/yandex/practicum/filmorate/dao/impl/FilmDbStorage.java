@@ -182,7 +182,7 @@ public class FilmDbStorage implements FilmStorage {
     @Override
     public Collection<Film> searchFilms(FilmSearchDto search) {
         StringBuilder sql = new StringBuilder("SELECT " +
-                "f.ID, f.TITLE, f.DESCRIPTION, f.RELEASE_DATE, f.DURATION, f.MPA_ID, m.RATING_NAME, COUNT(fl.USER_ID) AS likes, d.DIRECTOR_NAME " +
+                "f.ID, f.TITLE, f.DESCRIPTION, f.RELEASE_DATE, f.DURATION, f.MPA_ID, m.RATING_NAME, CAST (AVG (fl.RATING) AS DECIMAL(3,1)) AS rating, d.DIRECTOR_NAME " +
                 "FROM FILM f " +
                 "LEFT JOIN MPA m ON f.MPA_ID = m.ID " +
                 "LEFT JOIN film_like fl on f.id = fl.film_id " +
@@ -222,7 +222,7 @@ public class FilmDbStorage implements FilmStorage {
                         "LEFT JOIN film_like fl on f.id = fl.film_id " +
                         "GROUP BY f.id, m.rating_name " +
                         "HAVING f.id IN (%s) " +
-                        "ORDER BY likes DESC", commonFilmsIdsSql);
+                        "ORDER BY COUNT(fl.USER_ID) DESC", commonFilmsIdsSql);
         return jdbcTemplate.query(sql, this::mapToFilm, userId, friendId);
     }
 
