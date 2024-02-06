@@ -163,7 +163,7 @@ public class FilmServiceImpl implements FilmService {
     }
 
     /**
-     * Получение списка самых популярных фильмов c фильтром по названию фильма и режиссера
+     * Поиск фильмов по названию и по режиссеру.
      *
      * @param search query - текст для поиска
      * @param search by - может принимать значения director (поиск по режиссёру), title (поиск по названию),
@@ -207,7 +207,6 @@ public class FilmServiceImpl implements FilmService {
      * @param friendId идентификатор второго пользователя.
      * @return список общих фильмов между пользователями.
      */
-    @Transactional
     @Override
     public Collection<FilmDto> getCommonFilms(long userId, long friendId) {
         userStorage.findById(userId);
