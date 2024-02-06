@@ -378,9 +378,9 @@ class UserDbStorageTest {
         filmStorage.add(filmOne);
         filmStorage.add(filmTwo);
 
-        filmLikeStorage.add(filmOne.getId(), user.getId());
-        filmLikeStorage.add(filmOne.getId(), anotherUser.getId());
-        filmLikeStorage.add(filmTwo.getId(), anotherUser.getId());
+        filmLikeStorage.add(filmOne.getId(), user.getId(), 10);
+        filmLikeStorage.add(filmOne.getId(), anotherUser.getId(), 10);
+        filmLikeStorage.add(filmTwo.getId(), anotherUser.getId(), 10);
 
         Map<Long, Set<Long>> filmRecommendations = filmLikeStorage.getUsersAndFilmLikes();
 
@@ -415,7 +415,7 @@ class UserDbStorageTest {
         userStorage.add(user);
         userStorage.add(anotherUser);
         filmStorage.add(filmOne);
-        filmService.likeFilm(filmOne.getId(), user.getId());
+        filmService.likeFilm(filmOne.getId(), user.getId(), 10);
         userService.addFriend(user.getId(), anotherUser.getId());
 
         Feed feedLike = Feed.builder()
