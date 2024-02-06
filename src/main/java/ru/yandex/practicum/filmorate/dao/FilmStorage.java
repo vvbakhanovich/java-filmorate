@@ -16,5 +16,5 @@ public interface FilmStorage extends Dao<Film> {
 
     Collection<Film> findMostLikedFilms(int count, Integer genreId, Integer year);
 
-    Collection<Film> findFilmsByIdsOrderByLikes(Set<Long> filmIds);
+    Collection<Film> findCommonFilms(long userId, long friendId);
 }

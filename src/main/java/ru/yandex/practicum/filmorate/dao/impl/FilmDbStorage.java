@@ -174,7 +174,8 @@ public class FilmDbStorage implements FilmStorage {
 
         Collection<Film> films = jdbcTemplate.query(sql, this::mapToFilm, filmIds.toArray());
         setDirectorsForFilms(films);
-        return setGenresForFilms(films);
+        setGenresForFilms(films);
+        return films;
     }
 
     @Override
@@ -208,20 +209,34 @@ public class FilmDbStorage implements FilmStorage {
         return films;
     }
 
-    private List<Film> setGenresForFilms(Collection<Film> films) {
+    @Override
+    public Collection<Film> findCommonFilms(long userId, long friendId) {
+        final String commonFilmsIdsSql = "SELECT fl1.film_id FROM film_like fl1, film_like fl2 " +
+                "WHERE fl1.user_id = ? AND fl2.user_id = ? AND fl1.film_id = fl2.film_id";
+        final String sql = String.format(
+                "SELECT " +
+                        "f.ID, f.TITLE, f.DESCRIPTION, f.RELEASE_DATE, f.DURATION, f.MPA_ID, m.RATING_NAME, COUNT(fl.USER_ID) AS likes " +
+                        "FROM " +
+                        "FILM f LEFT JOIN MPA m ON f.MPA_ID = m.ID " +
+                        "LEFT JOIN film_like fl on f.id = fl.film_id " +
+                        "GROUP BY f.id, m.rating_name " +
+                        "HAVING f.id IN (%s) " +
+                        "ORDER BY likes DESC", commonFilmsIdsSql);
+        return jdbcTemplate.query(sql, this::mapToFilm, userId, friendId);
+    }
+
+    private void setGenresForFilms(Collection<Film> films) {
         Map<Long, Film> filmMap = films.stream()
                 .collect(Collectors.toMap(Film::getId, identity()));
         Map<Long, List<Genre>> filmIdGenreMap = filmGenreStorage.findGenresInIdList(filmMap.keySet());
         filmIdGenreMap.forEach((id, genres) -> filmMap.get(id).getGenres().addAll(genres));
-        return new ArrayList<>(filmMap.values());
     }
 
-    private List<Film> setDirectorsForFilms(Collection<Film> films) {
+    private void setDirectorsForFilms(Collection<Film> films) {
         Map<Long, Film> filmMap = films.stream()
                 .collect(Collectors.toMap(Film::getId, identity()));
         Map<Long, List<Director>> filmIdDirectorMap = filmDirectorStorage.findDirectorsInIdList(filmMap.keySet());
         filmIdDirectorMap.forEach((id, directors) -> filmMap.get(id).getDirectors().addAll(directors));
-        return new ArrayList<>(filmMap.values());
     }
 
     private Film mapToFilm(ResultSet rs, int rowNum) throws SQLException {
@@ -236,42 +251,4 @@ public class FilmDbStorage implements FilmStorage {
         film.setLikes(rs.getLong("likes"));
         return film;
     }
-
-    @Override
-    public Collection<Film> findFilmsByIdsOrderByLikes(Set<Long> filmIds) {
-        if (filmIds.isEmpty()) {
-            return Collections.emptyList();
-        }
-
-        String placeholders = String.join(",", Collections.nCopies(filmIds.size(), "?"));
-        String sql = "SELECT f.ID, f.TITLE, f.DESCRIPTION, f.RELEASE_DATE, f.DURATION, f.MPA_ID, " +
-                "m.RATING_NAME, COUNT(fl.USER_ID) AS LIKES " +
-                "FROM FILM f " +
-                "LEFT JOIN MPA m ON f.MPA_ID = m.ID " +
-                "LEFT JOIN film_like fl ON f.ID = fl.FILM_ID " +
-                "WHERE f.ID IN (" + placeholders + ") " +
-                "GROUP BY f.ID, m.RATING_NAME " +
-                "ORDER BY LIKES DESC";
-
-        Object[] idsArray = filmIds.toArray(new Object[0]);
-
-        List<Film> films = jdbcTemplate.query(sql, idsArray, (rs, rowNum) -> {
-            Mpa mpa = new Mpa(rs.getInt("MPA_ID"), rs.getString("RATING_NAME")); // Использование MpaMapper здесь невозможно, т.к. требуется ResultSet
-            Film film = Film.builder()
-                    .id(rs.getLong("ID"))
-                    .name(rs.getString("TITLE"))
-                    .description(rs.getString("DESCRIPTION"))
-                    .releaseDate(rs.getDate("RELEASE_DATE").toLocalDate())
-                    .duration(rs.getInt("DURATION"))
-                    .mpa(mpa)
-                    .likes(rs.getLong("LIKES"))
-                    .build();
-            return film;
-        });
-
-        setDirectorsForFilms(films);
-        setGenresForFilms(films);
-        return films;
-    }
-
 }
