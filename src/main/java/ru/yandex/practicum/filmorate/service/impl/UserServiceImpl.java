@@ -214,7 +214,8 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public Collection<FeedDto> getFeed(long id) {
-        return userStorage.getFeed(id).stream().map(FeedMapper::toDto).collect(Collectors.toList());
+        userStorage.findById(id);
+        return eventStorage.getFeed(id).stream().map(FeedMapper::toDto).collect(Collectors.toList());
     }
 
     private UserDto validateUserName(final UserDto userDto) {

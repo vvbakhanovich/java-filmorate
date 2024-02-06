@@ -45,21 +45,17 @@ public class ReviewDbStorage implements ReviewStorage {
 
     @Override
     public void remove(final long id) {
-        long userId;
-        try {
-            userId = findById(id).getUserId();
-        } catch (NullPointerException e) {
-            throw new NotFoundException("Отзыв с id '" +  id + "' не найден.");
-        }
         final String sql = "DELETE FROM review WHERE id = ?";
         int update = jdbcTemplate.update(sql, id);
+        if (update != 1) {
+            throw new NotFoundException("Отзыв с id '" +  id + "' не найден.");
+        }
     }
 
     @Override
     public void update(final Review review) {
         final String sql = "UPDATE review SET review_content = ?, is_positive = ? WHERE id = ?";
         final int update = jdbcTemplate.update(sql, review.getContent(), review.isPositive(), review.getReviewId());
-        Review updatedReview = findById(review.getReviewId());
         if (update != 1) {
             throw new NotFoundException("Отзыв с id '" + review.getReviewId() + "' не найден.");
         }

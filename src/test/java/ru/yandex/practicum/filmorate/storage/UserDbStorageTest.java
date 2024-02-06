@@ -432,7 +432,7 @@ class UserDbStorageTest {
                 .userId(user.getId())
                 .build();
 
-        List<Feed> feed = (List<Feed>) userStorage.getFeed(1L);
+        List<Feed> feed = (List<Feed>) eventStorage.getFeed(1L);
 
         assertThat(feed.get(0).getUserId())
                 .isNotNull()
@@ -474,7 +474,7 @@ class UserDbStorageTest {
         userStorage.add(anotherUser);
         filmStorage.add(filmOne);
 
-        Collection<Feed> feed = userStorage.getFeed(1L);
+        Collection<Feed> feed = eventStorage.getFeed(1L);
 
         assertThat(feed)
                 .isNotNull()
@@ -484,6 +484,6 @@ class UserDbStorageTest {
     @Test
     @DisplayName("Тест получение пустой ленты на несуществующего поьзователяпользователя.")
     void testGetNoUserFeed() {
-        assertThrows(NotFoundException.class, () -> userStorage.getFeed(1L));
+        assertThrows(NotFoundException.class, () -> eventStorage.getFeed(1L));
     }
 }
