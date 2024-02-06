@@ -235,7 +235,7 @@ public class FilmDbStorage implements FilmStorage {
         return jdbcTemplate.query(sql, this::extractToUserFilmMap);
     }
 
-    private List<Film> setGenresForFilms(Collection<Film> films) {
+    private void setGenresForFilms(Collection<Film> films) {
         Map<Long, Film> filmMap = films.stream().collect(Collectors.toMap(Film::getId, identity()));
         Map<Long, List<Genre>> filmIdGenreMap = filmGenreStorage.findGenresInIdList(filmMap.keySet());
         filmIdGenreMap.forEach((id, genres) -> filmMap.get(id).getGenres().addAll(genres));
