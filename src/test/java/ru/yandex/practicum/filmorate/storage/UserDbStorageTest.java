@@ -11,10 +11,8 @@ import org.springframework.test.annotation.DirtiesContext;
 import ru.yandex.practicum.filmorate.dao.*;
 import ru.yandex.practicum.filmorate.dao.impl.*;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
-import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.Friendship;
-import ru.yandex.practicum.filmorate.model.Mpa;
-import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.model.*;
+import ru.yandex.practicum.filmorate.service.impl.FilmServiceImpl;
 import ru.yandex.practicum.filmorate.service.impl.UserServiceImpl;
 
 import java.time.LocalDate;
@@ -35,10 +33,13 @@ class UserDbStorageTest {
     private final JdbcTemplate jdbcTemplate;
     private UserStorage userStorage;
     private UserServiceImpl userService;
+    private FilmServiceImpl filmService;
     private FriendshipStorage friendshipStorage;
     private FilmGenreStorage filmGenreStorage;
     private FilmLikeStorage filmLikeStorage;
-    private FilmStorage filmDbStorage;
+    private FilmStorage filmStorage;
+    private EventStorage eventStorage;
+    private DirectorStorage directorStorage;
     private User user;
     private User updatedUser;
     private User anotherUser;
@@ -51,10 +52,12 @@ class UserDbStorageTest {
         filmLikeStorage = new FilmLikeDbStorage(jdbcTemplate);
         filmGenreStorage = new FilmGenreDbStorage(jdbcTemplate);
         FilmDirectorStorage filmDirectorStorage = new FilmDirectorDbStorage(jdbcTemplate);
-        filmDbStorage = new FilmDbStorage(jdbcTemplate, filmGenreStorage, filmDirectorStorage);
+        filmStorage = new FilmDbStorage(jdbcTemplate, filmGenreStorage, filmDirectorStorage);
         userStorage = new UserDbStorage(jdbcTemplate);
+        eventStorage = new EventDbStorage(jdbcTemplate);
         friendshipStorage = new FriendshipDbStorage(jdbcTemplate);
-        userService = new UserServiceImpl(userStorage, filmDbStorage, friendshipStorage, filmLikeStorage);
+        userService = new UserServiceImpl(userStorage, filmStorage, friendshipStorage, filmLikeStorage, eventStorage);
+        filmService = new FilmServiceImpl(filmStorage, userStorage, filmLikeStorage, directorStorage, eventStorage);
         user = User.builder()
                 .id(1)
                 .email("email")
@@ -372,8 +375,8 @@ class UserDbStorageTest {
         userStorage.add(user);
         userStorage.add(anotherUser);
 
-        filmDbStorage.add(filmOne);
-        filmDbStorage.add(filmTwo);
+        filmStorage.add(filmOne);
+        filmStorage.add(filmTwo);
 
         filmLikeStorage.add(filmOne.getId(), user.getId());
         filmLikeStorage.add(filmOne.getId(), anotherUser.getId());
@@ -397,12 +400,90 @@ class UserDbStorageTest {
     void testGetRecommendationsListNoLikes() {
         userStorage.add(user);
         userStorage.add(anotherUser);
-        filmDbStorage.add(filmOne);
+        filmStorage.add(filmOne);
 
         Map<Long, Set<Long>> filmRecommendations = filmLikeStorage.getUsersAndFilmLikes();
 
         assertThat(filmRecommendations)
                 .isNotNull()
                 .isEmpty();
+    }
+
+    @Test
+    @DisplayName("Тест получение ленты пользователя.")
+    void testGetFeed() {
+        userStorage.add(user);
+        userStorage.add(anotherUser);
+        filmStorage.add(filmOne);
+        filmService.likeFilm(filmOne.getId(), user.getId());
+        userService.addFriend(user.getId(), anotherUser.getId());
+
+        Feed feedLike = Feed.builder()
+                .entityId(filmOne.getId())
+                .eventType(EventType.LIKE)
+                .operation(Operation.ADD)
+                .userId(user.getId())
+                .build();
+
+        Feed feedFriend = Feed.builder()
+                .entityId(anotherUser.getId())
+                .eventType(EventType.FRIEND)
+                .operation(Operation.ADD)
+                .userId(user.getId())
+                .build();
+
+        List<Feed> feed = (List<Feed>) eventStorage.getFeed(1L);
+
+        assertThat(feed.get(0).getUserId())
+                .isNotNull()
+                .isEqualTo(user.getId());
+
+        assertThat(feed.get(0).getEntityId())
+                .isNotNull()
+                .isEqualTo(filmOne.getId());
+
+        assertThat(feed.get(0).getEventType())
+                .isNotNull()
+                .isEqualTo(EventType.LIKE);
+
+        assertThat(feed.get(0).getOperation())
+                .isNotNull()
+                .isEqualTo(Operation.ADD);
+
+        assertThat(feed.get(1).getUserId())
+                .isNotNull()
+                .isEqualTo(user.getId());
+
+        assertThat(feed.get(1).getEntityId())
+                .isNotNull()
+                .isEqualTo(anotherUser.getId());
+
+        assertThat(feed.get(1).getEventType())
+                .isNotNull()
+                .isEqualTo(EventType.FRIEND);
+
+        assertThat(feed.get(1).getOperation())
+                .isNotNull()
+                .isEqualTo(Operation.ADD);
+    }
+
+    @Test
+    @DisplayName("Тест получение пустой ленты пользователя.")
+    void testGetEmptyFeed() {
+        userStorage.add(user);
+        userStorage.add(anotherUser);
+        filmStorage.add(filmOne);
+
+        Collection<Feed> feed = eventStorage.getFeed(1L);
+
+        assertThat(feed)
+                .isNotNull()
+                .isEmpty();
+    }
+
+    @Test
+    @DisplayName("Тест получение пустой ленты на несуществующего поьзователяпользователя.")
+    void testGetNoUserFeed() {
+        assertThrows(NotFoundException.class, () -> userService.getFeed(1L));
     }
 }

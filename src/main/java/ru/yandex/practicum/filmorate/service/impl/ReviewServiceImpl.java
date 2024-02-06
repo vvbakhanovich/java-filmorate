@@ -7,6 +7,8 @@ import org.springframework.transaction.annotation.Transactional;
 import ru.yandex.practicum.filmorate.dao.*;
 import ru.yandex.practicum.filmorate.dto.ReviewDto;
 import ru.yandex.practicum.filmorate.mapper.ReviewMapper;
+import ru.yandex.practicum.filmorate.model.EventType;
+import ru.yandex.practicum.filmorate.model.Operation;
 import ru.yandex.practicum.filmorate.model.Review;
 import ru.yandex.practicum.filmorate.service.ReviewService;
 
@@ -27,6 +29,7 @@ public class ReviewServiceImpl implements ReviewService {
     private final UserStorage userStorage;
     private final FilmStorage filmStorage;
     private final ReviewLikeStorage reviewLikeStorage;
+    private final EventStorage eventStorage;
 
     /**
      * Добавление отзыва в БД.
@@ -40,6 +43,7 @@ public class ReviewServiceImpl implements ReviewService {
         final Review review = toModel(reviewDto);
         final Review addedReview = reviewStorage.add(review);
         log.info("Добавлен новый отзыв: {}.", addedReview);
+        eventStorage.addEvent(EventType.REVIEW.name(), Operation.ADD.name(), review.getReviewId(), review.getUserId());
         return toDto(reviewStorage.findById(addedReview.getReviewId()));
     }
 
@@ -69,6 +73,8 @@ public class ReviewServiceImpl implements ReviewService {
         reviewStorage.update(updatedReview);
         final long reviewId = updatedReview.getReviewId();
         log.info("Обновление отзыва с id '{}': {}", reviewId, updatedReview);
+        ReviewDto currentReview = getReviewById(updatedReviewDto.getReviewId());
+        eventStorage.addEvent(EventType.REVIEW.name(), Operation.UPDATE.name(), currentReview.getReviewId(), currentReview.getUserId());
         return toDto(reviewStorage.findById(reviewId));
     }
 
@@ -80,7 +86,9 @@ public class ReviewServiceImpl implements ReviewService {
     @Override
     @Transactional
     public void deleteReview(final long id) {
+        ReviewDto review = getReviewById(id);
         reviewStorage.remove(id);
+        eventStorage.addEvent(EventType.REVIEW.name(), Operation.REMOVE.name(), id, review.getUserId());
         log.info("Отзыв с id '{}' был удален.", id);
     }
 

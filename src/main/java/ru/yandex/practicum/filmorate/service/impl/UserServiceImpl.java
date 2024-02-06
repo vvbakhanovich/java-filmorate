@@ -3,17 +3,14 @@ package ru.yandex.practicum.filmorate.service.impl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import ru.yandex.practicum.filmorate.dao.FilmLikeStorage;
-import ru.yandex.practicum.filmorate.dao.FilmStorage;
-import ru.yandex.practicum.filmorate.dao.FriendshipStorage;
-import ru.yandex.practicum.filmorate.dao.UserStorage;
+import ru.yandex.practicum.filmorate.dao.*;
+import ru.yandex.practicum.filmorate.dto.FeedDto;
 import ru.yandex.practicum.filmorate.dto.FilmDto;
 import ru.yandex.practicum.filmorate.dto.UserDto;
+import ru.yandex.practicum.filmorate.mapper.FeedMapper;
 import ru.yandex.practicum.filmorate.mapper.FilmMapper;
 import ru.yandex.practicum.filmorate.mapper.UserMapper;
-import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.Friendship;
-import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.model.*;
 import ru.yandex.practicum.filmorate.service.UserService;
 
 import java.util.*;
@@ -31,6 +28,7 @@ public class UserServiceImpl implements UserService {
     private final FilmStorage filmStorage;
     private final FriendshipStorage friendshipStorage;
     private final FilmLikeStorage filmLikeStorage;
+    private final EventStorage eventStorage;
 
     /**
      * Сохранение пользователя в БД.
@@ -109,6 +107,7 @@ public class UserServiceImpl implements UserService {
         }
         user.getFriends().add(friendship);
         log.info("Пользователи с id {} и id {} стали друзьями.", userId, friendId);
+        eventStorage.addEvent(EventType.FRIEND.name(), Operation.ADD.name(), friendId, userId);
         return UserMapper.toDto(userStorage.findById(userId));
     }
 
@@ -153,6 +152,7 @@ public class UserServiceImpl implements UserService {
         userStorage.findById(userId);
         userStorage.findById(friendId);
         friendshipStorage.remove(userId, friendId);
+        eventStorage.addEvent(EventType.FRIEND.name(), Operation.REMOVE.name(), friendId, userId);
         log.info("Пользователи с id {} и {} перестали быть друзьями", userId, friendId);
     }
 
@@ -201,6 +201,21 @@ public class UserServiceImpl implements UserService {
         }
         Collection<Film> filmsRecommendation = filmStorage.findFilmsByIds(recommendations);
         return filmsRecommendation.stream().map(FilmMapper::toDto).collect(Collectors.toList());
+    }
+
+    /**
+     * Выгразка ленты пользователя. Запрос выгружает историй действий пользователя:
+     * кого он добавлял в друзья и удалял из друзей
+     * что лайкал
+     * какие писал и удалял отзывы
+     * @param id идентификатор пользоваетеля
+     * @return коллекция FeedDto
+     */
+
+    @Override
+    public Collection<FeedDto> getFeed(long id) {
+        userStorage.findById(id);
+        return eventStorage.getFeed(id).stream().map(FeedMapper::toDto).collect(Collectors.toList());
     }
 
     private UserDto validateUserName(final UserDto userDto) {

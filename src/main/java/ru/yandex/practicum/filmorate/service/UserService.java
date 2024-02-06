@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.service;
 
+import ru.yandex.practicum.filmorate.dto.FeedDto;
 import ru.yandex.practicum.filmorate.dto.FilmDto;
 import ru.yandex.practicum.filmorate.dto.UserDto;
 
@@ -26,4 +27,6 @@ public interface UserService {
     void removeUser(long userId);
 
     Collection<FilmDto> showRecommendations(long id);
+
+    Collection<FeedDto> getFeed(long id);
 }

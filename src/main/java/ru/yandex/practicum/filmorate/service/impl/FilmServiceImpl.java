@@ -4,15 +4,17 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import ru.yandex.practicum.filmorate.dao.DirectorStorage;
-import ru.yandex.practicum.filmorate.dao.FilmLikeStorage;
-import ru.yandex.practicum.filmorate.dao.FilmStorage;
-import ru.yandex.practicum.filmorate.dao.UserStorage;
+import ru.yandex.practicum.filmorate.dao.*;
 import ru.yandex.practicum.filmorate.dto.FilmDto;
 import ru.yandex.practicum.filmorate.dto.FilmSearchDto;
 import ru.yandex.practicum.filmorate.mapper.FilmMapper;
+import ru.yandex.practicum.filmorate.model.EventType;
 import ru.yandex.practicum.filmorate.model.Film;
+
+import ru.yandex.practicum.filmorate.model.Operation;
+
 import ru.yandex.practicum.filmorate.model.SearchBy;
+
 import ru.yandex.practicum.filmorate.service.FilmService;
 
 import java.util.ArrayList;
@@ -40,6 +42,8 @@ public class FilmServiceImpl implements FilmService {
     private final FilmLikeStorage filmLikeStorage;
 
     private final DirectorStorage directorStorage;
+
+    private final EventStorage eventStorage;
 
     /**
      * Добавление фильма в БД.
@@ -111,6 +115,7 @@ public class FilmServiceImpl implements FilmService {
         userStorage.findById(userId);
         filmLikeStorage.add(filmId, userId);
         log.info("Пользователь с id {} поставил лайк фильму с id {}", userId, filmId);
+        eventStorage.addEvent(EventType.LIKE.name(), Operation.ADD.name(), filmId, userId);
         return toDto(filmStorage.findById(filmId));
     }
 
@@ -128,6 +133,7 @@ public class FilmServiceImpl implements FilmService {
         userStorage.findById(userId);
         filmLikeStorage.remove(filmId, userId);
         log.info("Пользователь с id {} удалил лайк фильма с id {}", userId, filmId);
+        eventStorage.addEvent(EventType.LIKE.name(), Operation.REMOVE.name(), filmId, userId);
         return toDto(filmStorage.findById(filmId));
     }
 
