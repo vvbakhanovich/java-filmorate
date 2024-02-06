@@ -6,10 +6,15 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.yandex.practicum.filmorate.dao.*;
 import ru.yandex.practicum.filmorate.dto.FilmDto;
+import ru.yandex.practicum.filmorate.dto.FilmSearchDto;
 import ru.yandex.practicum.filmorate.mapper.FilmMapper;
 import ru.yandex.practicum.filmorate.model.EventType;
 import ru.yandex.practicum.filmorate.model.Film;
+
 import ru.yandex.practicum.filmorate.model.Operation;
+
+import ru.yandex.practicum.filmorate.model.SearchBy;
+
 import ru.yandex.practicum.filmorate.service.FilmService;
 
 import java.util.ArrayList;
@@ -155,6 +160,25 @@ public class FilmServiceImpl implements FilmService {
     @Override
     public Collection<FilmDto> getMostPopularFilms(final int count, final Integer genreId, final Integer year) {
         return filmStorage.findMostLikedFilms(count, genreId, year)
+                .stream()
+                .map(FilmMapper::toDto)
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * Получение списка самых популярных фильмов c фильтром по названию фильма и режиссера
+     *
+     * @param search query - текст для поиска
+     * @param search by - может принимать значения director (поиск по режиссёру), title (поиск по названию),
+     *               либо оба значения через запятую при поиске одновременно и по режиссеру и по названию.
+     * @return список фильмов.
+     */
+    @Override
+    public Collection<FilmDto> searchFilms(FilmSearchDto search) {
+        if (!SearchBy.getStringValues().containsAll(search.getBy())) {
+            throw new IllegalArgumentException("Поле сортировки '" + search.getBy() + "' не поддерживается.");
+        }
+        return filmStorage.searchFilms(search)
                 .stream()
                 .map(FilmMapper::toDto)
                 .collect(Collectors.toList());

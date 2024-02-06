@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.service;
 
 import ru.yandex.practicum.filmorate.dto.FilmDto;
+import ru.yandex.practicum.filmorate.dto.FilmSearchDto;
 
 import java.util.Collection;
 
@@ -20,6 +21,8 @@ public interface FilmService {
     void removeFilm(long filmId);
 
     Collection<FilmDto> getFilmsFromDirector(long directorId, String sortBy);
+
+    Collection<FilmDto> searchFilms(FilmSearchDto search);
 
     Collection<FilmDto> getMostPopularFilms(int count, Integer genreId, Integer year);
 }
