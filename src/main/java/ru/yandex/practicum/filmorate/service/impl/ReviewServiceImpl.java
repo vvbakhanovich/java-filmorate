@@ -38,6 +38,7 @@ public class ReviewServiceImpl implements ReviewService {
      * @return отзыв с присвоенным идентификатором.
      */
     @Override
+    @Transactional
     public ReviewDto addReview(final ReviewDto reviewDto) {
         findUserAndFilmInDb(reviewDto);
         final Review review = toModel(reviewDto);
@@ -101,7 +102,6 @@ public class ReviewServiceImpl implements ReviewService {
      * @return список отзывов.
      */
     @Override
-    @Transactional
     public List<ReviewDto> getReviewsByFilmId(final Long filmId, final int count) {
         if (filmId == null) {
             final List<Review> reviews = reviewStorage.findAllLimitBy(count);
