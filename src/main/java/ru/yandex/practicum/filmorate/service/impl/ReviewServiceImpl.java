@@ -4,7 +4,10 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import ru.yandex.practicum.filmorate.dao.*;
+import ru.yandex.practicum.filmorate.dao.EventStorage;
+import ru.yandex.practicum.filmorate.dao.FilmStorage;
+import ru.yandex.practicum.filmorate.dao.ReviewStorage;
+import ru.yandex.practicum.filmorate.dao.UserStorage;
 import ru.yandex.practicum.filmorate.dto.ReviewDto;
 import ru.yandex.practicum.filmorate.mapper.ReviewMapper;
 import ru.yandex.practicum.filmorate.model.EventType;
@@ -28,7 +31,6 @@ public class ReviewServiceImpl implements ReviewService {
     private final ReviewStorage reviewStorage;
     private final UserStorage userStorage;
     private final FilmStorage filmStorage;
-    private final ReviewLikeStorage reviewLikeStorage;
     private final EventStorage eventStorage;
 
     /**
@@ -126,8 +128,7 @@ public class ReviewServiceImpl implements ReviewService {
     @Transactional
     public ReviewDto addLikeToReview(final long id, final long userId) {
         findReviewAndUserInDb(id, userId);
-        reviewStorage.addLikeToReview(id);
-        reviewLikeStorage.add(id, userId, LIKE.toString());
+        reviewStorage.addLikeToReview(id, userId, LIKE.toString());
         log.info("Пользователь с id '{}' поставил лайк отзыву с id '{}'", userId, id);
         return toDto(reviewStorage.findById(id));
     }
@@ -143,8 +144,7 @@ public class ReviewServiceImpl implements ReviewService {
     @Transactional
     public ReviewDto addDislikeToReview(long id, long userId) {
         findReviewAndUserInDb(id, userId);
-        reviewStorage.addDislikeToReview(id);
-        reviewLikeStorage.add(id, userId, DISLIKE.toString());
+        reviewStorage.addDislikeToReview(1, 1, DISLIKE.toString());
         log.info("Пользователь с id '{}' поставил дизлайк отзыву с id '{}'", userId, id);
         return toDto(reviewStorage.findById(id));
     }
@@ -160,8 +160,7 @@ public class ReviewServiceImpl implements ReviewService {
     @Transactional
     public ReviewDto deleteLikeFromReview(long id, long userId) {
         findReviewAndUserInDb(id, userId);
-        reviewStorage.addDislikeToReview(id);
-        reviewLikeStorage.delete(id, userId, LIKE.toString());
+        reviewStorage.addDislikeToReview(1, 1, DISLIKE.toString());
         log.info("Пользователь с id '{}' удалил лайк отзыву с id '{}'", userId, id);
         return toDto(reviewStorage.findById(id));
     }
@@ -177,8 +176,7 @@ public class ReviewServiceImpl implements ReviewService {
     @Transactional
     public ReviewDto deleteDislikeFromReview(long id, long userId) {
         findReviewAndUserInDb(id, userId);
-        reviewStorage.addLikeToReview(id);
-        reviewLikeStorage.delete(id, userId, DISLIKE.toString());
+        reviewStorage.addDislikeToReview(id, userId, DISLIKE.toString());
         log.info("Пользователь с id '{}' удалил дизлайк отзыву с id '{}'", userId, id);
         return toDto(reviewStorage.findById(id));
     }

@@ -18,6 +18,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 
+import static ru.yandex.practicum.filmorate.model.ReviewLike.LIKE;
+
 @Repository
 @RequiredArgsConstructor
 @Slf4j
@@ -95,15 +97,27 @@ public class ReviewDbStorage implements ReviewStorage {
     }
 
     @Override
-    public void addLikeToReview(final long id) {
+    public void addLikeToReview(final long id, final long userId, final String type) {
+        addLike(id, userId, type);
         final String sql = "UPDATE review SET useful = useful + 1 WHERE id = ?";
         jdbcTemplate.update(sql, id);
     }
 
     @Override
-    public void addDislikeToReview(long id) {
+    public void addDislikeToReview(final long id, final long userId, final String type) {
+        deleteLike(id, userId, type);
         final String sql = "UPDATE review SET useful = useful - 1 WHERE id = ?";
         jdbcTemplate.update(sql, id);
+    }
+
+    private void addLike(final long reviewId, final long userId, final String type) {
+        final String sql = "INSERT INTO review_like VALUES (?, ?, ?)";
+        jdbcTemplate.update(sql, reviewId, userId, type);
+    }
+
+    private void deleteLike(final long reviewId, final long userId, final String type) {
+        final String sql = "DELETE FROM review_like WHERE review_id = ? AND user_id = ? AND like_type = ?";
+        jdbcTemplate.update(sql, reviewId, userId, type);
     }
 
     private Review mapReview(final ResultSet rs, final int rowNum) throws SQLException {

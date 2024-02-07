@@ -9,12 +9,10 @@ import org.springframework.boot.test.autoconfigure.jdbc.JdbcTest;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.annotation.DirtiesContext;
 import ru.yandex.practicum.filmorate.dao.DirectorStorage;
-import ru.yandex.practicum.filmorate.dao.FilmLikeStorage;
 import ru.yandex.practicum.filmorate.dao.FilmStorage;
 import ru.yandex.practicum.filmorate.dao.UserStorage;
 import ru.yandex.practicum.filmorate.dao.impl.DirectorDbStorage;
 import ru.yandex.practicum.filmorate.dao.impl.FilmDbStorage;
-import ru.yandex.practicum.filmorate.dao.impl.FilmLikeDbStorage;
 import ru.yandex.practicum.filmorate.dao.impl.UserDbStorage;
 import ru.yandex.practicum.filmorate.dto.FilmSearchDto;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
@@ -37,7 +35,6 @@ public class FilmDbStorageTest {
 
     private final JdbcTemplate jdbcTemplate;
     private FilmStorage filmDbStorage;
-    private FilmLikeStorage filmLikeStorage;
     private DirectorStorage directorStorage;
     private UserStorage userStorage;
 
@@ -50,7 +47,6 @@ public class FilmDbStorageTest {
 
     @BeforeEach
     public void setUp() {
-        filmLikeStorage = new FilmLikeDbStorage(jdbcTemplate);
         directorStorage = new DirectorDbStorage(jdbcTemplate);
         filmDbStorage = new FilmDbStorage(jdbcTemplate);
         userStorage = new UserDbStorage(jdbcTemplate);
@@ -248,7 +244,7 @@ public class FilmDbStorageTest {
         filmDbStorage.add(film);
         userStorage.add(user);
 
-        filmLikeStorage.add(film.getId(), user.getId());
+        filmDbStorage.addLike(film.getId(), user.getId());
 
         Film storedFilm = filmDbStorage.findById(film.getId());
 
@@ -263,13 +259,13 @@ public class FilmDbStorageTest {
         filmDbStorage.add(film);
         userStorage.add(user);
 
-        filmLikeStorage.add(film.getId(), user.getId());
+        filmDbStorage.addLike(film.getId(), user.getId());
         Film storedFilm = filmDbStorage.findById(film.getId());
         long likes = storedFilm.getLikes();
 
         assertEquals(1, likes);
 
-        filmLikeStorage.remove(film.getId(), user.getId());
+        filmDbStorage.removeLike(film.getId(), user.getId());
         Film updatedFilm = filmDbStorage.findById(film.getId());
         long updatedLikes = updatedFilm.getLikes();
 
@@ -287,7 +283,7 @@ public class FilmDbStorageTest {
         film.getGenres().add(genre1);
         film.getGenres().add(genre2);
         filmDbStorage.add(film);
-        filmLikeStorage.add(film.getId(), user.getId());
+        filmDbStorage.addLike(film.getId(), user.getId());
 
         film.setLikes(1);
 
@@ -308,7 +304,7 @@ public class FilmDbStorageTest {
         film.getGenres().add(genre1);
         film.getGenres().add(genre2);
         filmDbStorage.add(film);
-        filmLikeStorage.add(film.getId(), user.getId());
+        filmDbStorage.addLike(film.getId(), user.getId());
 
         film.setLikes(1);
 
@@ -349,7 +345,7 @@ public class FilmDbStorageTest {
         film.getGenres().add(genre2);
         film.setReleaseDate(LocalDate.of(1999, 1, 1));
         filmDbStorage.add(film);
-        filmLikeStorage.add(film.getId(), user.getId());
+        filmDbStorage.addLike(film.getId(), user.getId());
 
         film.setLikes(1);
 
@@ -368,7 +364,7 @@ public class FilmDbStorageTest {
         userStorage.add(user);
         film.setReleaseDate(LocalDate.of(1999, 1, 1));
         filmDbStorage.add(film);
-        filmLikeStorage.add(film.getId(), user.getId());
+        filmDbStorage.addLike(film.getId(), user.getId());
 
         film.setLikes(1);
 
@@ -392,7 +388,7 @@ public class FilmDbStorageTest {
         film.getGenres().add(genre2);
 
         filmDbStorage.add(film);
-        filmLikeStorage.add(film.getId(), user.getId());
+        filmDbStorage.addLike(film.getId(), user.getId());
 
         film.setLikes(1);
 
@@ -511,12 +507,12 @@ public class FilmDbStorageTest {
         filmDbStorage.add(film);
         filmDbStorage.add(film2);
 
-        filmLikeStorage.add(film.getId(), user.getId());
-        filmLikeStorage.add(film.getId(), user2.getId());
-        filmLikeStorage.add(film.getId(), user3.getId());
+        filmDbStorage.addLike(film.getId(), user.getId());
+        filmDbStorage.addLike(film.getId(), user2.getId());
+        filmDbStorage.addLike(film.getId(), user3.getId());
 
-        filmLikeStorage.add(film2.getId(), user.getId());
-        filmLikeStorage.add(film2.getId(), user2.getId());
+        filmDbStorage.addLike(film2.getId(), user.getId());
+        filmDbStorage.addLike(film2.getId(), user2.getId());
 
         film.setLikes(3);
         film2.setLikes(2);
@@ -543,9 +539,9 @@ public class FilmDbStorageTest {
         filmDbStorage.add(film);
         filmDbStorage.add(film2);
 
-        filmLikeStorage.add(film.getId(), user.getId());
-        filmLikeStorage.add(film.getId(), user2.getId());
-        filmLikeStorage.add(film.getId(), user3.getId());
+        filmDbStorage.addLike(film.getId(), user.getId());
+        filmDbStorage.addLike(film.getId(), user2.getId());
+        filmDbStorage.addLike(film.getId(), user3.getId());
 
         film.setLikes(3);
 
@@ -587,7 +583,7 @@ public class FilmDbStorageTest {
         directorStorage.add(director);
         filmDbStorage.add(film);
         filmDbStorage.add(film2);
-        filmLikeStorage.add(1, 1);
+        filmDbStorage.addLike(1, 1);
         System.out.println(film.getId());
         System.out.println(film2.getId());
 
@@ -621,9 +617,9 @@ public class FilmDbStorageTest {
         filmDbStorage.add(film2);
         userStorage.add(user);
         userStorage.add(user2);
-        filmLikeStorage.add(film.getId(), user.getId());
-        filmLikeStorage.add(film2.getId(), user.getId());
-        filmLikeStorage.add(film.getId(), user2.getId());
+        filmDbStorage.addLike(film.getId(), user.getId());
+        filmDbStorage.addLike(film2.getId(), user.getId());
+        filmDbStorage.addLike(film.getId(), user2.getId());
         film.setLikes(2);
 
         Collection<Film> commonFilms = filmDbStorage.findCommonFilms(user.getId(), user2.getId());
@@ -642,8 +638,8 @@ public class FilmDbStorageTest {
         filmDbStorage.add(film2);
         userStorage.add(user);
         userStorage.add(user2);
-        filmLikeStorage.add(film.getId(), user.getId());
-        filmLikeStorage.add(film2.getId(), user2.getId());
+        filmDbStorage.addLike(film.getId(), user.getId());
+        filmDbStorage.addLike(film2.getId(), user2.getId());
 
         Collection<Film> commonFilms = filmDbStorage.findCommonFilms(user.getId(), user2.getId());
 

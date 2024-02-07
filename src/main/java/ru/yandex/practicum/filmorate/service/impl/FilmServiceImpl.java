@@ -36,8 +36,6 @@ public class FilmServiceImpl implements FilmService {
 
     private final UserStorage userStorage;
 
-    private final FilmLikeStorage filmLikeStorage;
-
     private final DirectorStorage directorStorage;
 
     private final EventStorage eventStorage;
@@ -110,7 +108,7 @@ public class FilmServiceImpl implements FilmService {
     public FilmDto likeFilm(final long filmId, final long userId) {
         filmStorage.findById(filmId);
         userStorage.findById(userId);
-        filmLikeStorage.add(filmId, userId);
+        filmStorage.addLike(filmId, userId);
         log.info("Пользователь с id {} поставил лайк фильму с id {}", userId, filmId);
         eventStorage.addEvent(EventType.LIKE.name(), Operation.ADD.name(), filmId, userId);
         return toDto(filmStorage.findById(filmId));
@@ -128,7 +126,7 @@ public class FilmServiceImpl implements FilmService {
     public FilmDto removeLike(final long filmId, final long userId) {
         filmStorage.findById(filmId);
         userStorage.findById(userId);
-        filmLikeStorage.remove(filmId, userId);
+        filmStorage.removeLike(filmId, userId);
         log.info("Пользователь с id {} удалил лайк фильма с id {}", userId, filmId);
         eventStorage.addEvent(EventType.LIKE.name(), Operation.REMOVE.name(), filmId, userId);
         return toDto(filmStorage.findById(filmId));

@@ -31,9 +31,6 @@ class FIlmServiceTest {
     private UserStorage userStorage;
 
     @Mock
-    private FilmLikeStorage filmLikeStorage;
-
-    @Mock
     private DirectorStorage directorStorage;
 
     @Mock
@@ -47,7 +44,7 @@ class FIlmServiceTest {
 
     @BeforeAll
     public void beforeAll() {
-        filmService = new FilmServiceImpl(filmStorage, userStorage, filmLikeStorage, directorStorage, eventStorage);
+        filmService = new FilmServiceImpl(filmStorage, userStorage, directorStorage, eventStorage);
     }
 
     @BeforeEach

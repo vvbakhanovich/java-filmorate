@@ -35,7 +35,6 @@ class UserDbStorageTest {
     private UserServiceImpl userService;
     private FilmServiceImpl filmService;
     private FriendshipStorage friendshipStorage;
-    private FilmLikeStorage filmLikeStorage;
     private FilmStorage filmStorage;
     private EventStorage eventStorage;
     private DirectorStorage directorStorage;
@@ -48,13 +47,12 @@ class UserDbStorageTest {
 
     @BeforeEach
     void setUp() {
-        filmLikeStorage = new FilmLikeDbStorage(jdbcTemplate);
         filmStorage = new FilmDbStorage(jdbcTemplate);
         userStorage = new UserDbStorage(jdbcTemplate);
         eventStorage = new EventDbStorage(jdbcTemplate);
         friendshipStorage = new FriendshipDbStorage(jdbcTemplate);
-        userService = new UserServiceImpl(userStorage, filmStorage, friendshipStorage, filmLikeStorage, eventStorage);
-        filmService = new FilmServiceImpl(filmStorage, userStorage, filmLikeStorage, directorStorage, eventStorage);
+        userService = new UserServiceImpl(userStorage, filmStorage, friendshipStorage, eventStorage);
+        filmService = new FilmServiceImpl(filmStorage, userStorage, directorStorage, eventStorage);
         user = User.builder()
                 .id(1)
                 .email("email")
@@ -375,11 +373,11 @@ class UserDbStorageTest {
         filmStorage.add(filmOne);
         filmStorage.add(filmTwo);
 
-        filmLikeStorage.add(filmOne.getId(), user.getId());
-        filmLikeStorage.add(filmOne.getId(), anotherUser.getId());
-        filmLikeStorage.add(filmTwo.getId(), anotherUser.getId());
+        filmStorage.addLike(filmOne.getId(), user.getId());
+        filmStorage.addLike(filmOne.getId(), anotherUser.getId());
+        filmStorage.addLike(filmTwo.getId(), anotherUser.getId());
 
-        Map<Long, Set<Long>> filmRecommendations = filmLikeStorage.getUsersAndFilmLikes();
+        Map<Long, Set<Long>> filmRecommendations = filmStorage.getUsersAndFilmLikes();
 
         assertThat(filmRecommendations.get(1L))
                 .isNotNull()
@@ -399,7 +397,7 @@ class UserDbStorageTest {
         userStorage.add(anotherUser);
         filmStorage.add(filmOne);
 
-        Map<Long, Set<Long>> filmRecommendations = filmLikeStorage.getUsersAndFilmLikes();
+        Map<Long, Set<Long>> filmRecommendations = filmStorage.getUsersAndFilmLikes();
 
         assertThat(filmRecommendations)
                 .isNotNull()

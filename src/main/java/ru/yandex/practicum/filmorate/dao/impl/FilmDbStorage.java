@@ -221,6 +221,24 @@ public class FilmDbStorage implements FilmStorage {
         return jdbcTemplate.query(sql, this::mapToFilm, userId, friendId);
     }
 
+    @Override
+    public void addLike(final long filmId, final long userId) {
+        final String sql = "INSERT INTO film_like (film_id, user_id) VALUES (?, ?)";
+        jdbcTemplate.update(sql, filmId, userId);
+    }
+
+    @Override
+    public void removeLike(long filmId, long userId) {
+        final String sql = "DELETE FROM film_like WHERE film_id = ? AND user_id = ?";
+        jdbcTemplate.update(sql, filmId, userId);
+    }
+
+    @Override
+    public Map<Long, Set<Long>> getUsersAndFilmLikes() {
+        String filmsIdsSql = "SELECT user_id, film_id FROM film_like";
+        return jdbcTemplate.query(filmsIdsSql, this::extractToUserIdLikedFilmsIdsMap);
+    }
+
     private void setGenresForFilms(Collection<Film> films) {
         Map<Long, Film> filmMap = films.stream()
                 .collect(Collectors.toMap(Film::getId, identity()));
@@ -369,5 +387,19 @@ public class FilmDbStorage implements FilmStorage {
                 .id(rs.getLong("director_id"))
                 .name(rs.getString("director_name"))
                 .build();
+    }
+
+    private Map<Long, Set<Long>> extractToUserIdLikedFilmsIdsMap(ResultSet rs) throws SQLException, DataAccessException {
+        final Map<Long, Set<Long>> userFilmLikesMap = new HashMap<>();
+        while (rs.next()) {
+            final Long userId = rs.getLong("user_id");
+            Set<Long> filmLikes = userFilmLikesMap.get(userId);
+            if (filmLikes == null) {
+                filmLikes = new HashSet<>();
+            }
+            filmLikes.add(rs.getLong("film_id"));
+            userFilmLikesMap.put(userId, filmLikes);
+        }
+        return userFilmLikesMap;
     }
 }
