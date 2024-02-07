@@ -9,6 +9,7 @@ import ru.yandex.practicum.filmorate.dto.FilmSearchDto;
 import ru.yandex.practicum.filmorate.service.FilmService;
 
 import javax.validation.Valid;
+import javax.validation.constraints.Min;
 import java.util.Collection;
 
 @RestController
@@ -50,9 +51,9 @@ public class FilmController {
     }
 
     @GetMapping("/popular")
-    public Collection<FilmDto> getMostPopularFilms(@RequestParam(required = false, defaultValue = "10") int count,
+    public Collection<FilmDto> getMostPopularFilms(@RequestParam(defaultValue = "10") int count,
                                                    @RequestParam(required = false) Integer genreId,
-                                                   @RequestParam(required = false) Integer year) {
+                                                   @RequestParam(required = false) @Min(1895) Integer year) {
         return filmService.getMostPopularFilms(count, genreId, year);
     }
 
