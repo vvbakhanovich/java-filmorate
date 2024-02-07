@@ -18,8 +18,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 
-import static ru.yandex.practicum.filmorate.model.ReviewLike.LIKE;
-
 @Repository
 @RequiredArgsConstructor
 @Slf4j
