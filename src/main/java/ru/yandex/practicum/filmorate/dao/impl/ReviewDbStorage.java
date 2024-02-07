@@ -20,7 +20,6 @@ import java.util.Objects;
 
 @Repository
 @RequiredArgsConstructor
-@Slf4j
 public class ReviewDbStorage implements ReviewStorage {
 
     private final JdbcTemplate jdbcTemplate;
