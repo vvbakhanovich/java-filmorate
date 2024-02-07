@@ -13,7 +13,6 @@ import ru.yandex.practicum.filmorate.dao.impl.*;
 import ru.yandex.practicum.filmorate.dto.FilmSearchDto;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.*;
-import ru.yandex.practicum.filmorate.service.impl.FilmServiceImpl;
 
 import java.time.LocalDate;
 import java.util.Collection;
