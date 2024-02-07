@@ -8,8 +8,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.JdbcTest;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.annotation.DirtiesContext;
-import ru.yandex.practicum.filmorate.dao.*;
-import ru.yandex.practicum.filmorate.dao.impl.*;
+import ru.yandex.practicum.filmorate.dao.DirectorStorage;
+import ru.yandex.practicum.filmorate.dao.FilmLikeStorage;
+import ru.yandex.practicum.filmorate.dao.FilmStorage;
+import ru.yandex.practicum.filmorate.dao.UserStorage;
+import ru.yandex.practicum.filmorate.dao.impl.DirectorDbStorage;
+import ru.yandex.practicum.filmorate.dao.impl.FilmDbStorage;
+import ru.yandex.practicum.filmorate.dao.impl.FilmLikeDbStorage;
+import ru.yandex.practicum.filmorate.dao.impl.UserDbStorage;
 import ru.yandex.practicum.filmorate.dto.FilmSearchDto;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.*;
@@ -18,6 +24,7 @@ import ru.yandex.practicum.filmorate.service.impl.FilmServiceImpl;
 import java.time.LocalDate;
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -30,7 +37,6 @@ public class FilmDbStorageTest {
 
     private final JdbcTemplate jdbcTemplate;
     private FilmStorage filmDbStorage;
-    private FilmGenreStorage filmGenreStorage;
     private FilmLikeStorage filmLikeStorage;
     private DirectorStorage directorStorage;
     private UserStorage userStorage;
@@ -45,10 +51,8 @@ public class FilmDbStorageTest {
     @BeforeEach
     public void setUp() {
         filmLikeStorage = new FilmLikeDbStorage(jdbcTemplate);
-        filmGenreStorage = new FilmGenreDbStorage(jdbcTemplate);
         directorStorage = new DirectorDbStorage(jdbcTemplate);
-        FilmDirectorStorage filmDirectorStorage = new FilmDirectorDbStorage(jdbcTemplate);
-        filmDbStorage = new FilmDbStorage(jdbcTemplate, filmGenreStorage, filmDirectorStorage);
+        filmDbStorage = new FilmDbStorage(jdbcTemplate);
         userStorage = new UserDbStorage(jdbcTemplate);
 
         Mpa mpa = new Mpa(1, "G");
@@ -184,12 +188,12 @@ public class FilmDbStorageTest {
         film.getGenres().add(genre2);
         filmDbStorage.add(film);
 
-        List<Genre> genres = filmGenreStorage.findAllById(1);
+        Set<Genre> genres = filmDbStorage.findById(1).getGenres();
 
 
         assertThat(genres)
                 .isNotNull()
-                .isEqualTo(List.of(genre1, genre2));
+                .isEqualTo(Set.of(genre1, genre2));
     }
 
     @Test
@@ -203,24 +207,24 @@ public class FilmDbStorageTest {
         film.getGenres().add(genre2);
         filmDbStorage.add(film);
 
-        List<Genre> genres = filmGenreStorage.findAllById(1);
+        Set<Genre> genres = filmDbStorage.findById(1).getGenres();
 
 
         assertThat(genres)
                 .isNotNull()
-                .isEqualTo(List.of(genre1, genre2));
+                .isEqualTo(Set.of(genre1, genre2));
 
         film.getGenres().remove(genre2);
         film.getGenres().add(genre3);
 
         filmDbStorage.update(film);
 
-        List<Genre> updatedGenres = filmGenreStorage.findAllById(1);
+        Set<Genre> updatedGenres = filmDbStorage.findById(1).getGenres();
 
 
         assertThat(updatedGenres)
                 .isNotNull()
-                .isEqualTo(List.of(genre1, genre3));
+                .isEqualTo(Set.of(genre1, genre3));
     }
 
     @Test

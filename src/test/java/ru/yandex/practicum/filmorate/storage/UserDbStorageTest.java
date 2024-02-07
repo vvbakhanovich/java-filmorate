@@ -35,7 +35,6 @@ class UserDbStorageTest {
     private UserServiceImpl userService;
     private FilmServiceImpl filmService;
     private FriendshipStorage friendshipStorage;
-    private FilmGenreStorage filmGenreStorage;
     private FilmLikeStorage filmLikeStorage;
     private FilmStorage filmStorage;
     private EventStorage eventStorage;
@@ -50,9 +49,7 @@ class UserDbStorageTest {
     @BeforeEach
     void setUp() {
         filmLikeStorage = new FilmLikeDbStorage(jdbcTemplate);
-        filmGenreStorage = new FilmGenreDbStorage(jdbcTemplate);
-        FilmDirectorStorage filmDirectorStorage = new FilmDirectorDbStorage(jdbcTemplate);
-        filmStorage = new FilmDbStorage(jdbcTemplate, filmGenreStorage, filmDirectorStorage);
+        filmStorage = new FilmDbStorage(jdbcTemplate);
         userStorage = new UserDbStorage(jdbcTemplate);
         eventStorage = new EventDbStorage(jdbcTemplate);
         friendshipStorage = new FriendshipDbStorage(jdbcTemplate);

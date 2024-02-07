@@ -42,9 +42,7 @@ class ReviewDbStorageTest {
     @BeforeEach
     public void setUp() {
         reviewStorage = new ReviewDbStorage(jdbcTemplate);
-        FilmGenreStorage filmGenreStorage = new FilmGenreDbStorage(jdbcTemplate);
-        FilmDirectorStorage filmDirectorStorage = new FilmDirectorDbStorage(jdbcTemplate);
-        filmStorage = new FilmDbStorage(jdbcTemplate, filmGenreStorage, filmDirectorStorage);
+        filmStorage = new FilmDbStorage(jdbcTemplate);
         userStorage = new UserDbStorage(jdbcTemplate);
         Mpa mpa = new Mpa(1, "G");
 
