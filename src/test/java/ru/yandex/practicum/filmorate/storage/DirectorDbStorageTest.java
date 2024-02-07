@@ -9,6 +9,7 @@ import ru.yandex.practicum.filmorate.dao.DirectorStorage;
 import ru.yandex.practicum.filmorate.dao.impl.DirectorDbStorage;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Director;
+import ru.yandex.practicum.filmorate.model.SortBy;
 
 import java.util.Collection;
 import java.util.List;
@@ -45,6 +46,8 @@ class DirectorDbStorageTest {
     @DisplayName("Получение списка режиссеров при пустой БД.")
     public void testFindEmptyDirectors() {
         Collection<Director> emptyDirectors = directorStorage.findAll();
+
+        System.out.println(SortBy.getStringValues());
 
         assertThat(emptyDirectors)
                 .isNotNull()
