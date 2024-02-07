@@ -2,7 +2,6 @@ package ru.yandex.practicum.filmorate.model;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import ru.yandex.practicum.filmorate.exception.NotFoundException;
 
 import java.util.Arrays;
 import java.util.List;
