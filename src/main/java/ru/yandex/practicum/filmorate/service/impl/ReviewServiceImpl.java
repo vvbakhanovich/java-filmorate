@@ -144,7 +144,7 @@ public class ReviewServiceImpl implements ReviewService {
     @Transactional
     public ReviewDto addDislikeToReview(long id, long userId) {
         findReviewAndUserInDb(id, userId);
-        reviewStorage.addDislikeToReview(1, 1, DISLIKE.toString());
+        reviewStorage.addDislikeToReview(id, userId, DISLIKE.toString());
         log.info("Пользователь с id '{}' поставил дизлайк отзыву с id '{}'", userId, id);
         return toDto(reviewStorage.findById(id));
     }
