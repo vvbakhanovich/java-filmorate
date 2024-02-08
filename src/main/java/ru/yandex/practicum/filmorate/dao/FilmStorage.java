@@ -9,9 +9,9 @@ import java.util.Set;
 
 public interface FilmStorage extends Dao<Film> {
 
-    void addLike(long filmId, long userId);
+    void addLikeToFilm(long filmId, long userId);
 
-    void removeLike(long filmId, long userId);
+    void removeLikeFromFilm(long filmId, long userId);
 
     Map<Long, Set<Long>> getUsersAndFilmLikes();
 

@@ -373,9 +373,9 @@ class UserDbStorageTest {
         filmStorage.add(filmOne);
         filmStorage.add(filmTwo);
 
-        filmStorage.addLike(filmOne.getId(), user.getId());
-        filmStorage.addLike(filmOne.getId(), anotherUser.getId());
-        filmStorage.addLike(filmTwo.getId(), anotherUser.getId());
+        filmStorage.addLikeToFilm(filmOne.getId(), user.getId());
+        filmStorage.addLikeToFilm(filmOne.getId(), anotherUser.getId());
+        filmStorage.addLikeToFilm(filmTwo.getId(), anotherUser.getId());
 
         Map<Long, Set<Long>> filmRecommendations = filmStorage.getUsersAndFilmLikes();
 
