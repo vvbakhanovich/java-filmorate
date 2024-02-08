@@ -4,7 +4,10 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import ru.yandex.practicum.filmorate.dao.*;
+import ru.yandex.practicum.filmorate.dao.EventStorage;
+import ru.yandex.practicum.filmorate.dao.FilmStorage;
+import ru.yandex.practicum.filmorate.dao.ReviewStorage;
+import ru.yandex.practicum.filmorate.dao.UserStorage;
 import ru.yandex.practicum.filmorate.dto.ReviewDto;
 import ru.yandex.practicum.filmorate.mapper.ReviewMapper;
 import ru.yandex.practicum.filmorate.model.EventType;
@@ -17,8 +20,6 @@ import java.util.stream.Collectors;
 
 import static ru.yandex.practicum.filmorate.mapper.ReviewMapper.toDto;
 import static ru.yandex.practicum.filmorate.mapper.ReviewMapper.toModel;
-import static ru.yandex.practicum.filmorate.model.ReviewLike.DISLIKE;
-import static ru.yandex.practicum.filmorate.model.ReviewLike.LIKE;
 
 @Service
 @RequiredArgsConstructor
@@ -28,7 +29,6 @@ public class ReviewServiceImpl implements ReviewService {
     private final ReviewStorage reviewStorage;
     private final UserStorage userStorage;
     private final FilmStorage filmStorage;
-    private final ReviewLikeStorage reviewLikeStorage;
     private final EventStorage eventStorage;
 
     /**
@@ -116,70 +116,34 @@ public class ReviewServiceImpl implements ReviewService {
     }
 
     /**
-     * Добавление лайка отзыву.
+     * Добавление лайка или дизлайка отзыву.
      *
      * @param id     идентификатор отзыва.
-     * @param userId идентификатор пользователя, который ставит лайк.
-     * @return отзыв с добавленным лайком.
+     * @param userId идентификатор пользователя, который ставит лайк/дизлайк.
+     * @return отзыв с добавленным лайком/дизлайк.
      */
     @Override
     @Transactional
-    public ReviewDto addLikeToReview(final long id, final long userId) {
+    public ReviewDto addLikeOrDislikeToReview(final long id, final long userId, String type) {
         findReviewAndUserInDb(id, userId);
-        reviewStorage.addLikeToReview(id);
-        reviewLikeStorage.add(id, userId, LIKE.toString());
+        reviewStorage.addLikeOrDislikeToReview(id, userId, type);
         log.info("Пользователь с id '{}' поставил лайк отзыву с id '{}'", userId, id);
         return toDto(reviewStorage.findById(id));
     }
 
     /**
-     * Добавление дизлайка отзыву.
+     * Удаление лайка или дизлайка у отзыва.
      *
      * @param id     идентификатор отзыва.
-     * @param userId идентификатор пользователя, который ставит дизлайк.
-     * @return отзыв с добавленным дизлайком.
+     * @param userId идентификатор пользователя, который удаляет лайк/дизлайк.
+     * @return отзыв с удаленным лайком/дизлайк.
      */
     @Override
     @Transactional
-    public ReviewDto addDislikeToReview(long id, long userId) {
+    public ReviewDto deleteLikeOrDislikeFromReview(long id, long userId, String type) {
         findReviewAndUserInDb(id, userId);
-        reviewStorage.addDislikeToReview(id);
-        reviewLikeStorage.add(id, userId, DISLIKE.toString());
-        log.info("Пользователь с id '{}' поставил дизлайк отзыву с id '{}'", userId, id);
-        return toDto(reviewStorage.findById(id));
-    }
-
-    /**
-     * Удаление лайка у отзыва.
-     *
-     * @param id     идентификатор отзыва.
-     * @param userId идентификатор пользователя, который удаляет лайк.
-     * @return отзыв с удаленным лайком.
-     */
-    @Override
-    @Transactional
-    public ReviewDto deleteLikeFromReview(long id, long userId) {
-        findReviewAndUserInDb(id, userId);
-        reviewStorage.addDislikeToReview(id);
-        reviewLikeStorage.delete(id, userId, LIKE.toString());
+        reviewStorage.deleteLikeOrDislikeFromReview(id, userId, type);
         log.info("Пользователь с id '{}' удалил лайк отзыву с id '{}'", userId, id);
-        return toDto(reviewStorage.findById(id));
-    }
-
-    /**
-     * Удаление дизлайка у отзыва.
-     *
-     * @param id     идентификатор отзыва.
-     * @param userId идентификатор пользователя, который удаляет дизлайк.
-     * @return отзыв с удаленным дизлайком.
-     */
-    @Override
-    @Transactional
-    public ReviewDto deleteDislikeFromReview(long id, long userId) {
-        findReviewAndUserInDb(id, userId);
-        reviewStorage.addLikeToReview(id);
-        reviewLikeStorage.delete(id, userId, DISLIKE.toString());
-        log.info("Пользователь с id '{}' удалил дизлайк отзыву с id '{}'", userId, id);
         return toDto(reviewStorage.findById(id));
     }
 
