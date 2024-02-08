@@ -9,7 +9,7 @@ public interface ReviewStorage extends Dao<Review> {
 
     List<Review> findAllLimitBy(int count);
 
-    void addLikeToReview(long reviewId, long userId, String type);
+    void addLikeOrDislikeToReview(long reviewId, long userId, String type);
 
-    void addDislikeToReview(long reviewId, long userId, String type);
+    void deleteLikeOrDislikeFromReview(final long reviewId, final long userId, final String type);
 }

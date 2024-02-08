@@ -10,6 +10,7 @@ import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.dao.ReviewStorage;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Review;
+import ru.yandex.practicum.filmorate.model.ReviewLike;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -95,27 +96,39 @@ public class ReviewDbStorage implements ReviewStorage {
     }
 
     @Override
-    public void addLikeToReview(final long id, final long userId, final String type) {
-        addLike(id, userId, type);
-        final String sql = "UPDATE review SET useful = useful + 1 WHERE id = ?";
+    public void addLikeOrDislikeToReview(final long id, final long userId, final String type) {
+        addLikeOrDislike(id, userId, type);
+        String sql;
+        if (ReviewLike.LIKE.name().equals(type)) {
+            sql = "UPDATE review SET useful = useful + 1 WHERE id = ?";
+        } else {
+            sql = "UPDATE review SET useful = useful - 1 WHERE id = ?";
+        }
         jdbcTemplate.update(sql, id);
     }
 
     @Override
-    public void addDislikeToReview(final long id, final long userId, final String type) {
-        deleteLike(id, userId, type);
-        final String sql = "UPDATE review SET useful = useful - 1 WHERE id = ?";
-        jdbcTemplate.update(sql, id);
+    public void deleteLikeOrDislikeFromReview(final long reviewId, final long userId, final String type) {
+        int update = deleteLikeOrDislike(reviewId, userId, type);
+        String changeUseful;
+        if (update == 1) {
+            if (ReviewLike.LIKE.name().equals(type)) {
+                changeUseful = "UPDATE review SET useful = useful - 1 WHERE id = ?";
+            } else {
+                changeUseful = "UPDATE review SET useful = useful + 1 WHERE id = ?";
+            }
+            jdbcTemplate.update(changeUseful, reviewId);
+        }
     }
 
-    private void addLike(final long reviewId, final long userId, final String type) {
+    private void addLikeOrDislike(final long reviewId, final long userId, final String type) {
         final String sql = "INSERT INTO review_like VALUES (?, ?, ?)";
         jdbcTemplate.update(sql, reviewId, userId, type);
     }
 
-    private void deleteLike(final long reviewId, final long userId, final String type) {
+    private int deleteLikeOrDislike(final long reviewId, final long userId, final String type) {
         final String sql = "DELETE FROM review_like WHERE review_id = ? AND user_id = ? AND like_type = ?";
-        jdbcTemplate.update(sql, reviewId, userId, type);
+        return jdbcTemplate.update(sql, reviewId, userId, type);
     }
 
     private Review mapReview(final ResultSet rs, final int rowNum) throws SQLException {

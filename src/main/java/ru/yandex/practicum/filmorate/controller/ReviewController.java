@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.dto.ReviewDto;
+import ru.yandex.practicum.filmorate.model.ReviewLike;
 import ru.yandex.practicum.filmorate.service.ReviewService;
 
 import javax.validation.Valid;
@@ -45,21 +46,21 @@ public class ReviewController {
 
     @PutMapping("/{id}/like/{userId}")
     public ReviewDto addLikeToReview(@PathVariable long id, @PathVariable long userId) {
-        return reviewService.addLikeToReview(id, userId);
+        return reviewService.addLikeOrDislikeToReview(id, userId, ReviewLike.LIKE.toString());
     }
 
     @PutMapping("/{id}/dislike/{userId}")
     public ReviewDto addDislikeToReview(@PathVariable long id, @PathVariable long userId) {
-        return reviewService.addDislikeToReview(id, userId);
+        return reviewService.addLikeOrDislikeToReview(id, userId, ReviewLike.DISLIKE.toString());
     }
 
     @DeleteMapping("/{id}/like/{userId}")
     public ReviewDto deleteLikeFromReview(@PathVariable long id, @PathVariable long userId) {
-        return reviewService.deleteLikeFromReview(id, userId);
+        return reviewService.deleteLikeOrDislikeFromReview(id, userId, ReviewLike.LIKE.toString());
     }
 
     @DeleteMapping("/{id}/dislike/{userId}")
     public ReviewDto deleteDislikeFromReview(@PathVariable long id, @PathVariable long userId) {
-        return reviewService.deleteDislikeFromReview(id, userId);
+        return reviewService.deleteLikeOrDislikeFromReview(id, userId, ReviewLike.DISLIKE.toString());
     }
 }

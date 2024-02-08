@@ -255,7 +255,7 @@ class ReviewDbStorageTest {
     public void addLikeToReview() {
         reviewStorage.add(review1);
 
-        reviewStorage.addLikeToReview(1, 1, ReviewLike.LIKE.toString());
+        reviewStorage.addLikeOrDislikeToReview(1, 1, ReviewLike.LIKE.toString());
         Review storedReview = reviewStorage.findById(1);
         assertEquals(2, storedReview.getUseful());
     }
@@ -266,7 +266,7 @@ class ReviewDbStorageTest {
         review1.setUseful(-1);
         reviewStorage.add(review1);
 
-        reviewStorage.addLikeToReview(1, 1, ReviewLike.LIKE.toString());
+        reviewStorage.addLikeOrDislikeToReview(1, 1, ReviewLike.LIKE.toString());
         Review storedReview = reviewStorage.findById(1);
         assertEquals(0, storedReview.getUseful());
     }
@@ -276,7 +276,7 @@ class ReviewDbStorageTest {
     public void addDislikeToReview() {
         reviewStorage.add(review1);
 
-        reviewStorage.addDislikeToReview(1, 1, ReviewLike.DISLIKE.toString());
+        reviewStorage.addLikeOrDislikeToReview(1, 1, ReviewLike.DISLIKE.toString());
         Review storedReview = reviewStorage.findById(1);
         assertEquals(0, storedReview.getUseful());
     }
@@ -287,7 +287,7 @@ class ReviewDbStorageTest {
         review1.setUseful(-1);
         reviewStorage.add(review1);
 
-        reviewStorage.addDislikeToReview(1, 1, ReviewLike.DISLIKE.toString());
+        reviewStorage.addLikeOrDislikeToReview(1, 1, ReviewLike.DISLIKE.toString());
         Review storedReview = reviewStorage.findById(1);
         assertEquals(-2, storedReview.getUseful());
     }
