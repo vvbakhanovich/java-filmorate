@@ -12,7 +12,8 @@ import java.util.stream.Stream;
 @Getter
 public enum SortBy {
     YEAR("f.release_date"),
-    LIKES("likes DESC");
+    LIKES("COUNT(fl.USER_ID) DESC"),
+    RATING("rating DESC");
 
     private final String sql;
 

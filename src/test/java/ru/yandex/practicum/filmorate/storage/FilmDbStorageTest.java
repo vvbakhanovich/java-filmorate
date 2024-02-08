@@ -582,7 +582,7 @@ public class FilmDbStorageTest {
         directorStorage.add(director);
         filmDbStorage.add(film);
         filmDbStorage.add(film2);
-        filmDbStorage.addLikeToFilm(1, 1);
+        filmDbStorage.addLikeToFilm(1, 1, 1);
         System.out.println(film.getId());
         System.out.println(film2.getId());
 
