@@ -8,19 +8,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.JdbcTest;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.annotation.DirtiesContext;
-import ru.yandex.practicum.filmorate.dao.FilmGenreStorage;
-import ru.yandex.practicum.filmorate.dao.FilmLikeStorage;
-import ru.yandex.practicum.filmorate.dao.FilmStorage;
-import ru.yandex.practicum.filmorate.dao.UserStorage;
-import ru.yandex.practicum.filmorate.dao.impl.FilmDbStorage;
-import ru.yandex.practicum.filmorate.dao.impl.FilmGenreDbStorage;
-import ru.yandex.practicum.filmorate.dao.impl.FilmLikeDbStorage;
-import ru.yandex.practicum.filmorate.dao.impl.UserDbStorage;
+import ru.yandex.practicum.filmorate.dao.*;
+import ru.yandex.practicum.filmorate.dao.impl.*;
+import ru.yandex.practicum.filmorate.dto.FilmSearchDto;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
-import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.Genre;
-import ru.yandex.practicum.filmorate.model.Mpa;
-import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.model.*;
 
 import java.time.LocalDate;
 import java.util.Collection;
@@ -39,17 +31,23 @@ public class FilmDbStorageTest {
     private FilmStorage filmDbStorage;
     private FilmGenreStorage filmGenreStorage;
     private FilmLikeStorage filmLikeStorage;
+    private DirectorStorage directorStorage;
     private UserStorage userStorage;
 
     private Film film;
+    private Film film2;
     private Film updatedFilm;
     private User user;
+    private User user2;
+    private Director director;
 
     @BeforeEach
     public void setUp() {
         filmLikeStorage = new FilmLikeDbStorage(jdbcTemplate);
         filmGenreStorage = new FilmGenreDbStorage(jdbcTemplate);
-        filmDbStorage = new FilmDbStorage(jdbcTemplate, filmGenreStorage);
+        directorStorage = new DirectorDbStorage(jdbcTemplate);
+        FilmDirectorStorage filmDirectorStorage = new FilmDirectorDbStorage(jdbcTemplate);
+        filmDbStorage = new FilmDbStorage(jdbcTemplate, filmGenreStorage, filmDirectorStorage);
         userStorage = new UserDbStorage(jdbcTemplate);
 
         Mpa mpa = new Mpa(1, "G");
@@ -63,6 +61,15 @@ public class FilmDbStorageTest {
                 .mpa(mpa)
                 .build();
 
+        film2 = Film.builder()
+                .id(2)
+                .name("film")
+                .description("film description")
+                .releaseDate(LocalDate.of(2019, 12, 12))
+                .duration(123)
+                .mpa(mpa)
+                .build();
+
         updatedFilm = Film.builder()
                 .id(1)
                 .name("updated film")
@@ -72,7 +79,26 @@ public class FilmDbStorageTest {
                 .mpa(mpa)
                 .build();
 
-        user = new User(1, "email", "login", "name", LocalDate.now());
+        user = User.builder()
+                .id(1)
+                .email("email")
+                .login("login")
+                .name("name")
+                .birthday(LocalDate.now())
+                .build();
+
+        user2 = User.builder()
+                .id(2)
+                .email("email 2")
+                .login("login 2")
+                .name("name 2")
+                .birthday(LocalDate.now())
+                .build();
+
+        director = Director.builder()
+                .id(1)
+                .name("Director")
+                .build();
     }
 
     @Test
@@ -285,5 +311,339 @@ public class FilmDbStorageTest {
                 .isNotNull()
                 .usingRecursiveComparison()
                 .isEqualTo(film);
+    }
+
+    @Test
+    @DisplayName("Тест удаление фильма")
+    void testDeleteFilm() {
+        Film newFilm = filmDbStorage.add(film);
+        filmDbStorage.remove(newFilm.getId());
+
+        String formattedResponse = String.format("Фильм с id '%s' не найден.", newFilm.getId());
+        NotFoundException e = assertThrows(NotFoundException.class, () -> filmDbStorage.findById(newFilm.getId()));
+        assertEquals(formattedResponse, e.getMessage());
+    }
+
+    @Test
+    @DisplayName("Тест удаление несуществующего фильма")
+    void testDeleteNotExistingUser() {
+        int filmId = 999;
+        String formattedResponse = String.format("Фильм с id '%s' не найден.", filmId);
+        NotFoundException e = assertThrows(NotFoundException.class, () -> filmDbStorage.remove(filmId));
+        assertEquals(formattedResponse, e.getMessage());
+    }
+
+    @Test
+    @DisplayName("Тест на получение самых популярных фильмов определенного жанра за указанный год")
+    void testMostPopularFilmsWithSpecifiedGenreAndYear() {
+        Genre genre1 = new Genre(1, "Комедия");
+        Genre genre2 = new Genre(6, "Боевик");
+
+        userStorage.add(user);
+        film.getGenres().add(genre1);
+        film.getGenres().add(genre2);
+        film.setReleaseDate(LocalDate.of(1999, 1, 1));
+        filmDbStorage.add(film);
+        filmLikeStorage.add(film.getId(), user.getId());
+
+        film.setLikes(1);
+
+        Collection<Film> popularFilms = filmDbStorage.findMostLikedFilms(10, 1, 1999);
+
+        assertThat(popularFilms)
+                .isNotNull()
+                .isNotEmpty()
+                .isEqualTo(List.of(film));
+    }
+
+    @Test
+    @DisplayName("Тест на получение самых популярных фильмов за указанный год и без жанров")
+    void testMostPopularFilmsWithSpecifiedYearWithoutGenre() {
+
+        userStorage.add(user);
+        film.setReleaseDate(LocalDate.of(1999, 1, 1));
+        filmDbStorage.add(film);
+        filmLikeStorage.add(film.getId(), user.getId());
+
+        film.setLikes(1);
+
+        Collection<Film> popularFilms = filmDbStorage.findMostLikedFilms(10, null, 1999);
+
+        assertThat(popularFilms)
+                .isNotNull()
+                .isNotEmpty()
+                .isEqualTo(List.of(film));
+    }
+
+    @Test
+    @DisplayName("Тест на получение самых популярных фильмов указанного жанра и без года")
+    void testMostPopularFilmsWithSpecifiedGenreWithoutYear() {
+
+        Genre genre1 = new Genre(1, "Комедия");
+        Genre genre2 = new Genre(6, "Боевик");
+
+        userStorage.add(user);
+        film.getGenres().add(genre1);
+        film.getGenres().add(genre2);
+
+        filmDbStorage.add(film);
+        filmLikeStorage.add(film.getId(), user.getId());
+
+        film.setLikes(1);
+
+        Collection<Film> popularFilms = filmDbStorage.findMostLikedFilms(10, 1, null);
+
+        assertThat(popularFilms)
+                .isNotNull()
+                .isNotEmpty()
+                .isEqualTo(List.of(film));
+    }
+
+    @Test
+    @DisplayName("Тест поиск фильма по названию")
+    void testSearchFilmByTitle() {
+        Film newFilm = filmDbStorage.add(film);
+        FilmSearchDto query = FilmSearchDto.builder()
+                .by(List.of(SearchBy.TITLE.toString()))
+                .query(newFilm.getName())
+                .build();
+        Collection<Film> films = filmDbStorage.searchFilms(query);
+
+        assertThat(films)
+                .isNotNull()
+                .isNotEmpty()
+                .isEqualTo(List.of(film));
+    }
+
+    @Test
+    @DisplayName("Тест поиск фильма по режиссеру")
+    void testSearchFilmByDirector() {
+        directorStorage.add(director);
+        film.getDirectors().add(director);
+        Film newFilm = filmDbStorage.add(film);
+        FilmSearchDto query = FilmSearchDto.builder()
+                .by(List.of(SearchBy.DIRECTOR.toString()))
+                .query(director.getName())
+                .build();
+        Collection<Film> films = filmDbStorage.searchFilms(query);
+
+        assertThat(films)
+                .isNotNull()
+                .isNotEmpty()
+                .usingRecursiveComparison()
+                .isEqualTo(List.of(newFilm));
+    }
+
+    @Test
+    @DisplayName("Тест поиск фильма по частичному названию")
+    void testSearchFilmByPartialTitle() {
+        Film newFilm = filmDbStorage.add(updatedFilm);
+        FilmSearchDto query = FilmSearchDto.builder()
+                .by(List.of(SearchBy.TITLE.toString()))
+                .query(newFilm.getName().substring(0, 3))
+                .build();
+        Collection<Film> films = filmDbStorage.searchFilms(query);
+
+        assertThat(films)
+                .isNotNull()
+                .isNotEmpty()
+                .isEqualTo(List.of(newFilm));
+    }
+
+    @Test
+    @DisplayName("Тест поиск фильмов по частичному названию фильма и режиссера")
+    void testSearchFilmBylTitleAndDirector() {
+        Director newDirector = Director.builder()
+                .id(1)
+                .name("name")
+                .build();
+        directorStorage.add(newDirector);
+
+        Film filmWithDir = Film.builder()
+                .name("film")
+                .description("film description")
+                .releaseDate(LocalDate.of(2019, 12, 12))
+                .duration(123)
+                .mpa(new Mpa(1, "G"))
+                .build();
+        filmWithDir.getDirectors().add(newDirector);
+        filmWithDir = filmDbStorage.add(filmWithDir);
+
+        Film fimWithName = Film.builder()
+                .name("name")
+                .description("film description")
+                .releaseDate(LocalDate.of(2019, 12, 12))
+                .duration(123)
+                .mpa(new Mpa(1, "G"))
+                .build();
+        fimWithName = filmDbStorage.add(fimWithName);
+
+        FilmSearchDto query = FilmSearchDto.builder()
+                .by(SearchBy.getStringValues())
+                .query(fimWithName.getName().substring(0, 3))
+                .build();
+        Collection<Film> films = filmDbStorage.searchFilms(query);
+
+        assertThat(films)
+                .isNotNull()
+                .isNotEmpty()
+                .hasSize(2)
+                .usingRecursiveComparison()
+                .isEqualTo(List.of(filmWithDir, fimWithName));
+    }
+
+    @Test
+    @DisplayName("Тест на получение самых популярных фильмов без указания жанра и года")
+    void testMostPopularFilmsWithoutSpecifiedGenreAndYear() {
+
+        User user2 = new User(2, "email2", "login2", "name2", LocalDate.now());
+        User user3 = new User(3, "email3", "login3", "name3", LocalDate.now());
+
+        userStorage.add(user);
+        userStorage.add(user2);
+        userStorage.add(user3);
+
+        filmDbStorage.add(film);
+        filmDbStorage.add(film2);
+
+        filmLikeStorage.add(film.getId(), user.getId());
+        filmLikeStorage.add(film.getId(), user2.getId());
+        filmLikeStorage.add(film.getId(), user3.getId());
+
+        filmLikeStorage.add(film2.getId(), user.getId());
+        filmLikeStorage.add(film2.getId(), user2.getId());
+
+        film.setLikes(3);
+        film2.setLikes(2);
+
+        Collection<Film> popularFilms = filmDbStorage.findMostLikedFilms(2, null, null);
+
+        assertThat(popularFilms)
+                .isNotNull()
+                .isNotEmpty()
+                .isEqualTo(List.of(film, film2));
+    }
+
+    @Test
+    @DisplayName("Тест на получение самых популярных фильмов без указания жанра и года (один фильм без лайков)")
+    void testMostPopularFilmsWithoutSpecifiedGenreAndYearOneFilmWithoutLikes() {
+
+        User user2 = new User(2, "email2", "login2", "name2", LocalDate.now());
+        User user3 = new User(3, "email3", "login3", "name3", LocalDate.now());
+
+        userStorage.add(user);
+        userStorage.add(user2);
+        userStorage.add(user3);
+
+        filmDbStorage.add(film);
+        filmDbStorage.add(film2);
+
+        filmLikeStorage.add(film.getId(), user.getId());
+        filmLikeStorage.add(film.getId(), user2.getId());
+        filmLikeStorage.add(film.getId(), user3.getId());
+
+        film.setLikes(3);
+
+        Collection<Film> popularFilms = filmDbStorage.findMostLikedFilms(2, null, null);
+
+        assertThat(popularFilms)
+                .isNotNull()
+                .isNotEmpty()
+                .isEqualTo(List.of(film, film2));
+    }
+
+    @Test
+    @DisplayName("Тест получения фильмов режиссера c сортировкой по году.")
+    public void findFilmsByDirectorSortByYear() {
+        film.getDirectors().add(director);
+        film2.getDirectors().add(director);
+        directorStorage.add(director);
+        filmDbStorage.add(film);
+        filmDbStorage.add(film2);
+
+        Collection<Film> films = filmDbStorage.findFilmsFromDirectorOrderBy(director.getId(),
+                SortBy.YEAR.getSql());
+
+        assertThat(films)
+                .isNotNull()
+                .isNotEmpty()
+                .usingRecursiveComparison()
+                .isEqualTo(List.of(film2, film));
+    }
+
+    @Test
+    @DisplayName("Тест получения фильмов режиссера c сортировкой по лайкам.")
+    public void findFilmsByDirectorSortByLikes() {
+        film.getDirectors().add(director);
+        film2.getDirectors().add(director);
+        film.setLikes(1);
+
+        userStorage.add(user);
+        directorStorage.add(director);
+        filmDbStorage.add(film);
+        filmDbStorage.add(film2);
+        filmLikeStorage.add(1, 1);
+        System.out.println(film.getId());
+        System.out.println(film2.getId());
+
+
+        Collection<Film> films = filmDbStorage.findFilmsFromDirectorOrderBy(director.getId(),
+                SortBy.LIKES.getSql());
+
+        assertThat(films)
+                .isNotNull()
+                .isNotEmpty()
+                .usingRecursiveComparison()
+                .isEqualTo(List.of(film, film2));
+    }
+
+    @Test
+    @DisplayName("Тест получения пустого списка, когда у режиссера нет фильмов.")
+    public void findFilmsByDirectorUnknownId() {
+        directorStorage.add(director);
+        Collection<Film> films = filmDbStorage.findFilmsFromDirectorOrderBy(director.getId(),
+                SortBy.YEAR.getSql());
+
+        assertThat(films)
+                .isNotNull()
+                .isEmpty();
+    }
+
+    @Test
+    @DisplayName("Тест получения списка общих фильмов")
+    public void findCommonFilms() {
+        filmDbStorage.add(film);
+        filmDbStorage.add(film2);
+        userStorage.add(user);
+        userStorage.add(user2);
+        filmLikeStorage.add(film.getId(), user.getId());
+        filmLikeStorage.add(film2.getId(), user.getId());
+        filmLikeStorage.add(film.getId(), user2.getId());
+        film.setLikes(2);
+
+        Collection<Film> commonFilms = filmDbStorage.findCommonFilms(user.getId(), user2.getId());
+
+        assertThat(commonFilms)
+                .isNotNull()
+                .isNotEmpty()
+                .usingRecursiveComparison()
+                .isEqualTo(List.of(film));
+    }
+
+    @Test
+    @DisplayName("Тест получения пустого списка общих фильмов")
+    public void findEmptyCommonFilms() {
+        filmDbStorage.add(film);
+        filmDbStorage.add(film2);
+        userStorage.add(user);
+        userStorage.add(user2);
+        filmLikeStorage.add(film.getId(), user.getId());
+        filmLikeStorage.add(film2.getId(), user2.getId());
+
+        Collection<Film> commonFilms = filmDbStorage.findCommonFilms(user.getId(), user2.getId());
+
+        assertThat(commonFilms)
+                .isNotNull()
+                .isEmpty();
     }
 }

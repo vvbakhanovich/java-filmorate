@@ -5,9 +5,11 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.dto.FilmDto;
+import ru.yandex.practicum.filmorate.dto.FilmSearchDto;
 import ru.yandex.practicum.filmorate.service.FilmService;
 
 import javax.validation.Valid;
+import javax.validation.constraints.Min;
 import java.util.Collection;
 
 @RestController
@@ -49,8 +51,31 @@ public class FilmController {
     }
 
     @GetMapping("/popular")
-    public Collection<FilmDto> getMostPopularFilms(@RequestParam(required = false, defaultValue = "10") int count) {
-        return filmService.getMostPopularFilms(count);
+    public Collection<FilmDto> getMostPopularFilms(@RequestParam(defaultValue = "10") int count,
+                                                   @RequestParam(required = false) Integer genreId,
+                                                   @RequestParam(required = false) @Min(1895) Integer year) {
+        return filmService.getMostPopularFilms(count, genreId, year);
     }
+
+    @DeleteMapping("/{id}")
+    public void removeFilm(@PathVariable long id) {
+        filmService.removeFilm(id);
+    }
+
+    @GetMapping("/search")
+    public Collection<FilmDto> searchFilms(@Valid FilmSearchDto search) {
+        return filmService.searchFilms(search);
+    }
+
+    @GetMapping("/director/{directorId}")
+    public Collection<FilmDto> getFilmsFromDirector(@PathVariable long directorId, @RequestParam String sortBy) {
+        return filmService.getFilmsFromDirector(directorId, sortBy);
+    }
+
+    @GetMapping("/common")
+    public Collection<FilmDto> getCommonFilms(@RequestParam long userId, @RequestParam long friendId) {
+        return filmService.getCommonFilms(userId, friendId);
+    }
+
 }
 

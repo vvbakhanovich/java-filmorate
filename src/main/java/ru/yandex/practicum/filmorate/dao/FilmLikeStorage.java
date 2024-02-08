@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.dao;
 
 import java.util.Map;
+import java.util.Set;
 
 public interface FilmLikeStorage {
     void add(long filmId, long userId);
@@ -10,4 +11,6 @@ public interface FilmLikeStorage {
     Map<Long, Long> findAll();
 
     void remove(long filmId, long userId);
+
+    Map<Long, Set<Long>> getUsersAndFilmLikes();
 }

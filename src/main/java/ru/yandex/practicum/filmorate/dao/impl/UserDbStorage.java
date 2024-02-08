@@ -9,8 +9,7 @@ import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.dao.UserStorage;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
-import ru.yandex.practicum.filmorate.model.Friendship;
-import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.model.*;
 
 import java.sql.Date;
 import java.sql.PreparedStatement;
@@ -108,7 +107,6 @@ public class UserDbStorage implements UserStorage {
                         "LEFT JOIN FRIENDSHIP_STATUS fs ON f.FRIENDSHIP_STATUS_ID = fs.ID WHERE fu.ID IN (%s)", commonFriendIdsSql);
         return jdbcTemplate.query(sql, this::extractToUserList, userId, anotherUserId);
     }
-
 
     private User extractToUser(ResultSet rs) throws SQLException, DataAccessException {
 
