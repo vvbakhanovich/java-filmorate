@@ -4,12 +4,11 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
-import ru.yandex.practicum.filmorate.dao.FilmDirectorStorage;
-import ru.yandex.practicum.filmorate.dao.FilmGenreStorage;
 import ru.yandex.practicum.filmorate.dao.FilmStorage;
 import ru.yandex.practicum.filmorate.dto.FilmSearchDto;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
@@ -31,10 +30,6 @@ public class FilmDbStorage implements FilmStorage {
 
     private final JdbcTemplate jdbcTemplate;
 
-    private final FilmGenreStorage filmGenreStorage;
-
-    private final FilmDirectorStorage filmDirectorStorage;
-
     @Override
     public Film add(final Film film) {
         final KeyHolder keyHolder = new GeneratedKeyHolder();
@@ -51,8 +46,8 @@ public class FilmDbStorage implements FilmStorage {
 
         film.setId(Objects.requireNonNull(keyHolder.getKey(), "Не удалось добавить фильм.").longValue());
 
-        filmGenreStorage.batchUpdate(film.getId(), film.getGenres());
-        filmDirectorStorage.batchUpdate(film.getId(), film.getDirectors());
+        batchUpdateGenres(film.getId(), film.getGenres());
+        batchUpdateDirectors(film.getId(), film.getDirectors());
 
         return film;
     }
@@ -75,10 +70,10 @@ public class FilmDbStorage implements FilmStorage {
             throw new NotFoundException("Фильм с id '" + film.getId() + "' не найден.");
         }
 
-        filmGenreStorage.deleteAllById(film.getId());
-        filmGenreStorage.batchUpdate(film.getId(), film.getGenres());
-        filmDirectorStorage.deleteAllByFilmId(film.getId());
-        filmDirectorStorage.batchUpdate(film.getId(), film.getDirectors());
+        deleteAllGenresByFilmId(film.getId());
+        batchUpdateGenres(film.getId(), film.getGenres());
+        deleteAllDirectorsByFilmId(film.getId());
+        batchUpdateDirectors(film.getId(), film.getDirectors());
     }
 
     @Override
@@ -108,8 +103,8 @@ public class FilmDbStorage implements FilmStorage {
 
         try {
             final Film film = jdbcTemplate.queryForObject(sql, this::mapToFilm, filmId);
-            List<Genre> genres = filmGenreStorage.findAllById(filmId);
-            List<Director> directors = filmDirectorStorage.findAllById(filmId);
+            List<Genre> genres = findAllGenresByFilmId(filmId);
+            List<Director> directors = findAllDirectorsByFilmId(filmId);
             film.getGenres().addAll(genres);
             film.getDirectors().addAll(directors);
             return film;
@@ -142,7 +137,7 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public Collection<Film> findFilmsFromDirectorOrderBy(final long directorId, final String sortBy) {
-        final List<Long> filmsByDirectorId = filmDirectorStorage.findFilmsByDirectorId(directorId);
+        final List<Long> filmsByDirectorId = findFilmsByDirectorId(directorId);
         final String ids = String.join(",", Collections.nCopies(filmsByDirectorId.size(), "?"));
         final String sql = String.format(
                 "SELECT " +
@@ -226,6 +221,24 @@ public class FilmDbStorage implements FilmStorage {
         return jdbcTemplate.query(sql, this::mapToFilm, userId, friendId);
     }
 
+    @Override
+    public void addLikeToFilm(final long filmId, final long userId) {
+        final String sql = "INSERT INTO film_like (film_id, user_id) VALUES (?, ?)";
+        jdbcTemplate.update(sql, filmId, userId);
+    }
+
+    @Override
+    public void removeLikeFromFilm(long filmId, long userId) {
+        final String sql = "DELETE FROM film_like WHERE film_id = ? AND user_id = ?";
+        jdbcTemplate.update(sql, filmId, userId);
+    }
+
+    @Override
+    public Map<Long, Set<Long>> getUsersAndFilmLikes() {
+        String filmsIdsSql = "SELECT user_id, film_id FROM film_like";
+        return jdbcTemplate.query(filmsIdsSql, this::extractToUserIdLikedFilmsIdsMap);
+    }
+
     public Map<Long, Set<Film>> findAllFilmsLikedByUsers() {
         final String sql = "SELECT fl.USER_ID, f.ID, f.TITLE, f.DESCRIPTION, f.RELEASE_DATE, f.DURATION, f.MPA_ID, m.RATING_NAME, fl.RATING " +
                 "FROM " +
@@ -236,16 +249,96 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     private void setGenresForFilms(Collection<Film> films) {
-        Map<Long, Film> filmMap = films.stream().collect(Collectors.toMap(Film::getId, identity()));
-        Map<Long, List<Genre>> filmIdGenreMap = filmGenreStorage.findGenresInIdList(filmMap.keySet());
+        Map<Long, Film> filmMap = films.stream()
+                .collect(Collectors.toMap(Film::getId, identity()));
+        Map<Long, List<Genre>> filmIdGenreMap = findGenresInIdList(filmMap.keySet());
         filmIdGenreMap.forEach((id, genres) -> filmMap.get(id).getGenres().addAll(genres));
     }
 
     private void setDirectorsForFilms(Collection<Film> films) {
         Map<Long, Film> filmMap = films.stream()
                 .collect(Collectors.toMap(Film::getId, identity()));
-        Map<Long, List<Director>> filmIdDirectorMap = filmDirectorStorage.findDirectorsInIdList(filmMap.keySet());
+        Map<Long, List<Director>> filmIdDirectorMap = findDirectorsInIdList(filmMap.keySet());
         filmIdDirectorMap.forEach((id, directors) -> filmMap.get(id).getDirectors().addAll(directors));
+    }
+
+    private void batchUpdateGenres(final long filmId, final Set<Genre> genres) {
+        final List<Genre> genreList = new ArrayList<>(genres);
+        final String sql = "INSERT INTO film_genre (film_id, genre_id) VALUES (?, ?)";
+        jdbcTemplate.batchUpdate(sql, new BatchPreparedStatementSetter() {
+            @Override
+            public void setValues(PreparedStatement ps, int i) throws SQLException {
+                ps.setLong(1, filmId);
+                ps.setLong(2, genreList.get(i).getId());
+            }
+
+            @Override
+            public int getBatchSize() {
+                return genres.size();
+            }
+        });
+    }
+
+    private void batchUpdateDirectors(final long filmId, final Set<Director> directors) {
+        final List<Director> directorList = new ArrayList<>(directors);
+        final String sql = "INSERT INTO film_director (film_id, director_id) VALUES (?, ?)";
+        jdbcTemplate.batchUpdate(sql, new BatchPreparedStatementSetter() {
+            @Override
+            public void setValues(PreparedStatement ps, int i) throws SQLException {
+                ps.setLong(1, filmId);
+                ps.setLong(2, directorList.get(i).getId());
+            }
+
+            @Override
+            public int getBatchSize() {
+                return directors.size();
+            }
+        });
+    }
+
+    private void deleteAllGenresByFilmId(final long filmId) {
+        final String sql = "DELETE FROM film_genre WHERE film_id = ?";
+        jdbcTemplate.update(sql, filmId);
+    }
+
+    private void deleteAllDirectorsByFilmId(final long filmId) {
+        final String sql = "DELETE FROM film_director WHERE film_id = ?";
+        jdbcTemplate.update(sql, filmId);
+    }
+
+    private Map<Long, List<Genre>> findGenresInIdList(Set<Long> filmIds) {
+        final String ids = String.join(",", Collections.nCopies(filmIds.size(), "?"));
+        final String sql = String.format(
+                "SELECT fg.film_id, fg.genre_id, g.genre_name FROM film_genre fg JOIN genre g ON fg.genre_id = g.id" +
+                        " WHERE fg.film_id IN (%s)", ids);
+
+        return jdbcTemplate.query(sql, this::extractToFilmIdGenreMap, filmIds.toArray());
+    }
+
+    private Map<Long, List<Director>> findDirectorsInIdList(final Set<Long> filmIds) {
+        final String ids = String.join(",", Collections.nCopies(filmIds.size(), "?"));
+        final String sql = String.format(
+                "SELECT fd.film_id, fd.director_id, d.director_name FROM film_director fd JOIN director d ON fd.director_id = d.id" +
+                        " WHERE fd.film_id IN (%s)", ids);
+
+        return jdbcTemplate.query(sql, this::extractToFilmIdDirectorMap, filmIds.toArray());
+    }
+
+    private List<Genre> findAllGenresByFilmId(final long filmId) {
+        final String sql = "SELECT fg.genre_id, g.genre_name FROM film_genre fg JOIN genre g ON fg.genre_id = g.id" +
+                " WHERE film_id = ?";
+        return jdbcTemplate.query(sql, this::mapRowToGenre, filmId);
+    }
+
+    private List<Director> findAllDirectorsByFilmId(long filmId) {
+        final String sql = "SELECT fd.film_id, fd.director_id, d.director_name FROM film_director fd JOIN director d ON fd.director_id = d.id" +
+                " WHERE fd.film_id = ?";
+        return jdbcTemplate.query(sql, this::mapToDirector, filmId);
+    }
+
+    private List<Long> findFilmsByDirectorId(final long directorId) {
+        final String sql = "SELECT film_id FROM film_director WHERE director_id = ?";
+        return jdbcTemplate.queryForList(sql, Long.class, directorId);
     }
 
     private Film mapToFilm(ResultSet rs, int rowNum) throws SQLException {
@@ -259,6 +352,64 @@ public class FilmDbStorage implements FilmStorage {
                 .build();
         film.setRating(rs.getDouble("rating"));
         return film;
+    }
+
+    private Map<Long, List<Genre>> extractToFilmIdGenreMap(ResultSet rs) throws SQLException, DataAccessException {
+        final Map<Long, List<Genre>> filmIdGenreMap = new HashMap<>();
+        while (rs.next()) {
+            final Long filmId = rs.getLong(1);
+            List<Genre> genres = filmIdGenreMap.get(filmId);
+            if (genres == null) {
+                genres = new ArrayList<>();
+            }
+            final Genre genre = new Genre(rs.getInt("genre_id"), rs.getString("genre_name"));
+            genres.add(genre);
+            filmIdGenreMap.put(filmId, genres);
+        }
+        return filmIdGenreMap;
+    }
+
+    private Map<Long, List<Director>> extractToFilmIdDirectorMap(ResultSet rs) throws SQLException, DataAccessException {
+        final Map<Long, List<Director>> filmIdDirectorMap = new HashMap<>();
+        while (rs.next()) {
+            final Long filmId = rs.getLong(1);
+            List<Director> directors = filmIdDirectorMap.get(filmId);
+            if (directors == null) {
+                directors = new ArrayList<>();
+            }
+            final Director director = Director.builder()
+                    .id(rs.getLong("director_id"))
+                    .name(rs.getString("director_name"))
+                    .build();
+            directors.add(director);
+            filmIdDirectorMap.put(filmId, directors);
+        }
+        return filmIdDirectorMap;
+    }
+
+    private Genre mapRowToGenre(ResultSet rs, int rowNum) throws SQLException {
+        return new Genre(rs.getInt("genre_id"), rs.getString("genre_name"));
+    }
+
+    private Director mapToDirector(ResultSet rs, int i) throws SQLException {
+        return Director.builder()
+                .id(rs.getLong("director_id"))
+                .name(rs.getString("director_name"))
+                .build();
+    }
+
+    private Map<Long, Set<Long>> extractToUserIdLikedFilmsIdsMap(ResultSet rs) throws SQLException, DataAccessException {
+        final Map<Long, Set<Long>> userFilmLikesMap = new HashMap<>();
+        while (rs.next()) {
+            final Long userId = rs.getLong("user_id");
+            Set<Long> filmLikes = userFilmLikesMap.get(userId);
+            if (filmLikes == null) {
+                filmLikes = new HashSet<>();
+            }
+            filmLikes.add(rs.getLong("film_id"));
+            userFilmLikesMap.put(userId, filmLikes);
+        }
+        return userFilmLikesMap;
     }
 
     private Map<Long, Set<Film>> extractToUserFilmMap(ResultSet rs) throws SQLException, DataAccessException {

@@ -16,11 +16,7 @@ public interface ReviewService {
 
     List<ReviewDto> getReviewsByFilmId(Long filmId, int count);
 
-    ReviewDto addLikeToReview(long id, long userId);
+    ReviewDto addLikeOrDislikeToReview(long id, long userId, String type);
 
-    ReviewDto addDislikeToReview(long id, long userId);
-
-    ReviewDto deleteLikeFromReview(long id, long userId);
-
-    ReviewDto deleteDislikeFromReview(long id, long userId);
+    ReviewDto deleteLikeOrDislikeFromReview(long id, long userId, String type);
 }

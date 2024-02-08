@@ -27,7 +27,6 @@ public class UserServiceImpl implements UserService {
     private final UserStorage userStorage;
     private final FilmStorage filmStorage;
     private final FriendshipStorage friendshipStorage;
-    private final FilmLikeStorage filmLikeStorage;
     private final EventStorage eventStorage;
 
     /**

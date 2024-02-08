@@ -10,10 +10,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.annotation.DirtiesContext;
 import ru.yandex.practicum.filmorate.dao.*;
 import ru.yandex.practicum.filmorate.dao.impl.*;
-import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.Mpa;
-import ru.yandex.practicum.filmorate.model.Review;
-import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.model.*;
 
 import java.time.LocalDate;
 import java.util.Collection;
@@ -42,9 +39,7 @@ class ReviewDbStorageTest {
     @BeforeEach
     public void setUp() {
         reviewStorage = new ReviewDbStorage(jdbcTemplate);
-        FilmGenreStorage filmGenreStorage = new FilmGenreDbStorage(jdbcTemplate);
-        FilmDirectorStorage filmDirectorStorage = new FilmDirectorDbStorage(jdbcTemplate);
-        filmStorage = new FilmDbStorage(jdbcTemplate, filmGenreStorage, filmDirectorStorage);
+        filmStorage = new FilmDbStorage(jdbcTemplate);
         userStorage = new UserDbStorage(jdbcTemplate);
         Mpa mpa = new Mpa(1, "G");
 
@@ -260,7 +255,7 @@ class ReviewDbStorageTest {
     public void addLikeToReview() {
         reviewStorage.add(review1);
 
-        reviewStorage.addLikeToReview(1);
+        reviewStorage.addLikeOrDislikeToReview(1, 1, ReviewLike.LIKE.toString());
         Review storedReview = reviewStorage.findById(1);
         assertEquals(2, storedReview.getUseful());
     }
@@ -271,7 +266,7 @@ class ReviewDbStorageTest {
         review1.setUseful(-1);
         reviewStorage.add(review1);
 
-        reviewStorage.addLikeToReview(1);
+        reviewStorage.addLikeOrDislikeToReview(1, 1, ReviewLike.LIKE.toString());
         Review storedReview = reviewStorage.findById(1);
         assertEquals(0, storedReview.getUseful());
     }
@@ -281,7 +276,7 @@ class ReviewDbStorageTest {
     public void addDislikeToReview() {
         reviewStorage.add(review1);
 
-        reviewStorage.addDislikeToReview(1);
+        reviewStorage.addLikeOrDislikeToReview(1, 1, ReviewLike.DISLIKE.toString());
         Review storedReview = reviewStorage.findById(1);
         assertEquals(0, storedReview.getUseful());
     }
@@ -292,7 +287,7 @@ class ReviewDbStorageTest {
         review1.setUseful(-1);
         reviewStorage.add(review1);
 
-        reviewStorage.addDislikeToReview(1);
+        reviewStorage.addLikeOrDislikeToReview(1, 1, ReviewLike.DISLIKE.toString());
         Review storedReview = reviewStorage.findById(1);
         assertEquals(-2, storedReview.getUseful());
     }

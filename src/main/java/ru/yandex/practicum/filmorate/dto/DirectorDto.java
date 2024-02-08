@@ -13,7 +13,7 @@ import javax.validation.constraints.NotBlank;
 @Builder
 public class DirectorDto {
 
-    long id;
+    private long id;
     @NotBlank(message = "Имя режиссера не может быть пустым.")
-    String name;
+    private String name;
 }

@@ -8,15 +8,11 @@ import ru.yandex.practicum.filmorate.dao.*;
 import ru.yandex.practicum.filmorate.dto.FilmDto;
 import ru.yandex.practicum.filmorate.dto.FilmSearchDto;
 import ru.yandex.practicum.filmorate.mapper.FilmMapper;
-import ru.yandex.practicum.filmorate.model.EventType;
-import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.Operation;
-import ru.yandex.practicum.filmorate.model.SearchBy;
+import ru.yandex.practicum.filmorate.model.*;
 import ru.yandex.practicum.filmorate.service.FilmService;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 import static ru.yandex.practicum.filmorate.mapper.FilmMapper.toDto;
@@ -27,17 +23,9 @@ import static ru.yandex.practicum.filmorate.mapper.FilmMapper.toModel;
 @Slf4j
 public class FilmServiceImpl implements FilmService {
 
-    public static final Map<String, String> ALLOWED_SORTS = Map.of(
-            "year", "f.release_date",
-            "likes", "COUNT(fl.USER_ID) DESC",
-            "rating", "rating DESC"
-    );
-
     private final FilmStorage filmStorage;
 
     private final UserStorage userStorage;
-
-    private final FilmLikeStorage filmLikeStorage;
 
     private final DirectorStorage directorStorage;
 
@@ -92,11 +80,10 @@ public class FilmServiceImpl implements FilmService {
      * @return найденный фильм.
      */
     @Override
-    @Transactional
     public FilmDto getFilmById(final long filmId) {
-        filmStorage.findById(filmId);
+        Film film = filmStorage.findById(filmId);
         log.info("Фильм с id {} найден.", filmId);
-        return toDto(filmStorage.findById(filmId));
+        return toDto(film);
     }
 
     /**
@@ -111,7 +98,7 @@ public class FilmServiceImpl implements FilmService {
     public FilmDto likeFilm(final long filmId, final long userId, final int rating) {
         filmStorage.findById(filmId);
         userStorage.findById(userId);
-        filmLikeStorage.add(filmId, userId, rating);
+        filmStorage.addLikeToFilm(filmId, userId, rating);
         log.info("Пользователь с id {} поставил лайк фильму с id {}", userId, filmId);
         eventStorage.addEvent(EventType.LIKE.name(), Operation.ADD.name(), filmId, userId);
         return toDto(filmStorage.findById(filmId));
@@ -129,7 +116,7 @@ public class FilmServiceImpl implements FilmService {
     public FilmDto removeLike(final long filmId, final long userId) {
         filmStorage.findById(filmId);
         userStorage.findById(userId);
-        filmLikeStorage.remove(filmId, userId);
+        filmStorage.removeLikeFromFilm(filmId, userId);
         log.info("Пользователь с id {} удалил лайк фильма с id {}", userId, filmId);
         eventStorage.addEvent(EventType.LIKE.name(), Operation.REMOVE.name(), filmId, userId);
         return toDto(filmStorage.findById(filmId));
@@ -192,11 +179,12 @@ public class FilmServiceImpl implements FilmService {
     @Override
     @Transactional
     public Collection<FilmDto> getFilmsFromDirector(final long directorId, final String sortBy) {
-        if (!ALLOWED_SORTS.containsKey(sortBy)) {
+        if (!SortBy.getStringValues().contains(sortBy)) {
             throw new IllegalArgumentException("Поле сортировки '" + sortBy + "' не поддерживается.");
         }
+        String sort = SortBy.fromString(sortBy).getSql();
         directorStorage.findById(directorId);
-        return filmStorage.findFilmsFromDirectorOrderBy(directorId, ALLOWED_SORTS.get(sortBy)).stream()
+        return filmStorage.findFilmsFromDirectorOrderBy(directorId, sort).stream()
                 .map(FilmMapper::toDto)
                 .collect(Collectors.toList());
     }
