@@ -13,7 +13,7 @@ public interface FilmStorage extends Dao<Film> {
 
     void removeLikeFromFilm(long filmId, long userId);
 
-    Map<Long, Set<Long>> getUsersAndFilmLikes();
+    Map<Long, Map<Long, Integer>> getUsersAndFilmLikes();
 
     Collection<Film> findFilmsByIds(Set<Long> filmIds);
 

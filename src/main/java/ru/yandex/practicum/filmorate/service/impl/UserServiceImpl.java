@@ -3,6 +3,7 @@ package ru.yandex.practicum.filmorate.service.impl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import ru.yandex.practicum.filmorate.dao.*;
 import ru.yandex.practicum.filmorate.dto.FeedDto;
 import ru.yandex.practicum.filmorate.dto.FilmDto;
@@ -36,6 +37,7 @@ public class UserServiceImpl implements UserService {
      * @return пользователь с присвоенным идентификатором
      */
     @Override
+    @Transactional
     public UserDto addUser(final UserDto userDto) {
         final User user = UserMapper.toModel(validateUserName(userDto));
         final User addedUser = userStorage.add(user);
@@ -50,6 +52,7 @@ public class UserServiceImpl implements UserService {
      * @return пользователь с обновленными данными.
      */
     @Override
+    @Transactional
     public UserDto updateUser(final UserDto updatedUserDto) {
         final User updatedUser = UserMapper.toModel(validateUserName(updatedUserDto));
         final long userId = updatedUser.getId();
@@ -91,6 +94,7 @@ public class UserServiceImpl implements UserService {
      * @return пользователь с обновленным списком друзей.
      */
     @Override
+    @Transactional
     public UserDto addFriend(final long userId, final long friendId) {
         final User user = userStorage.findById(userId);
         final User friend = userStorage.findById(friendId);
@@ -147,6 +151,7 @@ public class UserServiceImpl implements UserService {
      * @param friendId идентификатор друга, которого требуется исключить из списка друзей.
      */
     @Override
+    @Transactional
     public void removeFriend(final long userId, final long friendId) {
         userStorage.findById(userId);
         userStorage.findById(friendId);
@@ -179,11 +184,12 @@ public class UserServiceImpl implements UserService {
     public Collection<FilmDto> showRecommendations(long id) {
         log.info("Получение списка рекомендаций фильмов для пользователя с id {}.", id);
         int positiveRating = 6;
-        Map<Long, Set<Long>> usersLikes = filmStorage.getUsersAndFilmLikes();
+        Map<Long, Map<Long, Integer>> usersLikes = filmStorage.getUsersAndFilmLikes();
         Map<Long, Set<Film>> usersLikedFilms = filmStorage.findAllFilmsLikedByUsers();
         int maxLikes = 0;
         Set<Film> recommendations = new HashSet<>();
         Set<Film> userLikedFilms = usersLikedFilms.get(id);
+        Map<Long, Integer> userFilmIdRating = usersLikes.get(id);
         for (Long userId : usersLikes.keySet()) {
             if (userId != id) {
                 Set<Film> sameFilms = new HashSet<>();
@@ -196,10 +202,11 @@ public class UserServiceImpl implements UserService {
                     } else {
                         sameFilm = optionalFilm.get();
                     }
-                    if ((film.getRating() >= positiveRating && sameFilm.getRating() >= positiveRating) ||
-                            (film.getRating() < positiveRating && sameFilm.getRating() < positiveRating)) {
+                    long filmId = sameFilm.getId();
+                    Map<Long, Integer> anotherUserFilmIdRating = usersLikes.get(userId);
+                    if ((userFilmIdRating.get(filmId) >= positiveRating && anotherUserFilmIdRating.get(filmId) >= positiveRating) ||
+                            (userFilmIdRating.get(filmId) < positiveRating && anotherUserFilmIdRating.get(filmId) < positiveRating))
                         sameFilms.add(film);
-                    }
                 }
                 if (sameFilms.size() > maxLikes && sameFilms.size() < anotherUserLikedFilms.size()) {
                     recommendations.clear();
@@ -225,12 +232,12 @@ public class UserServiceImpl implements UserService {
     }
 
     /**
-     * Выгразка ленты пользователя. Запрос выгружает историй действий пользователя:
+     * Выгрузка ленты пользователя. Запрос выгружает историй действий пользователя:
      * кого он добавлял в друзья и удалял из друзей
      * что лайкал
      * какие писал и удалял отзывы
      *
-     * @param id идентификатор пользоваетеля
+     * @param id идентификатор пользователя
      * @return коллекция FeedDto
      */
 

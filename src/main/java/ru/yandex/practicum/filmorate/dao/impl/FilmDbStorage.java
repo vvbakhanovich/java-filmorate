@@ -234,8 +234,8 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     @Override
-    public Map<Long, Set<Long>> getUsersAndFilmLikes() {
-        String filmsIdsSql = "SELECT user_id, film_id FROM film_like";
+    public Map<Long, Map<Long, Integer>> getUsersAndFilmLikes() {
+        String filmsIdsSql = "SELECT user_id, film_id, rating FROM film_like";
         return jdbcTemplate.query(filmsIdsSql, this::extractToUserIdLikedFilmsIdsMap);
     }
 
@@ -398,15 +398,15 @@ public class FilmDbStorage implements FilmStorage {
                 .build();
     }
 
-    private Map<Long, Set<Long>> extractToUserIdLikedFilmsIdsMap(ResultSet rs) throws SQLException, DataAccessException {
-        final Map<Long, Set<Long>> userFilmLikesMap = new HashMap<>();
+    private Map<Long, Map<Long, Integer>> extractToUserIdLikedFilmsIdsMap(ResultSet rs) throws SQLException, DataAccessException {
+        final Map<Long, Map<Long, Integer>> userFilmLikesMap = new HashMap<>();
         while (rs.next()) {
             final Long userId = rs.getLong("user_id");
-            Set<Long> filmLikes = userFilmLikesMap.get(userId);
+            Map<Long, Integer> filmLikes = userFilmLikesMap.get(userId);
             if (filmLikes == null) {
-                filmLikes = new HashSet<>();
+                filmLikes = new HashMap<>();
             }
-            filmLikes.add(rs.getLong("film_id"));
+            filmLikes.put(rs.getLong("film_id"), rs.getInt("rating"));
             userFilmLikesMap.put(userId, filmLikes);
         }
         return userFilmLikesMap;
