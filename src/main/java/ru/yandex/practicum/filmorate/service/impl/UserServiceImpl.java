@@ -217,7 +217,7 @@ public class UserServiceImpl implements UserService {
             return Collections.emptyList();
         }
         Set<Long> recommendedFilmsId = recommendations.stream()
-                .filter(film -> film.getRating() >= 6)
+                .filter(film -> film.getRating() >= positiveRating)
                 .map(Film::getId)
                 .collect(Collectors.toSet());
 
