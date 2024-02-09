@@ -178,6 +178,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public Collection<FilmDto> showRecommendations(long id) {
         log.info("Получение списка рекомендаций фильмов для пользователя с id {}.", id);
+        int positiveRating = 6;
         Map<Long, Set<Long>> usersLikes = filmStorage.getUsersAndFilmLikes();
         Map<Long, Set<Film>> usersLikedFilms = filmStorage.findAllFilmsLikedByUsers();
         int maxLikes = 0;
@@ -195,7 +196,8 @@ public class UserServiceImpl implements UserService {
                     } else {
                         sameFilm = optionalFilm.get();
                     }
-                    if ((film.getRating() > 5 && sameFilm.getRating() > 5) || (film.getRating() < 6 && sameFilm.getRating() < 6)) {
+                    if ((film.getRating() >= positiveRating && sameFilm.getRating() >= positiveRating) ||
+                            (film.getRating() < positiveRating && sameFilm.getRating() < positiveRating)) {
                         sameFilms.add(film);
                     }
                 }
@@ -215,7 +217,7 @@ public class UserServiceImpl implements UserService {
             return Collections.emptyList();
         }
         Set<Long> recommendedFilmsId = recommendations.stream()
-                .filter(film -> film.getRating() > 5)
+                .filter(film -> film.getRating() >= 6)
                 .map(Film::getId)
                 .collect(Collectors.toSet());
 
