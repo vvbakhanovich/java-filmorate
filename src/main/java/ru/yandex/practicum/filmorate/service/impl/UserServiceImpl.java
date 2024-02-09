@@ -191,33 +191,34 @@ public class UserServiceImpl implements UserService {
         Set<Film> userLikedFilms = usersLikedFilms.get(id);
         Map<Long, Integer> userFilmIdRating = usersLikes.get(id);
         for (Long userId : usersLikes.keySet()) {
-            if (userId != id) {
-                Set<Film> sameFilms = new HashSet<>();
-                Set<Film> anotherUserLikedFilms = usersLikedFilms.get(userId);
-                for (Film film : anotherUserLikedFilms) {
-                    Film sameFilm;
-                    Optional<Film> optionalFilm = userLikedFilms.stream().filter(f -> f.getId() == film.getId()).findFirst();
-                    if (optionalFilm.isEmpty()) {
-                        continue;
-                    } else {
-                        sameFilm = optionalFilm.get();
-                    }
-                    long filmId = sameFilm.getId();
-                    Map<Long, Integer> anotherUserFilmIdRating = usersLikes.get(userId);
-                    if ((userFilmIdRating.get(filmId) >= positiveRating && anotherUserFilmIdRating.get(filmId) >= positiveRating) ||
-                            (userFilmIdRating.get(filmId) < positiveRating && anotherUserFilmIdRating.get(filmId) < positiveRating))
-                        sameFilms.add(film);
+            if (userId == id) {
+                continue;
+            }
+            Set<Film> sameFilms = new HashSet<>();
+            Set<Film> anotherUserLikedFilms = usersLikedFilms.get(userId);
+            for (Film film : anotherUserLikedFilms) {
+                Film sameFilm;
+                Optional<Film> optionalFilm = userLikedFilms.stream().filter(f -> f.getId() == film.getId()).findFirst();
+                if (optionalFilm.isEmpty()) {
+                    continue;
+                } else {
+                    sameFilm = optionalFilm.get();
                 }
-                if (sameFilms.size() > maxLikes && sameFilms.size() < anotherUserLikedFilms.size()) {
-                    recommendations.clear();
-                    maxLikes = sameFilms.size();
-                    anotherUserLikedFilms.removeAll(sameFilms);
-                    recommendations.addAll(anotherUserLikedFilms);
-                }
-                if (userLikedFilms.size() == maxLikes) {
-                    anotherUserLikedFilms.removeAll(sameFilms);
-                    recommendations.addAll(anotherUserLikedFilms);
-                }
+                long filmId = sameFilm.getId();
+                Map<Long, Integer> anotherUserFilmIdRating = usersLikes.get(userId);
+                if ((userFilmIdRating.get(filmId) >= positiveRating && anotherUserFilmIdRating.get(filmId) >= positiveRating) ||
+                        (userFilmIdRating.get(filmId) < positiveRating && anotherUserFilmIdRating.get(filmId) < positiveRating))
+                    sameFilms.add(film);
+            }
+            if (sameFilms.size() > maxLikes && sameFilms.size() < anotherUserLikedFilms.size()) {
+                recommendations.clear();
+                maxLikes = sameFilms.size();
+                anotherUserLikedFilms.removeAll(sameFilms);
+                recommendations.addAll(anotherUserLikedFilms);
+            }
+            if (userLikedFilms.size() == maxLikes) {
+                anotherUserLikedFilms.removeAll(sameFilms);
+                recommendations.addAll(anotherUserLikedFilms);
             }
         }
         if (recommendations.isEmpty()) {
@@ -228,7 +229,9 @@ public class UserServiceImpl implements UserService {
                 .map(Film::getId)
                 .collect(Collectors.toSet());
 
-        return filmStorage.findFilmsByIds(recommendedFilmsId).stream().map(FilmMapper::toDto).collect(Collectors.toList());
+        return filmStorage.findFilmsByIds(recommendedFilmsId).stream()
+                .map(FilmMapper::toDto)
+                .collect(Collectors.toList());
     }
 
     /**
