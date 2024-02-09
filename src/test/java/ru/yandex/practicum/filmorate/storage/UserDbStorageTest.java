@@ -377,17 +377,22 @@ class UserDbStorageTest {
         filmStorage.addLikeToFilm(filmOne.getId(), anotherUser.getId(), 10);
         filmStorage.addLikeToFilm(filmTwo.getId(), anotherUser.getId(), 10);
 
-        Map<Long, Set<Long>> filmRecommendations = filmStorage.getUsersAndFilmLikes();
+        Map<Long, Map<Long, Integer>> filmRecommendations = filmStorage.getUsersAndFilmLikes();
 
         assertThat(filmRecommendations.get(1L))
                 .isNotNull()
                 .isNotEmpty()
-                .containsExactly(filmOne.getId());
+                .usingRecursiveComparison()
+                .isEqualTo(Map.of(filmOne.getId(), 10));
 
         assertThat(filmRecommendations.get(2L))
                 .isNotNull()
                 .isNotEmpty()
-                .containsExactly(filmOne.getId(), filmTwo.getId());
+                .usingRecursiveComparison()
+                .isEqualTo(Map.of(
+                        filmOne.getId(), 10,
+                        filmTwo.getId(), 10)
+                );
     }
 
     @Test
@@ -397,7 +402,7 @@ class UserDbStorageTest {
         userStorage.add(anotherUser);
         filmStorage.add(filmOne);
 
-        Map<Long, Set<Long>> filmRecommendations = filmStorage.getUsersAndFilmLikes();
+        Map<Long, Map<Long, Integer>> filmRecommendations = filmStorage.getUsersAndFilmLikes();
 
         assertThat(filmRecommendations)
                 .isNotNull()
