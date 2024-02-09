@@ -187,12 +187,14 @@ public class UserServiceImpl implements UserService {
             if (userId != id) {
                 Set<Film> sameFilms = new HashSet<>();
                 Set<Film> anotherUserLikedFilms = usersLikedFilms.get(userId);
-                Set<Film> currentUserLikedFilms = new HashSet<>(userLikedFilms);
                 for (Film film : anotherUserLikedFilms) {
-                    if (currentUserLikedFilms.stream().noneMatch(f -> f.getId() == film.getId())) {
+                    Film sameFilm;
+                    Optional<Film> optionalFilm = userLikedFilms.stream().filter(f -> f.getId() == film.getId()).findFirst();
+                    if (optionalFilm.isEmpty()) {
                         continue;
+                    } else {
+                        sameFilm = optionalFilm.get();
                     }
-                    Film sameFilm = currentUserLikedFilms.stream().filter(f -> f.getId() == film.getId()).findFirst().get();
                     if ((film.getRating() > 5 && sameFilm.getRating() > 5) || (film.getRating() < 6 && sameFilm.getRating() < 6)) {
                         sameFilms.add(film);
                     }
@@ -202,7 +204,8 @@ public class UserServiceImpl implements UserService {
                     maxLikes = sameFilms.size();
                     anotherUserLikedFilms.removeAll(sameFilms);
                     recommendations.addAll(anotherUserLikedFilms);
-                } else if (currentUserLikedFilms.size() == maxLikes) {
+                }
+                if (userLikedFilms.size() == maxLikes) {
                     anotherUserLikedFilms.removeAll(sameFilms);
                     recommendations.addAll(anotherUserLikedFilms);
                 }
@@ -224,6 +227,7 @@ public class UserServiceImpl implements UserService {
      * кого он добавлял в друзья и удалял из друзей
      * что лайкал
      * какие писал и удалял отзывы
+     *
      * @param id идентификатор пользоваетеля
      * @return коллекция FeedDto
      */
