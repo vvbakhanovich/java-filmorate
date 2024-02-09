@@ -11,8 +11,8 @@ import ru.yandex.practicum.filmorate.service.FilmService;
 
 import javax.validation.Valid;
 import javax.validation.constraints.Max;
-import javax.validation.constraints.PositiveOrZero;
 import javax.validation.constraints.Min;
+import javax.validation.constraints.Positive;
 import java.util.Collection;
 
 @RestController
@@ -46,8 +46,8 @@ public class FilmController {
 
     @PutMapping("/{id}/like/{userId}")
     public FilmDto likeFilm(@PathVariable long id, @PathVariable long userId,
-                            @RequestParam(required = false, defaultValue = "0")
-                            @PositiveOrZero(message = "Рейтинг может находиться в диапозоне от 1 до 10")
+                            @RequestParam(defaultValue = "0")
+                            @Positive(message = "Рейтинг может находиться в диапазоне от 1 до 10")
                             @Max(value = 10, message = "Рейтинг не должен превышать 10.") int rating) {
         return filmService.likeFilm(id, userId, rating);
     }
