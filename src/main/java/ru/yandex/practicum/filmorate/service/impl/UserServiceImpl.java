@@ -188,31 +188,32 @@ public class UserServiceImpl implements UserService {
         Map<Long, Integer> userFilmIdRating = usersLikes.get(id); // список id лайкнутых фильмов и их оценок от искомого пользователя
         double bestMatch = Double.MAX_VALUE; // начальное значение для лучшего соотношения совпавших оценок
         long bestUserId = 0; // начальное значение id пользователя с наибольшим количеством совпадений по оценкам
-        int overallMatches = 0; // счетчик общего количества совпавших фильмов
+        int numberOfLikedFilms = 0; // начальное значение для количества фильмов, которым пользователь поставил оценки
         for (Long userId : usersLikes.keySet()) { // проходимся по всем пользователям, которые оценивали фильмы
             if (userId == id) { // искомого пользователя пропускаем
                 continue;
             }
             Map<Long, Integer> currentUserFilmRating = usersLikes.get(userId); // фильмы и их оценки от текущего пользователся
             int currentDiff = 0; // текущая разница оценок
-            int numberOfMatches = 0; // текущее количество совпавших фильмов
+            int currentNumberOfMatches = 0; // текущее количество совпавших фильмов
+            int currentNumberOfLikedFilms = 0;
             for (Long filmId : userFilmIdRating.keySet()) { // проходимся по всем фильмам, которые оценил искомый пользователь
+                currentNumberOfLikedFilms = userFilmIdRating.keySet().size();
                 int rateDiff = userFilmIdRating.get(filmId) - currentUserFilmRating.getOrDefault(filmId, 0); // высчитываем разницу между оценками. Если текущий пользователь не поставил оценку фильму, то используем 0.
                 currentDiff += rateDiff; // прибавляем к текущей разнице оценок
                 if (currentUserFilmRating.get(filmId) != null) { // если текущий пользователь не поставил оценку, то не учитываем его при подсчете
-                    numberOfMatches++;
+                    currentNumberOfMatches++;
                 }
             }
-            if (numberOfMatches == 0) { // если нет ни одного совпадения, то переходим к следующему пользователю
+            if (currentNumberOfMatches == 0) { // если нет ни одного совпадения, то переходим к следующему пользователю
                 continue;
             }
-            double match = Math.abs((double) currentDiff / numberOfMatches); // считаем насколько близки оценки между двумя пользователями
+            double match = Math.abs((double) currentDiff / currentNumberOfMatches); // считаем насколько близки оценки между двумя пользователями
             if (match < bestMatch) { // чем меньше показатель, тем больше похожи оценки
                 bestMatch = match;
                 bestUserId = userId;
-                overallMatches = numberOfMatches;
             }
-            if (match == bestMatch && numberOfMatches > overallMatches) { // если показатели одинаковые, но при этом у текущего пользователя больше совпадений, то выбираем его
+            if (match == bestMatch && currentNumberOfLikedFilms > numberOfLikedFilms) { // если показатели одинаковые, но при этом у текущего пользователя больше фильмов получили оценки, то выбираем его
                 bestUserId = userId;
             }
         }
