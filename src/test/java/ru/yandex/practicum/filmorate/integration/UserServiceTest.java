@@ -164,7 +164,7 @@ public class UserServiceTest {
     }
 
     @Test
-    @DisplayName("Тест получения рекомендаций c тремя пользователями")
+    @DisplayName("Тест получения рекомендаций с разным количеством совпавших оцененных фильмов")
     public void findRecommendations() {
         filmStorage.addLikeToFilm(film1.getId(), user1.getId(), 8);
         filmStorage.addLikeToFilm(film3.getId(), user1.getId(), 7);
@@ -216,6 +216,31 @@ public class UserServiceTest {
         filmStorage.addLikeToFilm(film2.getId(), user3.getId(), 5);
         filmStorage.addLikeToFilm(film3.getId(), user3.getId(), 7);
         filmStorage.addLikeToFilm(film4.getId(), user3.getId(), 9);
+        film4.setRating(9);
+
+        Collection<FilmDto> recommendations = userService.showRecommendations(user1.getId());
+
+        assertThat(recommendations)
+                .isNotNull()
+                .isNotEmpty()
+                .usingRecursiveComparison()
+                .isEqualTo(List.of(FilmMapper.toDto(film4)));
+    }
+
+    @Test
+    @DisplayName("Тест получения рекомендаций c разницей в несколько баллов")
+    public void findRecommendationsWithDifferentRatings() {
+        filmStorage.addLikeToFilm(film1.getId(), user1.getId(), 8);
+        filmStorage.addLikeToFilm(film3.getId(), user1.getId(), 7);
+
+        filmStorage.addLikeToFilm(film1.getId(), user2.getId(), 9);
+        filmStorage.addLikeToFilm(film2.getId(), user2.getId(), 5);
+        filmStorage.addLikeToFilm(film3.getId(), user2.getId(), 6);
+        filmStorage.addLikeToFilm(film4.getId(), user2.getId(), 9);
+
+        filmStorage.addLikeToFilm(film1.getId(), user3.getId(), 6);
+        filmStorage.addLikeToFilm(film2.getId(), user3.getId(), 5);
+        filmStorage.addLikeToFilm(film3.getId(), user3.getId(), 10);
         film4.setRating(9);
 
         Collection<FilmDto> recommendations = userService.showRecommendations(user1.getId());
