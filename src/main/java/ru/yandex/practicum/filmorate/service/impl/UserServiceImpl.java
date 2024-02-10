@@ -184,52 +184,45 @@ public class UserServiceImpl implements UserService {
     public Collection<FilmDto> showRecommendations(long id) {
         log.info("Получение списка рекомендаций фильмов для пользователя с id {}.", id);
         int positiveRating = 6;
-        Map<Long, Map<Long, Integer>> usersLikes = filmStorage.getUsersAndFilmLikes();
-        Map<Long, Set<Film>> usersLikedFilms = filmStorage.findAllFilmsLikedByUsers();
-        int maxLikes = 0;
-        Set<Film> recommendations = new HashSet<>();
-        Set<Film> userLikedFilms = usersLikedFilms.get(id);
-        Map<Long, Integer> userFilmIdRating = usersLikes.get(id);
-        for (Long userId : usersLikes.keySet()) {
-            if (userId == id) {
+        Map<Long, Map<Long, Integer>> usersLikes = filmStorage.getUsersAndFilmLikes(); // мапа id пользователя - мапа id фильма и поставленая оценка
+        Map<Long, Integer> userFilmIdRating = usersLikes.get(id); // список id лайкнутых фильмов и их оценок от искомого пользователя
+        double bestMatch = Double.MAX_VALUE; // начальное значение для лучшего соотношения совпавших оценок
+        long bestUserId = 0; // начальное значение id пользователя с наибольшим количеством совпадений по оценкам
+        int overallMatches = 0; // счетчик общего количества совпавших фильмов
+        for (Long userId : usersLikes.keySet()) { // проходимся по всем пользователям, которые оценивали фильмы
+            if (userId == id) { // искомого пользователя пропускаем
                 continue;
             }
-            Set<Film> sameFilms = new HashSet<>();
-            Set<Film> anotherUserLikedFilms = usersLikedFilms.get(userId);
-            for (Film film : anotherUserLikedFilms) {
-                Film sameFilm;
-                Optional<Film> optionalFilm = userLikedFilms.stream().filter(f -> f.getId() == film.getId()).findFirst();
-                if (optionalFilm.isEmpty()) {
-                    continue;
-                } else {
-                    sameFilm = optionalFilm.get();
+            Map<Long, Integer> currentUserFilmRating = usersLikes.get(userId); // фильмы и их оценки от текущего пользователся
+            int currentDiff = 0; // текущая разница оценок
+            int numberOfMatches = 0; // текущее количество совпавших фильмов
+            for (Long filmId : userFilmIdRating.keySet()) { // проходимся по всем фильмам, которые оценил искомый пользователь
+                int rateDiff = userFilmIdRating.get(filmId) - currentUserFilmRating.getOrDefault(filmId, 0); // высчитываем разницу между оценками. Если текущий пользователь не поставил оценку фильму, то используем 0.
+                currentDiff += rateDiff; // прибавляем к текущей разнице оценок
+                if (currentUserFilmRating.get(filmId) != null) { // если текущий пользователь не поставил оценку, то не учитываем его при подсчете
+                    numberOfMatches++;
                 }
-                long filmId = sameFilm.getId();
-                Map<Long, Integer> anotherUserFilmIdRating = usersLikes.get(userId);
-                if ((userFilmIdRating.get(filmId) >= positiveRating && anotherUserFilmIdRating.get(filmId) >= positiveRating) ||
-                        (userFilmIdRating.get(filmId) < positiveRating && anotherUserFilmIdRating.get(filmId) < positiveRating))
-                    sameFilms.add(film);
             }
-            if (sameFilms.size() > maxLikes && sameFilms.size() < anotherUserLikedFilms.size()) {
-                recommendations.clear();
-                maxLikes = sameFilms.size();
-                anotherUserLikedFilms.removeAll(sameFilms);
-                recommendations.addAll(anotherUserLikedFilms);
+            if (numberOfMatches == 0) { // если нет ни одного совпадения, то переходим к следующему пользователю
+                continue;
             }
-            if (userLikedFilms.size() == maxLikes) {
-                anotherUserLikedFilms.removeAll(sameFilms);
-                recommendations.addAll(anotherUserLikedFilms);
+            double match = Math.abs((double) currentDiff / numberOfMatches); // считаем насколько близки оценки между двумя пользователями
+            if (match < bestMatch) { // чем меньше показатель, тем больше похожи оценки
+                bestMatch = match;
+                bestUserId = userId;
+                overallMatches = numberOfMatches;
+            }
+            if (match == bestMatch && numberOfMatches > overallMatches) { // если показатели одинаковые, но при этом у текущего пользователя больше совпадений, то выбираем его
+                bestUserId = userId;
             }
         }
-        if (recommendations.isEmpty()) {
+        if (bestUserId == 0) { // если не было найдено совпадений, то возвращаем пустой список
             return Collections.emptyList();
         }
-        Set<Long> recommendedFilmsId = recommendations.stream()
+        Set<Long> bestUserLikedFilms = usersLikes.get(bestUserId).keySet(); // если пользователь найден, то получаем список лайкнутых им фильмов
+        bestUserLikedFilms.removeAll(userFilmIdRating.keySet()); // оставляем только те, которые не лайкал искомый пользователь
+        return filmStorage.findFilmsByIds(bestUserLikedFilms).stream()
                 .filter(film -> film.getRating() >= positiveRating)
-                .map(Film::getId)
-                .collect(Collectors.toSet());
-
-        return filmStorage.findFilmsByIds(recommendedFilmsId).stream()
                 .map(FilmMapper::toDto)
                 .collect(Collectors.toList());
     }
