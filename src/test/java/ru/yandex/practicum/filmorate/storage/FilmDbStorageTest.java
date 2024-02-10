@@ -253,6 +253,39 @@ public class FilmDbStorageTest {
     }
 
     @Test
+    @DisplayName("Тест проверки расчета рейтинга фильма")
+    void testCalculateRating() {
+        filmDbStorage.add(film);
+        userStorage.add(user);
+        userStorage.add(user2);
+
+        filmDbStorage.addLikeToFilm(film.getId(), user.getId(), 6);
+        filmDbStorage.addLikeToFilm(film.getId(), user2.getId(), 5);
+
+        Film storedFilm = filmDbStorage.findById(film.getId());
+
+        double rating = storedFilm.getRating();
+
+        assertEquals(5.5, rating);
+    }
+
+    @Test
+    @DisplayName("Тест добавления лайка дважды одному и тому же фильму от одного пользователя")
+    void testAddTwoLikesFromOneUser() {
+        filmDbStorage.add(film);
+        userStorage.add(user);
+
+        filmDbStorage.addLikeToFilm(film.getId(), user.getId(), 10);
+        filmDbStorage.addLikeToFilm(film.getId(), user.getId(), 2);
+
+        Film storedFilm = filmDbStorage.findById(film.getId());
+
+        double rating = storedFilm.getRating();
+
+        assertEquals(2, rating);
+    }
+
+    @Test
     @DisplayName("Тест удаления лайка")
     void testAddAndRemoveLike() {
         filmDbStorage.add(film);
