@@ -56,61 +56,13 @@ public class UserServiceTest {
 
     @BeforeEach
     public void beforeEach() {
-        user1 = User.builder()
-                .id(1)
-                .email("email 1")
-                .login("login 1")
-                .name("name 1")
-                .birthday(LocalDate.now())
-                .build();
-        user2 = User.builder()
-                .id(2)
-                .email("email 2")
-                .login("login 2")
-                .name("name 2")
-                .birthday(LocalDate.now())
-                .build();
-        user3 = User.builder()
-                .id(3)
-                .email("email 3")
-                .login("login 3")
-                .name("name 3")
-                .birthday(LocalDate.now())
-                .build();
-
-        Mpa mpa = new Mpa(1, "G");
-        film1 = Film.builder()
-                .id(1)
-                .name("film 1")
-                .description("film 1 description")
-                .releaseDate(LocalDate.of(2020, 12, 12))
-                .duration(123)
-                .mpa(mpa)
-                .build();
-        film2 = Film.builder()
-                .id(2)
-                .name("film 2")
-                .description("film 2 description")
-                .releaseDate(LocalDate.of(2020, 12, 12))
-                .duration(123)
-                .mpa(mpa)
-                .build();
-        film3 = Film.builder()
-                .id(3)
-                .name("film 3")
-                .description("film 3 description")
-                .releaseDate(LocalDate.of(2020, 12, 12))
-                .duration(123)
-                .mpa(mpa)
-                .build();
-        film4 = Film.builder()
-                .id(4)
-                .name("film 4")
-                .description("film description 4")
-                .releaseDate(LocalDate.of(2020, 12, 12))
-                .duration(123)
-                .mpa(mpa)
-                .build();
+        user1 = createUser(1);
+        user2 = createUser(2);
+        user3 = createUser(3);
+        film1 = createFilm(1);
+        film2 = createFilm(2);
+        film3 = createFilm(3);
+        film4 = createFilm(4);
         userStorage.add(user1);
         userStorage.add(user2);
         userStorage.add(user3);
@@ -123,14 +75,14 @@ public class UserServiceTest {
     @Test
     @DisplayName("Тест получения рекомендаций c двумя пользователями")
     public void findRecommendationsBetweenTwoUsers() {
-        filmStorage.addLikeToFilm(film1.getId(), user1.getId(), 8);
-        filmStorage.addLikeToFilm(film3.getId(), user1.getId(), 7);
+        filmStorage.addMarkToFilm(film1.getId(), user1.getId(), 8);
+        filmStorage.addMarkToFilm(film3.getId(), user1.getId(), 7);
 
-        filmStorage.addLikeToFilm(film1.getId(), user2.getId(), 8);
-        filmStorage.addLikeToFilm(film2.getId(), user2.getId(), 5);
-        filmStorage.addLikeToFilm(film4.getId(), user2.getId(), 9);
+        filmStorage.addMarkToFilm(film1.getId(), user2.getId(), 8);
+        filmStorage.addMarkToFilm(film2.getId(), user2.getId(), 5);
+        filmStorage.addMarkToFilm(film4.getId(), user2.getId(), 9);
 
-        film4.setRating(9);
+        film4.setRating(9.0);
 
         Collection<FilmDto> recommendations = userService.showRecommendations(user1.getId());
 
@@ -144,15 +96,15 @@ public class UserServiceTest {
     @Test
     @DisplayName("Тест получения нескольких рекомендаций c двумя пользователями")
     public void findSeveralRecommendationsBetweenTwoUsers() {
-        filmStorage.addLikeToFilm(film1.getId(), user1.getId(), 8);
-        filmStorage.addLikeToFilm(film3.getId(), user1.getId(), 7);
+        filmStorage.addMarkToFilm(film1.getId(), user1.getId(), 8);
+        filmStorage.addMarkToFilm(film3.getId(), user1.getId(), 7);
 
-        filmStorage.addLikeToFilm(film1.getId(), user2.getId(), 8);
-        filmStorage.addLikeToFilm(film2.getId(), user2.getId(), 6);
-        filmStorage.addLikeToFilm(film4.getId(), user2.getId(), 9);
+        filmStorage.addMarkToFilm(film1.getId(), user2.getId(), 8);
+        filmStorage.addMarkToFilm(film2.getId(), user2.getId(), 6);
+        filmStorage.addMarkToFilm(film4.getId(), user2.getId(), 9);
 
-        film2.setRating(6);
-        film4.setRating(9);
+        film2.setRating(6.0);
+        film4.setRating(9.0);
 
         Collection<FilmDto> recommendations = userService.showRecommendations(user1.getId());
 
@@ -166,17 +118,17 @@ public class UserServiceTest {
     @Test
     @DisplayName("Тест получения рекомендаций с разным количеством совпавших оцененных фильмов")
     public void findRecommendations() {
-        filmStorage.addLikeToFilm(film1.getId(), user1.getId(), 8);
-        filmStorage.addLikeToFilm(film3.getId(), user1.getId(), 7);
+        filmStorage.addMarkToFilm(film1.getId(), user1.getId(), 8);
+        filmStorage.addMarkToFilm(film3.getId(), user1.getId(), 7);
 
-        filmStorage.addLikeToFilm(film1.getId(), user2.getId(), 8);
-        filmStorage.addLikeToFilm(film2.getId(), user2.getId(), 5);
+        filmStorage.addMarkToFilm(film1.getId(), user2.getId(), 8);
+        filmStorage.addMarkToFilm(film2.getId(), user2.getId(), 5);
 
-        filmStorage.addLikeToFilm(film1.getId(), user3.getId(), 9);
-        filmStorage.addLikeToFilm(film2.getId(), user3.getId(), 6);
-        filmStorage.addLikeToFilm(film3.getId(), user3.getId(), 7);
-        filmStorage.addLikeToFilm(film4.getId(), user3.getId(), 9);
-        film4.setRating(9);
+        filmStorage.addMarkToFilm(film1.getId(), user3.getId(), 9);
+        filmStorage.addMarkToFilm(film2.getId(), user3.getId(), 6);
+        filmStorage.addMarkToFilm(film3.getId(), user3.getId(), 7);
+        filmStorage.addMarkToFilm(film4.getId(), user3.getId(), 9);
+        film4.setRating(9.0);
 
         Collection<FilmDto> recommendations = userService.showRecommendations(user1.getId());
 
@@ -190,11 +142,11 @@ public class UserServiceTest {
     @Test
     @DisplayName("Тест получение пустого списка рекомендаций при совпадении оценок")
     public void getEmptyListWhenSameRatings() {
-        filmStorage.addLikeToFilm(film1.getId(), user1.getId(), 8);
-        filmStorage.addLikeToFilm(film3.getId(), user1.getId(), 7);
+        filmStorage.addMarkToFilm(film1.getId(), user1.getId(), 8);
+        filmStorage.addMarkToFilm(film3.getId(), user1.getId(), 7);
 
-        filmStorage.addLikeToFilm(film1.getId(), user2.getId(), 8);
-        filmStorage.addLikeToFilm(film3.getId(), user2.getId(), 7);
+        filmStorage.addMarkToFilm(film1.getId(), user2.getId(), 8);
+        filmStorage.addMarkToFilm(film3.getId(), user2.getId(), 7);
 
         Collection<FilmDto> recommendations = userService.showRecommendations(user1.getId());
 
@@ -206,17 +158,17 @@ public class UserServiceTest {
     @Test
     @DisplayName("Тест получения рекомендаций c тремя пользователями при одинаковых оценках, но с разным количеством лайков")
     public void findRecommendationsWithSameRatings() {
-        filmStorage.addLikeToFilm(film1.getId(), user1.getId(), 8);
-        filmStorage.addLikeToFilm(film3.getId(), user1.getId(), 7);
+        filmStorage.addMarkToFilm(film1.getId(), user1.getId(), 8);
+        filmStorage.addMarkToFilm(film3.getId(), user1.getId(), 7);
 
-        filmStorage.addLikeToFilm(film1.getId(), user2.getId(), 8);
-        filmStorage.addLikeToFilm(film3.getId(), user2.getId(), 7);
+        filmStorage.addMarkToFilm(film1.getId(), user2.getId(), 8);
+        filmStorage.addMarkToFilm(film3.getId(), user2.getId(), 7);
 
-        filmStorage.addLikeToFilm(film1.getId(), user3.getId(), 8);
-        filmStorage.addLikeToFilm(film2.getId(), user3.getId(), 5);
-        filmStorage.addLikeToFilm(film3.getId(), user3.getId(), 7);
-        filmStorage.addLikeToFilm(film4.getId(), user3.getId(), 9);
-        film4.setRating(9);
+        filmStorage.addMarkToFilm(film1.getId(), user3.getId(), 8);
+        filmStorage.addMarkToFilm(film2.getId(), user3.getId(), 5);
+        filmStorage.addMarkToFilm(film3.getId(), user3.getId(), 7);
+        filmStorage.addMarkToFilm(film4.getId(), user3.getId(), 9);
+        film4.setRating(9.0);
 
         Collection<FilmDto> recommendations = userService.showRecommendations(user1.getId());
 
@@ -230,18 +182,18 @@ public class UserServiceTest {
     @Test
     @DisplayName("Тест получения рекомендаций c разницей в несколько баллов")
     public void findRecommendationsWithDifferentRatings() {
-        filmStorage.addLikeToFilm(film1.getId(), user1.getId(), 8);
-        filmStorage.addLikeToFilm(film3.getId(), user1.getId(), 7);
+        filmStorage.addMarkToFilm(film1.getId(), user1.getId(), 8);
+        filmStorage.addMarkToFilm(film3.getId(), user1.getId(), 7);
 
-        filmStorage.addLikeToFilm(film1.getId(), user2.getId(), 9);
-        filmStorage.addLikeToFilm(film2.getId(), user2.getId(), 5);
-        filmStorage.addLikeToFilm(film3.getId(), user2.getId(), 6);
-        filmStorage.addLikeToFilm(film4.getId(), user2.getId(), 9);
+        filmStorage.addMarkToFilm(film1.getId(), user2.getId(), 9);
+        filmStorage.addMarkToFilm(film2.getId(), user2.getId(), 5);
+        filmStorage.addMarkToFilm(film3.getId(), user2.getId(), 6);
+        filmStorage.addMarkToFilm(film4.getId(), user2.getId(), 9);
 
-        filmStorage.addLikeToFilm(film1.getId(), user3.getId(), 6);
-        filmStorage.addLikeToFilm(film2.getId(), user3.getId(), 5);
-        filmStorage.addLikeToFilm(film3.getId(), user3.getId(), 10);
-        film4.setRating(9);
+        filmStorage.addMarkToFilm(film1.getId(), user3.getId(), 6);
+        filmStorage.addMarkToFilm(film2.getId(), user3.getId(), 5);
+        filmStorage.addMarkToFilm(film3.getId(), user3.getId(), 10);
+        film4.setRating(9.0);
 
         Collection<FilmDto> recommendations = userService.showRecommendations(user1.getId());
 
@@ -255,13 +207,35 @@ public class UserServiceTest {
     @Test
     @DisplayName("Тест получение пустого списка рекомендаций, когда только один пользователь")
     public void getEmptyListWithOnlyOneUser() {
-        filmStorage.addLikeToFilm(film1.getId(), user1.getId(), 8);
-        filmStorage.addLikeToFilm(film3.getId(), user1.getId(), 7);
+        filmStorage.addMarkToFilm(film1.getId(), user1.getId(), 8);
+        filmStorage.addMarkToFilm(film3.getId(), user1.getId(), 7);
 
         Collection<FilmDto> recommendations = userService.showRecommendations(user1.getId());
 
         assertThat(recommendations)
                 .isNotNull()
                 .isEmpty();
+    }
+
+    private User createUser(int id) {
+        return User.builder()
+                .id(id)
+                .email("email " + id)
+                .login("login " + id)
+                .name("name " + id)
+                .birthday(LocalDate.now())
+                .build();
+    }
+
+    private Film createFilm(int id) {
+        Mpa mpa = new Mpa(1, "G");
+        return Film.builder()
+                .id(id)
+                .name("film " + id)
+                .description("film " + id + " description")
+                .releaseDate(LocalDate.of(2020, 12, 12))
+                .duration(123)
+                .mpa(mpa)
+                .build();
     }
 }
