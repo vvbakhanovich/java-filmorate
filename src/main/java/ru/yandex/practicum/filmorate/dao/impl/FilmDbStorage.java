@@ -233,10 +233,9 @@ public class FilmDbStorage implements FilmStorage {
         jdbcTemplate.update(sql, filmId, userId);
     }
 
-    @Override
-    public Map<Long, Map<Long, Integer>> getUsersAndFilmLikes() {
+    public Map<Long, Set<FilmMark>> findUserIdFilmMarks() {
         String filmsIdsSql = "SELECT user_id, film_id, mark FROM film_mark";
-        return jdbcTemplate.query(filmsIdsSql, this::extractToUserIdLikedFilmsIdsMap);
+        return jdbcTemplate.query(filmsIdsSql, this::extractToUserIdFilmMarks);
     }
 
     private void setGenresForFilms(Collection<Film> films) {
@@ -389,32 +388,21 @@ public class FilmDbStorage implements FilmStorage {
                 .build();
     }
 
-    private Collection<FilmMarkByUser> extractToUserIdLikedFilmsIdsMap2(ResultSet rs) throws SQLException, DataAccessException {
-        Map<Long, FilmMarkByUser> userFilmMarks = new HashMap<>();
+    private Map<Long, Set<FilmMark>> extractToUserIdFilmMarks(ResultSet rs) throws SQLException, DataAccessException {
+        Map<Long, Set<FilmMark>> userFilmMarks = new HashMap<>();
         while (rs.next()) {
             final Long userId = rs.getLong("user_id");
-            FilmMarkByUser filmMarkByUser = userFilmMarks.get(userId);
-            if (filmMarkByUser == null) {
-                filmMarkByUser = new FilmMarkByUser();
+            Set<FilmMark> filmMarks = userFilmMarks.get(userId);
+            if (filmMarks == null) {
+                filmMarks = new LinkedHashSet<>();
             }
-            Map<Long, Integer> filmIdMarks = filmMarkByUser.getFilmIdMarks();
-            filmIdMarks.put(rs.getLong("film_id"), rs.getInt("mark"));
-            userFilmMarks.put(userId, filmMarkByUser);
+            FilmMark filmMark = FilmMark.builder()
+                    .filmId(rs.getLong("film_id"))
+                    .mark(rs.getInt("mark"))
+                    .build();
+            filmMarks.add(filmMark);
+            userFilmMarks.put(userId, filmMarks);
         }
-        return new ArrayList<>(userFilmMarks.values());
-    }
-
-    private Map<Long, Map<Long, Integer>> extractToUserIdLikedFilmsIdsMap(ResultSet rs) throws SQLException, DataAccessException {
-        final Map<Long, Map<Long, Integer>> userFilmLikesMap = new HashMap<>();
-        while (rs.next()) {
-            final Long userId = rs.getLong("user_id");
-            Map<Long, Integer> filmLikes = userFilmLikesMap.get(userId);
-            if (filmLikes == null) {
-                filmLikes = new HashMap<>();
-            }
-            filmLikes.put(rs.getLong("film_id"), rs.getInt("mark"));
-            userFilmLikesMap.put(userId, filmLikes);
-        }
-        return userFilmLikesMap;
+        return userFilmMarks;
     }
 }

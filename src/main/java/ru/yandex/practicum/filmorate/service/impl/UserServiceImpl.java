@@ -4,17 +4,30 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import ru.yandex.practicum.filmorate.dao.*;
+import ru.yandex.practicum.filmorate.dao.EventStorage;
+import ru.yandex.practicum.filmorate.dao.FilmStorage;
+import ru.yandex.practicum.filmorate.dao.FriendshipStorage;
+import ru.yandex.practicum.filmorate.dao.UserStorage;
 import ru.yandex.practicum.filmorate.dto.FeedDto;
 import ru.yandex.practicum.filmorate.dto.FilmDto;
+import ru.yandex.practicum.filmorate.dto.RecommendationsCurrentParams;
 import ru.yandex.practicum.filmorate.dto.UserDto;
 import ru.yandex.practicum.filmorate.mapper.FeedMapper;
 import ru.yandex.practicum.filmorate.mapper.FilmMapper;
 import ru.yandex.practicum.filmorate.mapper.UserMapper;
-import ru.yandex.practicum.filmorate.model.*;
+import ru.yandex.practicum.filmorate.model.EventType;
+import ru.yandex.practicum.filmorate.model.FilmMark;
+import ru.yandex.practicum.filmorate.model.Friendship;
+import ru.yandex.practicum.filmorate.model.Operation;
+import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.UserService;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import static ru.yandex.practicum.filmorate.model.FriendshipStatus.ACKNOWLEDGED;
@@ -172,7 +185,10 @@ public class UserServiceImpl implements UserService {
     }
 
     /**
-     * Получение списка рекомендованных к просмотру фильмов, которые могут понравиться пользователю.
+     * Получение списка рекомендованных к просмотру фильмов, которые могут понравиться пользователю. Алгоритм
+     * выбора рекомендаций определяет пользователя с наиболее схожими оценками с пользователем, который хочет получить
+     * рекомендации, и возвращает те фильмы, которые не были оценены искомым пользователем и у которых положительный
+     * рейтинг.
      *
      * @param id идентификатор пользователя, который хочет получить рекомендации.
      * @return список рекомендованных фильмов.
@@ -181,47 +197,20 @@ public class UserServiceImpl implements UserService {
     @Override
     public Collection<FilmDto> showRecommendations(long id) {
         log.info("Получение списка рекомендаций фильмов для пользователя с id {}.", id);
-        int positiveRating = 6;
-        Map<Long, Map<Long, Integer>> usersLikes = filmStorage.getUsersAndFilmLikes(); // мапа id пользователя - мапа id фильма и поставленая оценка
-        Map<Long, Integer> userFilmIdRating = usersLikes.get(id); // список id лайкнутых фильмов и их оценок от искомого пользователя
-        double bestMatch = Double.MAX_VALUE; // начальное значение для лучшего соотношения совпавших оценок
-        long bestUserId = 0; // начальное значение id пользователя с наибольшим количеством совпадений по оценкам
-        int numberOfLikedFilms = 0; // начальное значение для количества фильмов, которым пользователь поставил оценки
-        for (Long userId : usersLikes.keySet()) { // проходимся по всем пользователям, которые оценивали фильмы
-            if (userId == id) { // искомого пользователя пропускаем
-                continue;
-            }
-            Map<Long, Integer> currentUserFilmRating = usersLikes.get(userId); // фильмы и их оценки от текущего пользователся
-            int currentDiff = 0; // текущая разница оценок
-            int currentNumberOfMatches = 0; // текущее количество совпавших фильмов
-            int currentNumberOfLikedFilms = 0;
-            for (Long filmId : userFilmIdRating.keySet()) { // проходимся по всем фильмам, которые оценил искомый пользователь
-                currentNumberOfLikedFilms = userFilmIdRating.keySet().size();
-                int rateDiff = userFilmIdRating.get(filmId) - currentUserFilmRating.getOrDefault(filmId, 0); // высчитываем разницу между оценками. Если текущий пользователь не поставил оценку фильму, то используем 0.
-                currentDiff += rateDiff; // прибавляем к текущей разнице оценок
-                if (currentUserFilmRating.get(filmId) != null) { // если текущий пользователь не поставил оценку, то не учитываем его при подсчете
-                    currentNumberOfMatches++;
-                }
-            }
-            if (currentNumberOfMatches == 0) { // если нет ни одного совпадения, то переходим к следующему пользователю
-                continue;
-            }
-            double match = Math.abs((double) currentDiff / currentNumberOfMatches); // считаем насколько близки оценки между двумя пользователями
-            if (match < bestMatch) { // чем меньше показатель, тем больше похожи оценки
-                bestMatch = match;
-                bestUserId = userId;
-            }
-            if (match == bestMatch && currentNumberOfLikedFilms > numberOfLikedFilms) { // если показатели одинаковые, но при этом у текущего пользователя больше фильмов получили оценки, то выбираем его
-                bestUserId = userId;
-            }
-        }
-        if (bestUserId == 0) { // если не было найдено совпадений, то возвращаем пустой список
+        Map<Long, Set<FilmMark>> usersFilmMarks = filmStorage.findUserIdFilmMarks();
+        Set<FilmMark> searchedUserFilmMarks = usersFilmMarks.get(id);
+        Long userIdWithClosestMarks = findUserIdWithClosestMarks(usersFilmMarks, id);
+        if (userIdWithClosestMarks == null) {
             return Collections.emptyList();
         }
-        Set<Long> bestUserLikedFilms = usersLikes.get(bestUserId).keySet(); // если пользователь найден, то получаем список лайкнутых им фильмов
-        bestUserLikedFilms.removeAll(userFilmIdRating.keySet()); // оставляем только те, которые не лайкал искомый пользователь
-        return filmStorage.findFilmsByIds(bestUserLikedFilms).stream()
-                .filter(film -> film.getRating() >= positiveRating)
+        Set<Long> matchedUserMarkedFilmIds = usersFilmMarks.get(userIdWithClosestMarks).stream()
+                .map(FilmMark::getFilmId)
+                .collect(Collectors.toSet());
+        matchedUserMarkedFilmIds.removeAll(searchedUserFilmMarks.stream()
+                .map(FilmMark::getFilmId)
+                .collect(Collectors.toSet()));
+        return filmStorage.findFilmsByIds(matchedUserMarkedFilmIds).stream()
+                .filter(film -> film.getRating() >= POSITIVE_RATING)
                 .map(FilmMapper::toDto)
                 .collect(Collectors.toList());
     }
@@ -247,5 +236,53 @@ public class UserServiceImpl implements UserService {
                 userDto.getLogin() : userDto.getName();
         userDto.setName(validatedName);
         return userDto;
+    }
+
+    private RecommendationsCurrentParams compareToCurrentUserMarks(Set<FilmMark> searchedUserFilmMarks,
+                                                                   Set<FilmMark> currentUserFilmMarks) {
+        RecommendationsCurrentParams currentParams = new RecommendationsCurrentParams();
+        for (FilmMark filmMark : searchedUserFilmMarks) {
+            long filmId = filmMark.getFilmId();
+            currentParams.setCurrentNumberOfLikedFilms(currentUserFilmMarks.size());
+            Optional<FilmMark> currentUserFilmMark = currentUserFilmMarks.stream()
+                    .filter(currentFilmMark -> currentFilmMark.getFilmId() == filmId)
+                    .findAny();
+            int rateDiff = currentUserFilmMark
+                    .map(mark -> filmMark.getMark() - mark.getMark())
+                    .orElseGet(filmMark::getMark);
+            currentParams.setCurrentDiff(currentParams.getCurrentDiff() + rateDiff);
+            if (currentUserFilmMark.isPresent()) {
+                currentParams.setCurrentNumberOfMatches(currentParams.getCurrentNumberOfMatches() + 1);
+            }
+        }
+        return currentParams;
+    }
+
+    private Long findUserIdWithClosestMarks(Map<Long, Set<FilmMark>> usersFilmMarks, long searchedUserId) {
+        double closestMarksDiff = Double.MAX_VALUE;
+        Long userIdWithClosestMarks = null;
+        int numberOfLikedFilms = 0;
+        for (Long userId : usersFilmMarks.keySet()) {
+            if (userId == searchedUserId) {
+                continue;
+            }
+            Set<FilmMark> currentUserFilmMarks = usersFilmMarks.get(userId);
+            RecommendationsCurrentParams currentParams =
+                    compareToCurrentUserMarks(usersFilmMarks.get(searchedUserId), currentUserFilmMarks);
+            if (currentParams.getCurrentNumberOfMatches() == 0) {
+                continue;
+            }
+            double marksDiff =
+                    Math.abs((double) currentParams.getCurrentDiff() / currentParams.getCurrentNumberOfMatches());
+            if (marksDiff < closestMarksDiff) {
+                closestMarksDiff = marksDiff;
+                userIdWithClosestMarks = userId;
+                numberOfLikedFilms = currentParams.getCurrentNumberOfLikedFilms();
+            }
+            if (marksDiff == closestMarksDiff && currentParams.getCurrentNumberOfLikedFilms() > numberOfLikedFilms) {
+                userIdWithClosestMarks = userId;
+            }
+        }
+        return userIdWithClosestMarks;
     }
 }

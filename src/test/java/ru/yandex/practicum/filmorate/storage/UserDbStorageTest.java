@@ -377,21 +377,21 @@ class UserDbStorageTest {
         filmStorage.addMarkToFilm(filmOne.getId(), anotherUser.getId(), 10);
         filmStorage.addMarkToFilm(filmTwo.getId(), anotherUser.getId(), 10);
 
-        Map<Long, Map<Long, Integer>> filmRecommendations = filmStorage.getUsersAndFilmLikes();
+        Map<Long, Set<FilmMark>> filmRecommendations = filmStorage.findUserIdFilmMarks();
 
         assertThat(filmRecommendations.get(1L))
                 .isNotNull()
                 .isNotEmpty()
                 .usingRecursiveComparison()
-                .isEqualTo(Map.of(filmOne.getId(), 10));
+                .isEqualTo(Set.of(new FilmMark(filmOne.getId(), 10)));
 
         assertThat(filmRecommendations.get(2L))
                 .isNotNull()
                 .isNotEmpty()
                 .usingRecursiveComparison()
-                .isEqualTo(Map.of(
-                        filmOne.getId(), 10,
-                        filmTwo.getId(), 10)
+                .isEqualTo(Set.of(
+                        new FilmMark(filmOne.getId(), 10),
+                        new FilmMark(filmTwo.getId(), 10))
                 );
     }
 
@@ -402,7 +402,7 @@ class UserDbStorageTest {
         userStorage.add(anotherUser);
         filmStorage.add(filmOne);
 
-        Map<Long, Map<Long, Integer>> filmRecommendations = filmStorage.getUsersAndFilmLikes();
+        Map<Long, Set<FilmMark>> filmRecommendations = filmStorage.findUserIdFilmMarks();
 
         assertThat(filmRecommendations)
                 .isNotNull()
