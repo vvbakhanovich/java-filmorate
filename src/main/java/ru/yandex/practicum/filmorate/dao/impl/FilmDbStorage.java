@@ -79,10 +79,10 @@ public class FilmDbStorage implements FilmStorage {
     @Override
     public Collection<Film> findAll() {
         final String sql = "SELECT " +
-                "f.ID, f.TITLE, f.DESCRIPTION, f.RELEASE_DATE, f.DURATION, f.MPA_ID, m.RATING_NAME, CAST (AVG (fl.RATING) AS DECIMAL(3,1)) AS rating " +
+                "f.ID, f.TITLE, f.DESCRIPTION, f.RELEASE_DATE, f.DURATION, f.MPA_ID, m.RATING_NAME, CAST (AVG (fm.MARK) AS DECIMAL(3,1)) AS rating " +
                 "FROM " +
                 "FILM f LEFT JOIN MPA m ON f.MPA_ID = m.ID " +
-                "LEFT JOIN film_like fl on f.id = fl.film_id " +
+                "LEFT JOIN film_mark fm on f.id = fm.film_id " +
                 "GROUP BY f.id, m.rating_name";
 
         Collection<Film> films = jdbcTemplate.query(sql, this::mapToFilm);
@@ -94,10 +94,10 @@ public class FilmDbStorage implements FilmStorage {
     @Override
     public Film findById(final long filmId) {
         final String sql = "SELECT " +
-                "f.ID, f.TITLE, f.DESCRIPTION, f.RELEASE_DATE, f.DURATION, f.MPA_ID, m.RATING_NAME, CAST (AVG (fl.RATING) AS DECIMAL(3,1)) AS rating " +
+                "f.ID, f.TITLE, f.DESCRIPTION, f.RELEASE_DATE, f.DURATION, f.MPA_ID, m.RATING_NAME, CAST (AVG (fm.MARK) AS DECIMAL(3,1)) AS rating " +
                 "FROM " +
                 "FILM f LEFT JOIN MPA m ON f.MPA_ID = m.ID " +
-                "LEFT JOIN film_like fl on f.id = fl.film_id " +
+                "LEFT JOIN film_mark fm on f.id = fm.film_id " +
                 "GROUP BY f.id, m.rating_name " +
                 "HAVING f.ID = ?";
 
@@ -116,18 +116,18 @@ public class FilmDbStorage implements FilmStorage {
     @Override
     public Collection<Film> findMostLikedFilms(final int count, final Integer genreId, final Integer year) {
         final StringBuilder sql = new StringBuilder(
-                "SELECT f.ID, f.TITLE, f.DESCRIPTION, f.RELEASE_DATE, f.DURATION, f.MPA_ID, m.RATING_NAME, CAST (AVG (fl.RATING) AS DECIMAL(3,1)) AS rating " +
+                "SELECT f.ID, f.TITLE, f.DESCRIPTION, f.RELEASE_DATE, f.DURATION, f.MPA_ID, m.RATING_NAME, CAST (AVG (fm.MARK) AS DECIMAL(3,1)) AS rating " +
                         "FROM FILM_GENRE " +
                         "RIGHT JOIN film f on FILM_GENRE.FILM_ID = f.ID " +
                         "LEFT JOIN MPA m ON f.MPA_ID = m.ID " +
-                        "LEFT JOIN film_like fl on f.id = fl.film_id " +
+                        "LEFT JOIN film_mark fm on f.id = fm.film_id " +
                         "WHERE YEAR(f.RELEASE_DATE) = COALESCE(?, YEAR(f.RELEASE_DATE)) ");
         Collection<Film> films;
         if (genreId != null) {
-            sql.append("AND GENRE_ID = ? GROUP BY f.ID ORDER BY COUNT(fl.USER_ID) DESC LIMIT ?");
+            sql.append("AND GENRE_ID = ? GROUP BY f.ID ORDER BY COUNT(fm.USER_ID) DESC LIMIT ?");
             films = jdbcTemplate.query(sql.toString(), this::mapToFilm, year, genreId, count);
         } else {
-            sql.append("GROUP BY f.ID ORDER BY COUNT(fl.USER_ID) DESC LIMIT ?");
+            sql.append("GROUP BY f.ID ORDER BY COUNT(fm.USER_ID) DESC LIMIT ?");
             films = jdbcTemplate.query(sql.toString(), this::mapToFilm, year, count);
         }
         setGenresForFilms(films);
@@ -141,10 +141,10 @@ public class FilmDbStorage implements FilmStorage {
         final String ids = String.join(",", Collections.nCopies(filmsByDirectorId.size(), "?"));
         final String sql = String.format(
                 "SELECT " +
-                        "f.ID, f.TITLE, f.DESCRIPTION, f.RELEASE_DATE, f.DURATION, f.MPA_ID, m.RATING_NAME, CAST (AVG (fl.RATING) AS DECIMAL(3,1)) AS rating " +
+                        "f.ID, f.TITLE, f.DESCRIPTION, f.RELEASE_DATE, f.DURATION, f.MPA_ID, m.RATING_NAME, CAST (AVG (fm.MARK) AS DECIMAL(3,1)) AS rating " +
                         "FROM " +
                         "FILM f LEFT JOIN MPA m ON f.MPA_ID = m.ID " +
-                        "LEFT JOIN film_like fl on f.id = fl.film_id " +
+                        "LEFT JOIN film_mark fm on f.id = fm.film_id " +
                         "GROUP BY f.id, m.rating_name " +
                         "HAVING f.id IN (%s) " +
                         "ORDER BY ", ids);
@@ -161,10 +161,10 @@ public class FilmDbStorage implements FilmStorage {
         final String ids = String.join(",", Collections.nCopies(filmIds.size(), "?"));
         final String sql = String.format(
                 "SELECT " +
-                        "f.ID, f.TITLE, f.DESCRIPTION, f.RELEASE_DATE, f.DURATION, f.MPA_ID, m.RATING_NAME, CAST (AVG (fl.RATING) AS DECIMAL(3,1)) AS rating " +
+                        "f.ID, f.TITLE, f.DESCRIPTION, f.RELEASE_DATE, f.DURATION, f.MPA_ID, m.RATING_NAME, CAST (AVG (fm.MARK) AS DECIMAL(3,1)) AS rating " +
                         "FROM " +
                         "FILM f LEFT JOIN MPA m ON f.MPA_ID = m.ID " +
-                        "LEFT JOIN film_like fl on f.id = fl.film_id " +
+                        "LEFT JOIN film_mark fm on f.id = fm.film_id " +
                         "WHERE f.ID IN (%s)" +
                         "GROUP BY f.id, m.rating_name ", ids);
 
@@ -177,10 +177,10 @@ public class FilmDbStorage implements FilmStorage {
     @Override
     public Collection<Film> searchFilms(FilmSearchDto search) {
         StringBuilder sql = new StringBuilder("SELECT " +
-                "f.ID, f.TITLE, f.DESCRIPTION, f.RELEASE_DATE, f.DURATION, f.MPA_ID, m.RATING_NAME, CAST (AVG (fl.RATING) AS DECIMAL(3,1)) AS rating, d.DIRECTOR_NAME " +
+                "f.ID, f.TITLE, f.DESCRIPTION, f.RELEASE_DATE, f.DURATION, f.MPA_ID, m.RATING_NAME, CAST (AVG (fm.MARK) AS DECIMAL(3,1)) AS rating, d.DIRECTOR_NAME " +
                 "FROM FILM f " +
                 "LEFT JOIN MPA m ON f.MPA_ID = m.ID " +
-                "LEFT JOIN film_like fl on f.id = fl.film_id " +
+                "LEFT JOIN film_mark fm on f.id = fm.film_id " +
                 "left join FILM_DIRECTOR fd on f.id = fd.FILM_ID " +
                 "left join DIRECTOR D on fd.DIRECTOR_ID = D.ID " +
                 "where ");
@@ -198,7 +198,7 @@ public class FilmDbStorage implements FilmStorage {
                     .append(search.getQuery())
                     .append("%' ");
         }
-        sql.append("GROUP BY f.id ORDER BY COUNT(fl.USER_ID) DESC");
+        sql.append("GROUP BY f.id ORDER BY COUNT(fm.USER_ID) DESC");
         Collection<Film> films = jdbcTemplate.query(sql.toString(), this::mapToFilm);
         setDirectorsForFilms(films);
         setGenresForFilms(films);
@@ -207,35 +207,35 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public Collection<Film> findCommonFilms(long userId, long friendId) {
-        final String commonFilmsIdsSql = "SELECT fl1.film_id FROM film_like fl1, film_like fl2 " +
-                "WHERE fl1.user_id = ? AND fl2.user_id = ? AND fl1.film_id = fl2.film_id";
+        final String commonFilmsIdsSql = "SELECT fm1.film_id FROM film_mark fm1, film_mark fm2 " +
+                "WHERE fm1.user_id = ? AND fm2.user_id = ? AND fm1.film_id = fm2.film_id";
         final String sql = String.format(
                 "SELECT " +
-                        "f.ID, f.TITLE, f.DESCRIPTION, f.RELEASE_DATE, f.DURATION, f.MPA_ID, m.RATING_NAME, CAST (AVG (fl.RATING) AS DECIMAL(3,1)) AS rating " +
+                        "f.ID, f.TITLE, f.DESCRIPTION, f.RELEASE_DATE, f.DURATION, f.MPA_ID, m.RATING_NAME, CAST (AVG (fm.MARK) AS DECIMAL(3,1)) AS rating " +
                         "FROM " +
                         "FILM f LEFT JOIN MPA m ON f.MPA_ID = m.ID " +
-                        "LEFT JOIN film_like fl on f.id = fl.film_id " +
+                        "LEFT JOIN film_mark fm on f.id = fm.film_id " +
                         "GROUP BY f.id, m.rating_name " +
                         "HAVING f.id IN (%s) " +
-                        "ORDER BY COUNT(fl.USER_ID) DESC", commonFilmsIdsSql);
+                        "ORDER BY COUNT(fm.USER_ID) DESC", commonFilmsIdsSql);
         return jdbcTemplate.query(sql, this::mapToFilm, userId, friendId);
     }
 
     @Override
-    public void addLikeToFilm(final long filmId, final long userId, final int rating) {
-        final String sql = "MERGE INTO film_like (film_id, user_id, rating) VALUES (?, ?, ?)";
-        jdbcTemplate.update(sql, filmId, userId, rating);
+    public void addMarkToFilm(final long filmId, final long userId, final Integer mark) {
+        final String sql = "MERGE INTO film_mark (film_id, user_id, mark) VALUES (?, ?, ?)";
+        jdbcTemplate.update(sql, filmId, userId, mark);
     }
 
     @Override
-    public void removeLikeFromFilm(long filmId, long userId) {
-        final String sql = "DELETE FROM film_like WHERE film_id = ? AND user_id = ?";
+    public void removeMarkFromFilm(long filmId, long userId) {
+        final String sql = "DELETE FROM film_mark WHERE film_id = ? AND user_id = ?";
         jdbcTemplate.update(sql, filmId, userId);
     }
 
     @Override
     public Map<Long, Map<Long, Integer>> getUsersAndFilmLikes() {
-        String filmsIdsSql = "SELECT user_id, film_id, rating FROM film_like";
+        String filmsIdsSql = "SELECT user_id, film_id, mark FROM film_mark";
         return jdbcTemplate.query(filmsIdsSql, this::extractToUserIdLikedFilmsIdsMap);
     }
 
@@ -389,6 +389,21 @@ public class FilmDbStorage implements FilmStorage {
                 .build();
     }
 
+    private Collection<FilmMarkByUser> extractToUserIdLikedFilmsIdsMap2(ResultSet rs) throws SQLException, DataAccessException {
+        Map<Long, FilmMarkByUser> userFilmMarks = new HashMap<>();
+        while (rs.next()) {
+            final Long userId = rs.getLong("user_id");
+            FilmMarkByUser filmMarkByUser = userFilmMarks.get(userId);
+            if (filmMarkByUser == null) {
+                filmMarkByUser = new FilmMarkByUser();
+            }
+            Map<Long, Integer> filmIdMarks = filmMarkByUser.getFilmIdMarks();
+            filmIdMarks.put(rs.getLong("film_id"), rs.getInt("mark"));
+            userFilmMarks.put(userId, filmMarkByUser);
+        }
+        return new ArrayList<>(userFilmMarks.values());
+    }
+
     private Map<Long, Map<Long, Integer>> extractToUserIdLikedFilmsIdsMap(ResultSet rs) throws SQLException, DataAccessException {
         final Map<Long, Map<Long, Integer>> userFilmLikesMap = new HashMap<>();
         while (rs.next()) {
@@ -397,7 +412,7 @@ public class FilmDbStorage implements FilmStorage {
             if (filmLikes == null) {
                 filmLikes = new HashMap<>();
             }
-            filmLikes.put(rs.getLong("film_id"), rs.getInt("rating"));
+            filmLikes.put(rs.getLong("film_id"), rs.getInt("mark"));
             userFilmLikesMap.put(userId, filmLikes);
         }
         return userFilmLikesMap;
