@@ -14,13 +14,13 @@ import java.util.LinkedHashSet;
 @NoArgsConstructor
 @Builder
 public class Film {
-    private long id; //целочисленный идентификатор
-    private String name; //название
-    private String description; //описание
-    private LocalDate releaseDate; //дата релиза
-    private int duration; //продолжительность фильма
-    private Mpa mpa; //возрастной рейтинг
-    private final LinkedHashSet<Genre> genres = new LinkedHashSet<>(); //жанры
-    private final LinkedHashSet<Director> directors = new LinkedHashSet<>(); //режиссеры
-    private double rating; //количество лайков от пользователей
+    private long id;
+    private String name;
+    private String description;
+    private LocalDate releaseDate;
+    private int duration;
+    private Mpa mpa;
+    private final LinkedHashSet<Genre> genres = new LinkedHashSet<>();
+    private final LinkedHashSet<Director> directors = new LinkedHashSet<>();
+    private double rating;
 }
