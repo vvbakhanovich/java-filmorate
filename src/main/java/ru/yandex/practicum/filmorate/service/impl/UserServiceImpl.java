@@ -24,6 +24,7 @@ import static ru.yandex.practicum.filmorate.model.FriendshipStatus.NOT_ACKNOWLED
 @RequiredArgsConstructor
 @Slf4j
 public class UserServiceImpl implements UserService {
+    private static final int POSITIVE_RATING = 6;
 
     private final UserStorage userStorage;
     private final FilmStorage filmStorage;
