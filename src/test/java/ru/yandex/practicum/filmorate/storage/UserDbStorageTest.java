@@ -383,15 +383,15 @@ class UserDbStorageTest {
                 .isNotNull()
                 .isNotEmpty()
                 .usingRecursiveComparison()
-                .isEqualTo(Set.of(new FilmMark(filmOne.getId(), 10)));
+                .isEqualTo(Set.of(new FilmMark(user.getId(), filmOne.getId(), 10)));
 
         assertThat(filmRecommendations.get(2L))
                 .isNotNull()
                 .isNotEmpty()
                 .usingRecursiveComparison()
                 .isEqualTo(Set.of(
-                        new FilmMark(filmOne.getId(), 10),
-                        new FilmMark(filmTwo.getId(), 10))
+                        new FilmMark(anotherUser.getId(), filmOne.getId(), 10),
+                        new FilmMark(anotherUser.getId(), filmTwo.getId(), 10))
                 );
     }
 

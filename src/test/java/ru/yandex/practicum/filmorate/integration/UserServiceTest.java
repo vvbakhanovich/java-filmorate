@@ -217,6 +217,52 @@ public class UserServiceTest {
                 .isEmpty();
     }
 
+    @Test
+    @DisplayName("Тест получения рекомендаций, когда у рекомендуемых фильмов отрицательные оценки")
+    public void findRecommendationsWithNegativeRatings() {
+        filmStorage.addMarkToFilm(film1.getId(), user1.getId(), 8);
+        filmStorage.addMarkToFilm(film3.getId(), user1.getId(), 7);
+
+        filmStorage.addMarkToFilm(film1.getId(), user2.getId(), 9);
+        filmStorage.addMarkToFilm(film2.getId(), user2.getId(), 5);
+        filmStorage.addMarkToFilm(film3.getId(), user2.getId(), 6);
+        filmStorage.addMarkToFilm(film4.getId(), user2.getId(), 2);
+
+        filmStorage.addMarkToFilm(film1.getId(), user3.getId(), 6);
+        filmStorage.addMarkToFilm(film2.getId(), user3.getId(), 5);
+        filmStorage.addMarkToFilm(film3.getId(), user3.getId(), 10);
+        film4.setRating(9.0);
+
+        Collection<FilmDto> recommendations = userService.showRecommendations(user1.getId());
+
+        assertThat(recommendations)
+                .isNotNull()
+                .isEmpty();
+    }
+
+    @Test
+    @DisplayName("Тест получения рекомендаций, когда у других пользователей все отрицательные оценки")
+    public void findRecommendationsWithAllNegativeRatings() {
+        filmStorage.addMarkToFilm(film1.getId(), user1.getId(), 8);
+        filmStorage.addMarkToFilm(film3.getId(), user1.getId(), 7);
+
+        filmStorage.addMarkToFilm(film1.getId(), user2.getId(), 1);
+        filmStorage.addMarkToFilm(film2.getId(), user2.getId(), 3);
+        filmStorage.addMarkToFilm(film3.getId(), user2.getId(), 5);
+        filmStorage.addMarkToFilm(film4.getId(), user2.getId(), 2);
+
+        filmStorage.addMarkToFilm(film1.getId(), user3.getId(), 3);
+        filmStorage.addMarkToFilm(film2.getId(), user3.getId(), 4);
+        filmStorage.addMarkToFilm(film3.getId(), user3.getId(), 1);
+        film4.setRating(9.0);
+
+        Collection<FilmDto> recommendations = userService.showRecommendations(user1.getId());
+
+        assertThat(recommendations)
+                .isNotNull()
+                .isEmpty();
+    }
+
     private User createUser(int id) {
         return User.builder()
                 .id(id)
