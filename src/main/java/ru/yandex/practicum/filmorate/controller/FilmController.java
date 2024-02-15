@@ -55,8 +55,8 @@ public class FilmController {
     @PutMapping("/{id}/like/{userId}")
     public FilmDto addMarkToFilm(@PathVariable long id, @PathVariable long userId,
                                  @Min(value = 1, message = "Рейтинг не может быть ниже 1.")
-                                 @Max(value = 10, message = "Рейтинг не должен превышать 10.") Integer rating) {
-        return filmService.addMarkToFilm(id, userId, rating);
+                                 @Max(value = 10, message = "Рейтинг не должен превышать 10.") Integer mark) {
+        return filmService.addMarkToFilm(id, userId, mark);
     }
 
     @DeleteMapping("/{id}/like/{userId}")

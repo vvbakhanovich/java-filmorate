@@ -10,7 +10,7 @@ import java.util.Set;
 
 public interface FilmStorage extends Dao<Film> {
 
-    void addMarkToFilm(long filmId, long userId, Integer rating);
+    void addMarkToFilm(long filmId, long userId, Integer mark);
 
     void removeMarkFromFilm(long filmId, long userId);
 
