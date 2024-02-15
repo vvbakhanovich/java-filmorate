@@ -243,16 +243,16 @@ public class UserServiceImpl implements UserService {
         RecommendationsCurrentParams currentParams = new RecommendationsCurrentParams();
         for (FilmMark filmMark : searchedUserFilmMarks) {
             long filmId = filmMark.getFilmId();
-            currentParams.setCurrentNumberOfLikedFilms(currentUserFilmMarks.size());
+            currentParams.setNumberOfLikedFilms(currentUserFilmMarks.size());
             Optional<FilmMark> currentUserFilmMark = currentUserFilmMarks.stream()
                     .filter(currentFilmMark -> currentFilmMark.getFilmId() == filmId)
                     .findAny();
             int rateDiff = currentUserFilmMark
                     .map(mark -> filmMark.getMark() - mark.getMark())
                     .orElseGet(filmMark::getMark);
-            currentParams.setCurrentDiff(currentParams.getCurrentDiff() + rateDiff);
+            currentParams.setDiff(currentParams.getDiff() + rateDiff);
             if (currentUserFilmMark.isPresent()) {
-                currentParams.setCurrentNumberOfMatches(currentParams.getCurrentNumberOfMatches() + 1);
+                currentParams.setNumberOfMatches(currentParams.getNumberOfMatches() + 1);
             }
         }
         return currentParams;
@@ -269,17 +269,17 @@ public class UserServiceImpl implements UserService {
             Set<FilmMark> currentUserFilmMarks = usersFilmMarks.get(userId);
             RecommendationsCurrentParams currentParams =
                     compareToCurrentUserMarks(usersFilmMarks.get(searchedUserId), currentUserFilmMarks);
-            if (currentParams.getCurrentNumberOfMatches() == 0) {
+            if (currentParams.getNumberOfMatches() == 0) {
                 continue;
             }
             double marksDiff =
-                    Math.abs((double) currentParams.getCurrentDiff() / currentParams.getCurrentNumberOfMatches());
+                    Math.abs((double) currentParams.getDiff() / currentParams.getNumberOfMatches());
             if (marksDiff < closestMarksDiff) {
                 closestMarksDiff = marksDiff;
                 userIdWithClosestMarks = userId;
-                numberOfLikedFilms = currentParams.getCurrentNumberOfLikedFilms();
+                numberOfLikedFilms = currentParams.getNumberOfLikedFilms();
             }
-            if (marksDiff == closestMarksDiff && currentParams.getCurrentNumberOfLikedFilms() > numberOfLikedFilms) {
+            if (marksDiff == closestMarksDiff && currentParams.getNumberOfLikedFilms() > numberOfLikedFilms) {
                 userIdWithClosestMarks = userId;
             }
         }

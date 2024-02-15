@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 @Builder
 public class RecommendationsCurrentParams {
 
-    private int currentDiff;
-    private int currentNumberOfMatches;
-    private int currentNumberOfLikedFilms;
+    private int diff;
+    private int numberOfMatches;
+    private int numberOfLikedFilms;
 }
