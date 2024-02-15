@@ -10,6 +10,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Builder
 public class FilmMark {
+    private long userId;
     private long filmId;
     private int mark;
 }

@@ -397,6 +397,7 @@ public class FilmDbStorage implements FilmStorage {
                 filmMarks = new LinkedHashSet<>();
             }
             FilmMark filmMark = FilmMark.builder()
+                    .userId(userId)
                     .filmId(rs.getLong("film_id"))
                     .mark(rs.getInt("mark"))
                     .build();
