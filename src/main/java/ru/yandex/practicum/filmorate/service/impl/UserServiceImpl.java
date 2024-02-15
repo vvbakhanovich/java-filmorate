@@ -207,7 +207,7 @@ public class UserServiceImpl implements UserService {
         }
         Set<Long> matchedUserMarkedFilmIds = usersFilmMarks.get(userIdWithClosestMarks).stream()
                 .map(FilmMark::getFilmId)
-                .filter(requesterMarkedFilmsIds::contains)
+                .filter(filmId -> !requesterMarkedFilmsIds.contains(filmId))
                 .collect(Collectors.toSet());
         return filmStorage.findFilmsByIds(matchedUserMarkedFilmIds).stream()
                 .filter(film -> film.getRating() >= MIN_POSITIVE_RATING_VALUE)
