@@ -205,10 +205,8 @@ public class UserServiceImpl implements UserService {
         }
         Set<Long> matchedUserMarkedFilmIds = usersFilmMarks.get(userIdWithClosestMarks).stream()
                 .map(FilmMark::getFilmId)
+                .filter(filmId -> requesterFilmMarks.stream().noneMatch(filmMark -> filmMark.getFilmId() == filmId))
                 .collect(Collectors.toSet());
-        matchedUserMarkedFilmIds.removeAll(searchedUserFilmMarks.stream()
-                .map(FilmMark::getFilmId)
-                .collect(Collectors.toSet()));
         return filmStorage.findFilmsByIds(matchedUserMarkedFilmIds).stream()
                 .filter(film -> film.getRating() >= MIN_POSITIVE_RATING_VALUE)
                 .map(FilmMapper::toDto)
@@ -238,26 +236,6 @@ public class UserServiceImpl implements UserService {
         return userDto;
     }
 
-    private RecommendationsCurrentParams compareToCurrentUserMarks(Set<FilmMark> searchedUserFilmMarks,
-                                                                   Set<FilmMark> currentUserFilmMarks) {
-        RecommendationsCurrentParams currentParams = new RecommendationsCurrentParams();
-        for (FilmMark filmMark : searchedUserFilmMarks) {
-            long filmId = filmMark.getFilmId();
-            currentParams.setNumberOfLikedFilms(currentUserFilmMarks.size());
-            Optional<FilmMark> currentUserFilmMark = currentUserFilmMarks.stream()
-                    .filter(currentFilmMark -> currentFilmMark.getFilmId() == filmId)
-                    .findAny();
-            int rateDiff = currentUserFilmMark
-                    .map(mark -> filmMark.getMark() - mark.getMark())
-                    .orElseGet(filmMark::getMark);
-            currentParams.setDiff(currentParams.getDiff() + rateDiff);
-            if (currentUserFilmMark.isPresent()) {
-                currentParams.setNumberOfMatches(currentParams.getNumberOfMatches() + 1);
-            }
-        }
-        return currentParams;
-    }
-
     private Long findUserIdWithClosestMarks(Map<Long, Set<FilmMark>> usersFilmMarks, long searchedUserId) {
         double closestMarksDiff = Double.MAX_VALUE;
         Long userIdWithClosestMarks = null;
@@ -284,5 +262,25 @@ public class UserServiceImpl implements UserService {
             }
         }
         return userIdWithClosestMarks;
+    }
+
+    private RecommendationsCurrentParams compareToCurrentUserMarks(Set<FilmMark> searchedUserFilmMarks,
+                                                                   Set<FilmMark> currentUserFilmMarks) {
+        RecommendationsCurrentParams currentParams = new RecommendationsCurrentParams();
+        for (FilmMark filmMark : searchedUserFilmMarks) {
+            long filmId = filmMark.getFilmId();
+            currentParams.setNumberOfLikedFilms(currentUserFilmMarks.size());
+            Optional<FilmMark> currentUserFilmMark = currentUserFilmMarks.stream()
+                    .filter(currentFilmMark -> currentFilmMark.getFilmId() == filmId)
+                    .findAny();
+            int rateDiff = currentUserFilmMark
+                    .map(mark -> filmMark.getMark() - mark.getMark())
+                    .orElseGet(filmMark::getMark);
+            currentParams.setDiff(currentParams.getDiff() + rateDiff);
+            if (currentUserFilmMark.isPresent()) {
+                currentParams.setNumberOfMatches(currentParams.getNumberOfMatches() + 1);
+            }
+        }
+        return currentParams;
     }
 }
