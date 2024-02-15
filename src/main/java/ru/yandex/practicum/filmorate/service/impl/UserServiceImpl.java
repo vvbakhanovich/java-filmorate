@@ -198,14 +198,16 @@ public class UserServiceImpl implements UserService {
     public Collection<FilmDto> showRecommendations(long requesterId) {
         log.info("Получение списка рекомендаций фильмов для пользователя с id {}.", requesterId);
         Map<Long, Set<FilmMark>> usersFilmMarks = filmStorage.findUserIdFilmMarks();
-        Set<FilmMark> requesterFilmMarks = usersFilmMarks.get(requesterId);
+        Set<Long> requesterMarkedFilmsIds = usersFilmMarks.get(requesterId).stream()
+                .map(FilmMark::getFilmId)
+                .collect(Collectors.toSet());
         Long userIdWithClosestMarks = findUserIdWithClosestMarks(usersFilmMarks, requesterId);
         if (userIdWithClosestMarks == null) {
             return Collections.emptyList();
         }
         Set<Long> matchedUserMarkedFilmIds = usersFilmMarks.get(userIdWithClosestMarks).stream()
                 .map(FilmMark::getFilmId)
-                .filter(filmId -> requesterFilmMarks.stream().noneMatch(filmMark -> filmMark.getFilmId() == filmId))
+                .filter(requesterMarkedFilmsIds::contains)
                 .collect(Collectors.toSet());
         return filmStorage.findFilmsByIds(matchedUserMarkedFilmIds).stream()
                 .filter(film -> film.getRating() >= MIN_POSITIVE_RATING_VALUE)
@@ -236,17 +238,17 @@ public class UserServiceImpl implements UserService {
         return userDto;
     }
 
-    private Long findUserIdWithClosestMarks(Map<Long, Set<FilmMark>> usersFilmMarks, long searchedUserId) {
+    private Long findUserIdWithClosestMarks(Map<Long, Set<FilmMark>> usersFilmMarks, long requesterId) {
         double closestMarksDiff = Double.MAX_VALUE;
         Long userIdWithClosestMarks = null;
         int numberOfLikedFilms = 0;
         for (Long userId : usersFilmMarks.keySet()) {
-            if (userId == searchedUserId) {
+            if (userId == requesterId) {
                 continue;
             }
             Set<FilmMark> currentUserFilmMarks = usersFilmMarks.get(userId);
             RecommendationsCurrentParams currentParams =
-                    compareToCurrentUserMarks(usersFilmMarks.get(searchedUserId), currentUserFilmMarks);
+                    compareToCurrentUserMarks(usersFilmMarks.get(requesterId), currentUserFilmMarks);
             if (currentParams.getNumberOfMatches() == 0) {
                 continue;
             }
@@ -264,10 +266,10 @@ public class UserServiceImpl implements UserService {
         return userIdWithClosestMarks;
     }
 
-    private RecommendationsCurrentParams compareToCurrentUserMarks(Set<FilmMark> searchedUserFilmMarks,
+    private RecommendationsCurrentParams compareToCurrentUserMarks(Set<FilmMark> requesterFilmMarks,
                                                                    Set<FilmMark> currentUserFilmMarks) {
         RecommendationsCurrentParams currentParams = new RecommendationsCurrentParams();
-        for (FilmMark filmMark : searchedUserFilmMarks) {
+        for (FilmMark filmMark : requesterFilmMarks) {
             long filmId = filmMark.getFilmId();
             currentParams.setNumberOfLikedFilms(currentUserFilmMarks.size());
             Optional<FilmMark> currentUserFilmMark = currentUserFilmMarks.stream()
