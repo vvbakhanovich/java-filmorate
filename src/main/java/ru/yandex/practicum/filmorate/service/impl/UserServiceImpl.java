@@ -37,7 +37,7 @@ import static ru.yandex.practicum.filmorate.model.FriendshipStatus.NOT_ACKNOWLED
 @RequiredArgsConstructor
 @Slf4j
 public class UserServiceImpl implements UserService {
-    private static final int POSITIVE_RATING = 6;
+    private static final int MIN_POSITIVE_RATING_VALUE = 6;
 
     private final UserStorage userStorage;
     private final FilmStorage filmStorage;
@@ -210,7 +210,7 @@ public class UserServiceImpl implements UserService {
                 .map(FilmMark::getFilmId)
                 .collect(Collectors.toSet()));
         return filmStorage.findFilmsByIds(matchedUserMarkedFilmIds).stream()
-                .filter(film -> film.getRating() >= POSITIVE_RATING)
+                .filter(film -> film.getRating() >= MIN_POSITIVE_RATING_VALUE)
                 .map(FilmMapper::toDto)
                 .collect(Collectors.toList());
     }
