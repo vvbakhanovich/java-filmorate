@@ -190,16 +190,16 @@ public class UserServiceImpl implements UserService {
      * рекомендации, и возвращает те фильмы, которые не были оценены искомым пользователем и у которых положительный
      * рейтинг.
      *
-     * @param id идентификатор пользователя, который хочет получить рекомендации.
+     * @param requesterId идентификатор пользователя, который хочет получить рекомендации.
      * @return список рекомендованных фильмов.
      */
 
     @Override
-    public Collection<FilmDto> showRecommendations(long id) {
-        log.info("Получение списка рекомендаций фильмов для пользователя с id {}.", id);
+    public Collection<FilmDto> showRecommendations(long requesterId) {
+        log.info("Получение списка рекомендаций фильмов для пользователя с id {}.", requesterId);
         Map<Long, Set<FilmMark>> usersFilmMarks = filmStorage.findUserIdFilmMarks();
-        Set<FilmMark> searchedUserFilmMarks = usersFilmMarks.get(id);
-        Long userIdWithClosestMarks = findUserIdWithClosestMarks(usersFilmMarks, id);
+        Set<FilmMark> requesterFilmMarks = usersFilmMarks.get(requesterId);
+        Long userIdWithClosestMarks = findUserIdWithClosestMarks(usersFilmMarks, requesterId);
         if (userIdWithClosestMarks == null) {
             return Collections.emptyList();
         }
