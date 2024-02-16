@@ -14,10 +14,10 @@ import java.util.List;
 @NoArgsConstructor
 @Builder
 public class User {
-    private long id; //целочисленный идентификатор
-    private String email; //электронная почта
-    private String login; //логин пользователя
-    private String name; //имя для отображения
-    private LocalDate birthday; //дата рождения
-    private final List<Friendship> friends = new ArrayList<>(); //список друзей
+    private long id;
+    private String email;
+    private String login;
+    private String name;
+    private LocalDate birthday;
+    private final List<Friendship> friends = new ArrayList<>();
 }

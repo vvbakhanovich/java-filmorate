@@ -2,11 +2,19 @@ package ru.yandex.practicum.filmorate.dao;
 
 import ru.yandex.practicum.filmorate.dto.FilmSearchDto;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.FilmMark;
 
 import java.util.Collection;
+import java.util.Map;
 import java.util.Set;
 
 public interface FilmStorage extends Dao<Film> {
+
+    void addMarkToFilm(long filmId, long userId, Integer mark);
+
+    void removeMarkFromFilm(long filmId, long userId);
+
+    Map<Long, Set<FilmMark>> findUserIdFilmMarks();
 
     Collection<Film> findFilmsByIds(Set<Long> filmIds);
 

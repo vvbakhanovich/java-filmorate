@@ -14,9 +14,9 @@ public interface FilmService {
 
     FilmDto getFilmById(long filmId);
 
-    FilmDto likeFilm(long filmId, long userId);
+    FilmDto addMarkToFilm(long filmId, long userId, Integer mark);
 
-    FilmDto removeLike(long filmId, long userId);
+    FilmDto removeMarkFromFilm(long filmId, long userId);
 
     void removeFilm(long filmId);
 

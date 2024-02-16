@@ -27,8 +27,6 @@ public class FilmServiceImpl implements FilmService {
 
     private final UserStorage userStorage;
 
-    private final FilmLikeStorage filmLikeStorage;
-
     private final DirectorStorage directorStorage;
 
     private final EventStorage eventStorage;
@@ -97,10 +95,10 @@ public class FilmServiceImpl implements FilmService {
      */
     @Override
     @Transactional
-    public FilmDto likeFilm(final long filmId, final long userId) {
+    public FilmDto addMarkToFilm(final long filmId, final long userId, final Integer mark) {
         filmStorage.findById(filmId);
         userStorage.findById(userId);
-        filmLikeStorage.add(filmId, userId);
+        filmStorage.addMarkToFilm(filmId, userId, mark);
         log.info("Пользователь с id {} поставил лайк фильму с id {}", userId, filmId);
         eventStorage.addEvent(EventType.LIKE.name(), Operation.ADD.name(), filmId, userId);
         return toDto(filmStorage.findById(filmId));
@@ -115,10 +113,10 @@ public class FilmServiceImpl implements FilmService {
      */
     @Override
     @Transactional
-    public FilmDto removeLike(final long filmId, final long userId) {
+    public FilmDto removeMarkFromFilm(final long filmId, final long userId) {
         filmStorage.findById(filmId);
         userStorage.findById(userId);
-        filmLikeStorage.remove(filmId, userId);
+        filmStorage.removeMarkFromFilm(filmId, userId);
         log.info("Пользователь с id {} удалил лайк фильма с id {}", userId, filmId);
         eventStorage.addEvent(EventType.LIKE.name(), Operation.REMOVE.name(), filmId, userId);
         return toDto(filmStorage.findById(filmId));

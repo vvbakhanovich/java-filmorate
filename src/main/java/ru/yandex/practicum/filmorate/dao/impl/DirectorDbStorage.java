@@ -71,6 +71,12 @@ public class DirectorDbStorage implements DirectorStorage {
         }
     }
 
+    @Override
+    public void addDirectorToFilm(final long filmId, final long directorId) {
+        final String sql = "INSERT INTO film_director VALUES (?, ?)";
+        jdbcTemplate.update(sql, filmId, directorId);
+    }
+
     private Director mapToDirector(ResultSet rs, int rowNum) throws SQLException {
         return Director.builder()
                 .id(rs.getLong("id"))

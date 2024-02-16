@@ -3,17 +3,29 @@ package ru.yandex.practicum.filmorate.controller;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestController;
 import ru.yandex.practicum.filmorate.dto.FilmDto;
 import ru.yandex.practicum.filmorate.dto.FilmSearchDto;
 import ru.yandex.practicum.filmorate.service.FilmService;
 
 import javax.validation.Valid;
+import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import java.util.Collection;
 
 @RestController
 @RequestMapping("/films")
+@Validated
 @RequiredArgsConstructor
 public class FilmController {
 
@@ -41,13 +53,15 @@ public class FilmController {
     }
 
     @PutMapping("/{id}/like/{userId}")
-    public FilmDto likeFilm(@PathVariable long id, @PathVariable long userId) {
-        return filmService.likeFilm(id, userId);
+    public FilmDto addMarkToFilm(@PathVariable long id, @PathVariable long userId,
+                                 @Min(value = 1, message = "Рейтинг не может быть ниже 1.")
+                                 @Max(value = 10, message = "Рейтинг не должен превышать 10.") Integer mark) {
+        return filmService.addMarkToFilm(id, userId, mark);
     }
 
     @DeleteMapping("/{id}/like/{userId}")
-    public FilmDto removeLike(@PathVariable long id, @PathVariable long userId) {
-        return filmService.removeLike(id, userId);
+    public FilmDto removeMarkFromFilm(@PathVariable long id, @PathVariable long userId) {
+        return filmService.removeMarkFromFilm(id, userId);
     }
 
     @GetMapping("/popular")

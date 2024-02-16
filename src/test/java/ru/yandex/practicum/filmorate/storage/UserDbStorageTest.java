@@ -35,8 +35,6 @@ class UserDbStorageTest {
     private UserServiceImpl userService;
     private FilmServiceImpl filmService;
     private FriendshipStorage friendshipStorage;
-    private FilmGenreStorage filmGenreStorage;
-    private FilmLikeStorage filmLikeStorage;
     private FilmStorage filmStorage;
     private EventStorage eventStorage;
     private DirectorStorage directorStorage;
@@ -49,15 +47,12 @@ class UserDbStorageTest {
 
     @BeforeEach
     void setUp() {
-        filmLikeStorage = new FilmLikeDbStorage(jdbcTemplate);
-        filmGenreStorage = new FilmGenreDbStorage(jdbcTemplate);
-        FilmDirectorStorage filmDirectorStorage = new FilmDirectorDbStorage(jdbcTemplate);
-        filmStorage = new FilmDbStorage(jdbcTemplate, filmGenreStorage, filmDirectorStorage);
+        filmStorage = new FilmDbStorage(jdbcTemplate);
         userStorage = new UserDbStorage(jdbcTemplate);
         eventStorage = new EventDbStorage(jdbcTemplate);
         friendshipStorage = new FriendshipDbStorage(jdbcTemplate);
-        userService = new UserServiceImpl(userStorage, filmStorage, friendshipStorage, filmLikeStorage, eventStorage);
-        filmService = new FilmServiceImpl(filmStorage, userStorage, filmLikeStorage, directorStorage, eventStorage);
+        userService = new UserServiceImpl(userStorage, filmStorage, friendshipStorage, eventStorage);
+        filmService = new FilmServiceImpl(filmStorage, userStorage, directorStorage, eventStorage);
         user = User.builder()
                 .id(1)
                 .email("email")
@@ -378,21 +373,26 @@ class UserDbStorageTest {
         filmStorage.add(filmOne);
         filmStorage.add(filmTwo);
 
-        filmLikeStorage.add(filmOne.getId(), user.getId());
-        filmLikeStorage.add(filmOne.getId(), anotherUser.getId());
-        filmLikeStorage.add(filmTwo.getId(), anotherUser.getId());
+        filmStorage.addMarkToFilm(filmOne.getId(), user.getId(), 10);
+        filmStorage.addMarkToFilm(filmOne.getId(), anotherUser.getId(), 10);
+        filmStorage.addMarkToFilm(filmTwo.getId(), anotherUser.getId(), 10);
 
-        Map<Long, Set<Long>> filmRecommendations = filmLikeStorage.getUsersAndFilmLikes();
+        Map<Long, Set<FilmMark>> filmRecommendations = filmStorage.findUserIdFilmMarks();
 
         assertThat(filmRecommendations.get(1L))
                 .isNotNull()
                 .isNotEmpty()
-                .containsExactly(filmOne.getId());
+                .usingRecursiveComparison()
+                .isEqualTo(Set.of(new FilmMark(user.getId(), filmOne.getId(), 10)));
 
         assertThat(filmRecommendations.get(2L))
                 .isNotNull()
                 .isNotEmpty()
-                .containsExactly(filmOne.getId(), filmTwo.getId());
+                .usingRecursiveComparison()
+                .isEqualTo(Set.of(
+                        new FilmMark(anotherUser.getId(), filmOne.getId(), 10),
+                        new FilmMark(anotherUser.getId(), filmTwo.getId(), 10))
+                );
     }
 
     @Test
@@ -402,7 +402,7 @@ class UserDbStorageTest {
         userStorage.add(anotherUser);
         filmStorage.add(filmOne);
 
-        Map<Long, Set<Long>> filmRecommendations = filmLikeStorage.getUsersAndFilmLikes();
+        Map<Long, Set<FilmMark>> filmRecommendations = filmStorage.findUserIdFilmMarks();
 
         assertThat(filmRecommendations)
                 .isNotNull()
@@ -415,7 +415,7 @@ class UserDbStorageTest {
         userStorage.add(user);
         userStorage.add(anotherUser);
         filmStorage.add(filmOne);
-        filmService.likeFilm(filmOne.getId(), user.getId());
+        filmService.addMarkToFilm(filmOne.getId(), user.getId(), 10);
         userService.addFriend(user.getId(), anotherUser.getId());
 
         Feed feedLike = Feed.builder()
