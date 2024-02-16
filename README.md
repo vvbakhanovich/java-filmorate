@@ -33,9 +33,10 @@
 7. __film_genre__ (соединительная таблица между __film__ и __genre__):
     - *film_id* (составной первичный ключ, внешний ключ, содержит id фильма из таблицы __film__)
     - *genre_id* (составной первичный ключ, внешний ключ, содержит id жанра из таблицы __genre__)
-8. __film_like__ (содержит список лайков фильмов от пользователей):
+8. __film_mark__ (содержит список оценок фильмов от пользователей):
     - *film_id* (составной первичный ключ, внешний ключ, содержит id фильма из таблицы __film__)
     - *user_id* (составной первичный ключ, внешний ключ, содержит id пользователя из таблицы __user__)
+    - *mark* (оценка фильма)
 9. __review__
     - *id* (первичный ключ)
     - *review_content* (содержание отзыва)
@@ -59,7 +60,7 @@
     - *id* (первичный ключ)
     - *event_type* (тип события в ленте)
     - *operation* (тип операции над объектом)
-    - *entity_id* (идентификатор объекта, на котром прозводилась операция)
+    - *entity_id* (идентификатор объекта, на котором производилась операция)
     - *publication_time* (время выполнения события)
     - *user_id* (внешний ключ, содержит id фильма из таблицы __filmorate_user__)
 ---
@@ -125,22 +126,22 @@ __SELECT__ * __FROM__ user __WHERE__ id __IN__ (__SELECT__ friend_id __FROM__ fr
 
 &emsp;&emsp;__SELECT__ * __FROM__ film __WHERE__ id = 1;
 
-- *добавить лайк фильму*
+- *добавить оценку фильму*
 
-&emsp;&emsp;__INSERT INTO__ film_likes (filmd_id, user_id)
+&emsp;&emsp;__INSERT INTO__ film_mark (filmd_id, user_id, mark)
 
 
-&emsp;&emsp;__VALUES__ (1, 1);
+&emsp;&emsp;__VALUES__ (1, 1, 7);
 
-- *удалить лайк*
+- *удалить оценку*
 
-&emsp;&emsp;__DELETE__ film_likes __WHERE__ filmd_id = 1 __AND__ user_id = 1; 
+&emsp;&emsp;__DELETE__ film_mark __WHERE__ filmd_id = 1 __AND__ user_id = 1; 
 
 - *получить 10 самых популярных фильмов*
 
 &emsp;&emsp;__SELECT__ title __FROM__ film __WHERE__ id __IN__ (
 
-&emsp;&emsp;&emsp;&emsp;__SELECT__ film_id __FROM__ film_likes __GROUP BY__ film_id __ORDER BY__ __COUNT__(*) __DESC__
+&emsp;&emsp;&emsp;&emsp;__SELECT__ film_id __FROM__ film_mark __GROUP BY__ film_id __ORDER BY__ __COUNT__(*) __DESC__
 
 &emsp;&emsp;) __LIMIT__ 10;
 
