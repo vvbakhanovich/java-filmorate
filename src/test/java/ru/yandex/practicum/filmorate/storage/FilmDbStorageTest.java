@@ -243,13 +243,78 @@ public class FilmDbStorageTest {
         filmDbStorage.add(film);
         userStorage.add(user);
 
-        filmDbStorage.addLikeToFilm(film.getId(), user.getId());
+        filmDbStorage.addMarkToFilm(film.getId(), user.getId(), 10);
 
         Film storedFilm = filmDbStorage.findById(film.getId());
 
-        long likes = storedFilm.getLikes();
+        double rating = storedFilm.getRating();
 
-        assertEquals(1, likes);
+        assertEquals(10, rating);
+    }
+
+    @Test
+    @DisplayName("Тест проверки расчета рейтинга фильма")
+    void testCalculateRating() {
+        filmDbStorage.add(film);
+        userStorage.add(user);
+        userStorage.add(user2);
+
+        filmDbStorage.addMarkToFilm(film.getId(), user.getId(), 6);
+        filmDbStorage.addMarkToFilm(film.getId(), user2.getId(), 5);
+
+        Film storedFilm = filmDbStorage.findById(film.getId());
+
+        double rating = storedFilm.getRating();
+
+        assertEquals(5.5, rating);
+    }
+
+    @Test
+    @DisplayName("Тест добавления лайка дважды одному и тому же фильму от одного пользователя")
+    void testAddTwoLikesFromOneUser() {
+        filmDbStorage.add(film);
+        userStorage.add(user);
+
+        filmDbStorage.addMarkToFilm(film.getId(), user.getId(), 10);
+        filmDbStorage.addMarkToFilm(film.getId(), user.getId(), 2);
+
+        Film storedFilm = filmDbStorage.findById(film.getId());
+
+        double rating = storedFilm.getRating();
+
+        assertEquals(2, rating);
+    }
+
+    @Test
+    @DisplayName("Тест добавления лайка фильму без указания оценки")
+    void testLikeWithoutMark() {
+        filmDbStorage.add(film);
+        userStorage.add(user);
+
+        filmDbStorage.addMarkToFilm(film.getId(), user.getId(), null);
+
+        Film storedFilm = filmDbStorage.findById(film.getId());
+
+        double rating = storedFilm.getRating();
+
+        assertEquals(0, rating);
+    }
+
+    @Test
+    @DisplayName("Тест добавления двух лайков фильму, один без указания оценки")
+    void testLikeWithAndWithoutMark() {
+        filmDbStorage.add(film);
+        userStorage.add(user);
+        userStorage.add(user2);
+
+        filmDbStorage.addMarkToFilm(film.getId(), user.getId(), null);
+        filmDbStorage.addMarkToFilm(film.getId(), user.getId(), 6);
+
+        Film storedFilm = filmDbStorage.findById(film.getId());
+
+        double rating = storedFilm.getRating();
+
+        assertEquals(6, rating);
     }
 
     @Test
@@ -258,17 +323,17 @@ public class FilmDbStorageTest {
         filmDbStorage.add(film);
         userStorage.add(user);
 
-        filmDbStorage.addLikeToFilm(film.getId(), user.getId());
+        filmDbStorage.addMarkToFilm(film.getId(), user.getId(), 1);
         Film storedFilm = filmDbStorage.findById(film.getId());
-        long likes = storedFilm.getLikes();
+        double rating = storedFilm.getRating();
 
-        assertEquals(1, likes);
+        assertEquals(1, rating);
 
-        filmDbStorage.removeLikeFromFilm(film.getId(), user.getId());
+        filmDbStorage.removeMarkFromFilm(film.getId(), user.getId());
         Film updatedFilm = filmDbStorage.findById(film.getId());
-        long updatedLikes = updatedFilm.getLikes();
+        double updatedRating = updatedFilm.getRating();
 
-        assertEquals(0, updatedLikes);
+        assertEquals(0, updatedRating);
     }
 
     @Test
@@ -282,9 +347,9 @@ public class FilmDbStorageTest {
         film.getGenres().add(genre1);
         film.getGenres().add(genre2);
         filmDbStorage.add(film);
-        filmDbStorage.addLikeToFilm(film.getId(), user.getId());
+        filmDbStorage.addMarkToFilm(film.getId(), user.getId(), 1);
 
-        film.setLikes(1);
+        film.setRating(1);
 
         assertThat(filmDbStorage.findAll())
                 .isNotNull()
@@ -303,9 +368,9 @@ public class FilmDbStorageTest {
         film.getGenres().add(genre1);
         film.getGenres().add(genre2);
         filmDbStorage.add(film);
-        filmDbStorage.addLikeToFilm(film.getId(), user.getId());
+        filmDbStorage.addMarkToFilm(film.getId(), user.getId(), 1);
 
-        film.setLikes(1);
+        film.setRating(1);
 
         assertThat(filmDbStorage.findById(film.getId()))
                 .isNotNull()
@@ -344,9 +409,9 @@ public class FilmDbStorageTest {
         film.getGenres().add(genre2);
         film.setReleaseDate(LocalDate.of(1999, 1, 1));
         filmDbStorage.add(film);
-        filmDbStorage.addLikeToFilm(film.getId(), user.getId());
+        filmDbStorage.addMarkToFilm(film.getId(), user.getId(), 1);
 
-        film.setLikes(1);
+        film.setRating(1);
 
         Collection<Film> popularFilms = filmDbStorage.findMostLikedFilms(10, 1, 1999);
 
@@ -363,9 +428,9 @@ public class FilmDbStorageTest {
         userStorage.add(user);
         film.setReleaseDate(LocalDate.of(1999, 1, 1));
         filmDbStorage.add(film);
-        filmDbStorage.addLikeToFilm(film.getId(), user.getId());
+        filmDbStorage.addMarkToFilm(film.getId(), user.getId(), 1);
 
-        film.setLikes(1);
+        film.setRating(1);
 
         Collection<Film> popularFilms = filmDbStorage.findMostLikedFilms(10, null, 1999);
 
@@ -387,9 +452,9 @@ public class FilmDbStorageTest {
         film.getGenres().add(genre2);
 
         filmDbStorage.add(film);
-        filmDbStorage.addLikeToFilm(film.getId(), user.getId());
+        filmDbStorage.addMarkToFilm(film.getId(), user.getId(), 1);
 
-        film.setLikes(1);
+        film.setRating(1);
 
         Collection<Film> popularFilms = filmDbStorage.findMostLikedFilms(10, 1, null);
 
@@ -506,15 +571,15 @@ public class FilmDbStorageTest {
         filmDbStorage.add(film);
         filmDbStorage.add(film2);
 
-        filmDbStorage.addLikeToFilm(film.getId(), user.getId());
-        filmDbStorage.addLikeToFilm(film.getId(), user2.getId());
-        filmDbStorage.addLikeToFilm(film.getId(), user3.getId());
+        filmDbStorage.addMarkToFilm(film.getId(), user.getId(), 2);
+        filmDbStorage.addMarkToFilm(film.getId(), user2.getId(), 6);
+        filmDbStorage.addMarkToFilm(film.getId(), user3.getId(), 8);
 
-        filmDbStorage.addLikeToFilm(film2.getId(), user.getId());
-        filmDbStorage.addLikeToFilm(film2.getId(), user2.getId());
+        filmDbStorage.addMarkToFilm(film2.getId(), user.getId(), 4);
+        filmDbStorage.addMarkToFilm(film2.getId(), user2.getId(), 7);
 
-        film.setLikes(3);
-        film2.setLikes(2);
+        film.setRating(5.3);
+        film2.setRating(5.5);
 
         Collection<Film> popularFilms = filmDbStorage.findMostLikedFilms(2, null, null);
 
@@ -538,11 +603,11 @@ public class FilmDbStorageTest {
         filmDbStorage.add(film);
         filmDbStorage.add(film2);
 
-        filmDbStorage.addLikeToFilm(film.getId(), user.getId());
-        filmDbStorage.addLikeToFilm(film.getId(), user2.getId());
-        filmDbStorage.addLikeToFilm(film.getId(), user3.getId());
+        filmDbStorage.addMarkToFilm(film.getId(), user.getId(), 8);
+        filmDbStorage.addMarkToFilm(film.getId(), user2.getId(), 7);
+        filmDbStorage.addMarkToFilm(film.getId(), user3.getId(), 6);
 
-        film.setLikes(3);
+        film.setRating(7);
 
         Collection<Film> popularFilms = filmDbStorage.findMostLikedFilms(2, null, null);
 
@@ -576,13 +641,13 @@ public class FilmDbStorageTest {
     public void findFilmsByDirectorSortByLikes() {
         film.getDirectors().add(director);
         film2.getDirectors().add(director);
-        film.setLikes(1);
+        film.setRating(1);
 
         userStorage.add(user);
         directorStorage.add(director);
         filmDbStorage.add(film);
         filmDbStorage.add(film2);
-        filmDbStorage.addLikeToFilm(1, 1);
+        filmDbStorage.addMarkToFilm(1, 1, 1);
         System.out.println(film.getId());
         System.out.println(film2.getId());
 
@@ -616,10 +681,10 @@ public class FilmDbStorageTest {
         filmDbStorage.add(film2);
         userStorage.add(user);
         userStorage.add(user2);
-        filmDbStorage.addLikeToFilm(film.getId(), user.getId());
-        filmDbStorage.addLikeToFilm(film2.getId(), user.getId());
-        filmDbStorage.addLikeToFilm(film.getId(), user2.getId());
-        film.setLikes(2);
+        filmDbStorage.addMarkToFilm(film.getId(), user.getId(), 1);
+        filmDbStorage.addMarkToFilm(film2.getId(), user.getId(), 3);
+        filmDbStorage.addMarkToFilm(film.getId(), user2.getId(), 2);
+        film.setRating(1.5);
 
         Collection<Film> commonFilms = filmDbStorage.findCommonFilms(user.getId(), user2.getId());
 
@@ -637,8 +702,8 @@ public class FilmDbStorageTest {
         filmDbStorage.add(film2);
         userStorage.add(user);
         userStorage.add(user2);
-        filmDbStorage.addLikeToFilm(film.getId(), user.getId());
-        filmDbStorage.addLikeToFilm(film2.getId(), user2.getId());
+        filmDbStorage.addMarkToFilm(film.getId(), user.getId(), 4);
+        filmDbStorage.addMarkToFilm(film2.getId(), user2.getId(), 5);
 
         Collection<Film> commonFilms = filmDbStorage.findCommonFilms(user.getId(), user2.getId());
 

@@ -62,34 +62,9 @@ class ReviewDbStorageTest {
         filmStorage.add(film);
         userStorage.add(user);
 
-
-        review1 = Review.builder()
-                .reviewId(1)
-                .content("review 2")
-                .isPositive(true)
-                .useful(1)
-                .userId(1)
-                .filmId(1)
-                .build();
-
-        review2 = Review.builder()
-                .reviewId(2)
-                .content("review 1")
-                .isPositive(false)
-                .useful(2)
-                .userId(1)
-                .filmId(1)
-                .build();
-
-        review3 = Review.builder()
-                .reviewId(3)
-                .content("review 3")
-                .isPositive(true)
-                .useful(3)
-                .userId(1)
-                .filmId(1)
-                .build();
-
+        review1 = createReview(1);
+        review2 = createReview(2);
+        review3 = createReview(3);
         updatedReview = Review.builder()
                 .reviewId(1)
                 .content("updated review 1")
@@ -292,4 +267,14 @@ class ReviewDbStorageTest {
         assertEquals(-2, storedReview.getUseful());
     }
 
+    private Review createReview(long id) {
+        return Review.builder()
+                .reviewId(id)
+                .content("review " + id)
+                .isPositive(true)
+                .useful(id)
+                .userId(1)
+                .filmId(1)
+                .build();
+    }
 }

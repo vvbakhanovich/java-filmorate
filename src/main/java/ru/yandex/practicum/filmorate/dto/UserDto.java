@@ -23,11 +23,11 @@ public class UserDto {
     private long id;
     @Email(message = "Некорректный формат электронной почты.", regexp = "^[\\w\\-\\.]+@([\\w-]+\\.)+[\\w-]{2,4}$")
     @NotEmpty(message = "Адрес электронной почты не может быть пустым.")
-    private String email; //электронная почта
+    private String email;
     @NotBlank(message = "Логин не может быть пустым и содержать пробелы.")
-    private String login; //логин пользователя
-    private String name; //имя для отображения
+    private String login;
+    private String name;
     @PastOrPresent(message = "Дата рождения не может быть в будущем.")
-    private LocalDate birthday; //дата рождения
-    private final List<Friendship> friends = new ArrayList<>(); //список друзей
+    private LocalDate birthday;
+    private final List<Friendship> friends = new ArrayList<>();
 }

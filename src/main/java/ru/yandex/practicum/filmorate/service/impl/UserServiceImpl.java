@@ -3,17 +3,31 @@ package ru.yandex.practicum.filmorate.service.impl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import ru.yandex.practicum.filmorate.dao.*;
+import org.springframework.transaction.annotation.Transactional;
+import ru.yandex.practicum.filmorate.dao.EventStorage;
+import ru.yandex.practicum.filmorate.dao.FilmStorage;
+import ru.yandex.practicum.filmorate.dao.FriendshipStorage;
+import ru.yandex.practicum.filmorate.dao.UserStorage;
 import ru.yandex.practicum.filmorate.dto.FeedDto;
 import ru.yandex.practicum.filmorate.dto.FilmDto;
+import ru.yandex.practicum.filmorate.dto.RecommendationsCurrentParams;
 import ru.yandex.practicum.filmorate.dto.UserDto;
 import ru.yandex.practicum.filmorate.mapper.FeedMapper;
 import ru.yandex.practicum.filmorate.mapper.FilmMapper;
 import ru.yandex.practicum.filmorate.mapper.UserMapper;
-import ru.yandex.practicum.filmorate.model.*;
+import ru.yandex.practicum.filmorate.model.EventType;
+import ru.yandex.practicum.filmorate.model.FilmMark;
+import ru.yandex.practicum.filmorate.model.Friendship;
+import ru.yandex.practicum.filmorate.model.Operation;
+import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.UserService;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import static ru.yandex.practicum.filmorate.model.FriendshipStatus.ACKNOWLEDGED;
@@ -23,6 +37,7 @@ import static ru.yandex.practicum.filmorate.model.FriendshipStatus.NOT_ACKNOWLED
 @RequiredArgsConstructor
 @Slf4j
 public class UserServiceImpl implements UserService {
+    private static final int MIN_POSITIVE_RATING_VALUE = 6;
 
     private final UserStorage userStorage;
     private final FilmStorage filmStorage;
@@ -36,6 +51,7 @@ public class UserServiceImpl implements UserService {
      * @return пользователь с присвоенным идентификатором
      */
     @Override
+    @Transactional
     public UserDto addUser(final UserDto userDto) {
         final User user = UserMapper.toModel(validateUserName(userDto));
         final User addedUser = userStorage.add(user);
@@ -50,6 +66,7 @@ public class UserServiceImpl implements UserService {
      * @return пользователь с обновленными данными.
      */
     @Override
+    @Transactional
     public UserDto updateUser(final UserDto updatedUserDto) {
         final User updatedUser = UserMapper.toModel(validateUserName(updatedUserDto));
         final long userId = updatedUser.getId();
@@ -91,6 +108,7 @@ public class UserServiceImpl implements UserService {
      * @return пользователь с обновленным списком друзей.
      */
     @Override
+    @Transactional
     public UserDto addFriend(final long userId, final long friendId) {
         final User user = userStorage.findById(userId);
         final User friend = userStorage.findById(friendId);
@@ -147,6 +165,7 @@ public class UserServiceImpl implements UserService {
      * @param friendId идентификатор друга, которого требуется исключить из списка друзей.
      */
     @Override
+    @Transactional
     public void removeFriend(final long userId, final long friendId) {
         userStorage.findById(userId);
         userStorage.findById(friendId);
@@ -166,48 +185,43 @@ public class UserServiceImpl implements UserService {
     }
 
     /**
-     * Создание рекомендаций пользователю фильмов, которые ему могут понравиться. Для подготовки рекомендаций
-     * выгружаем данные из таблицы film_like, находим пользователей с максимальным количеством одинаковых с нашим
-     * пользователем лайков и выбираем у них для рекомендации, которые они тоже залайкали, но наш пользователь
-     * в запросе их еще не видел
+     * Получение списка рекомендованных к просмотру фильмов, которые могут понравиться пользователю. Алгоритм
+     * выбора рекомендаций определяет пользователя с наиболее схожими оценками с пользователем, который хочет получить
+     * рекомендации, и возвращает те фильмы, которые не были оценены искомым пользователем и у которых положительный
+     * рейтинг.
      *
-     * @param id идентификатор пользователя
-     * @return коллекцию FilmDto
+     * @param requesterId идентификатор пользователя, который хочет получить рекомендации.
+     * @return список рекомендованных фильмов.
      */
 
     @Override
-    public Collection<FilmDto> showRecommendations(long id) {
-        log.info("Получение списка рекомендаций фильмов для пользователя с id {}.", id);
-        Map<Long, Set<Long>> usersLikes = filmStorage.getUsersAndFilmLikes();
-        int maxLikes = 0;
-        Set<Long> recommendations = new HashSet<>();
-        Set<Long> userLikedFilms = usersLikes.get(id);
-        for (Long user : usersLikes.keySet()) {
-            if (user != id) {
-                Set<Long> likedFilms = usersLikes.get(user);
-                Set<Long> currentUserLikedFilms = new HashSet<>(userLikedFilms);
-                currentUserLikedFilms.retainAll(likedFilms);
-                if (currentUserLikedFilms.size() > maxLikes && currentUserLikedFilms.size() < likedFilms.size()) {
-                    recommendations.clear();
-                    maxLikes = currentUserLikedFilms.size();
-                    likedFilms.removeAll(currentUserLikedFilms);
-                    recommendations.addAll(likedFilms);
-                } else if (currentUserLikedFilms.size() == maxLikes) {
-                    likedFilms.removeAll(currentUserLikedFilms);
-                    recommendations.addAll(likedFilms);
-                }
-            }
+    public Collection<FilmDto> showRecommendations(long requesterId) {
+        log.info("Получение списка рекомендаций фильмов для пользователя с id {}.", requesterId);
+        Map<Long, Set<FilmMark>> usersFilmMarks = filmStorage.findUserIdFilmMarks();
+        Set<Long> requesterMarkedFilmsIds = usersFilmMarks.get(requesterId).stream()
+                .map(FilmMark::getFilmId)
+                .collect(Collectors.toSet());
+        Long userIdWithClosestMarks = findUserIdWithClosestMarks(usersFilmMarks, requesterId);
+        if (userIdWithClosestMarks == null) {
+            return Collections.emptyList();
         }
-        Collection<Film> filmsRecommendation = filmStorage.findFilmsByIds(recommendations);
-        return filmsRecommendation.stream().map(FilmMapper::toDto).collect(Collectors.toList());
+        Set<Long> matchedUserMarkedFilmIds = usersFilmMarks.get(userIdWithClosestMarks).stream()
+                .map(FilmMark::getFilmId)
+                .filter(filmId -> !requesterMarkedFilmsIds.contains(filmId))
+                .collect(Collectors.toSet());
+        return filmStorage.findFilmsByIds(matchedUserMarkedFilmIds).stream()
+                .filter(film -> film.getRating() >= MIN_POSITIVE_RATING_VALUE)
+                .map(FilmMapper::toDto)
+                .collect(Collectors.toList());
     }
 
     /**
-     * Выгразка ленты пользователя. Запрос выгружает историй действий пользователя:
+     * Выгрузка ленты пользователя. Запрос выгружает историй действий пользователя:
      * кого он добавлял в друзья и удалял из друзей
      * что лайкал
      * какие писал и удалял отзывы
-     * @param id идентификатор пользоваетеля
+     *
+     * @param id идентификатор пользователя
      * @return коллекция FeedDto
      */
 
@@ -222,5 +236,53 @@ public class UserServiceImpl implements UserService {
                 userDto.getLogin() : userDto.getName();
         userDto.setName(validatedName);
         return userDto;
+    }
+
+    private Long findUserIdWithClosestMarks(Map<Long, Set<FilmMark>> usersFilmMarks, long requesterId) {
+        double closestMarksDiff = Double.MAX_VALUE;
+        Long userIdWithClosestMarks = null;
+        int numberOfLikedFilms = 0;
+        for (Long userId : usersFilmMarks.keySet()) {
+            if (userId == requesterId) {
+                continue;
+            }
+            Set<FilmMark> currentUserFilmMarks = usersFilmMarks.get(userId);
+            RecommendationsCurrentParams currentParams =
+                    compareToCurrentUserMarks(usersFilmMarks.get(requesterId), currentUserFilmMarks);
+            if (currentParams.getNumberOfMatches() == 0) {
+                continue;
+            }
+            double marksDiff =
+                    Math.abs((double) currentParams.getDiff() / currentParams.getNumberOfMatches());
+            if (marksDiff < closestMarksDiff) {
+                closestMarksDiff = marksDiff;
+                userIdWithClosestMarks = userId;
+                numberOfLikedFilms = currentParams.getNumberOfLikedFilms();
+            }
+            if (marksDiff == closestMarksDiff && currentParams.getNumberOfLikedFilms() > numberOfLikedFilms) {
+                userIdWithClosestMarks = userId;
+            }
+        }
+        return userIdWithClosestMarks;
+    }
+
+    private RecommendationsCurrentParams compareToCurrentUserMarks(Set<FilmMark> requesterFilmMarks,
+                                                                   Set<FilmMark> currentUserFilmMarks) {
+        RecommendationsCurrentParams currentParams = new RecommendationsCurrentParams();
+        for (FilmMark filmMark : requesterFilmMarks) {
+            long filmId = filmMark.getFilmId();
+            currentParams.setNumberOfLikedFilms(currentUserFilmMarks.size());
+            Optional<FilmMark> currentUserFilmMark = currentUserFilmMarks.stream()
+                    .filter(currentFilmMark -> currentFilmMark.getFilmId() == filmId)
+                    .findAny();
+            int rateDiff = currentUserFilmMark
+                    .map(mark -> filmMark.getMark() - mark.getMark())
+                    .orElseGet(filmMark::getMark);
+            currentParams.setDiff(currentParams.getDiff() + rateDiff);
+            if (currentUserFilmMark.isPresent()) {
+                currentParams.setNumberOfMatches(currentParams.getNumberOfMatches() + 1);
+            }
+        }
+        return currentParams;
     }
 }

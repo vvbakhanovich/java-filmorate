@@ -373,21 +373,26 @@ class UserDbStorageTest {
         filmStorage.add(filmOne);
         filmStorage.add(filmTwo);
 
-        filmStorage.addLikeToFilm(filmOne.getId(), user.getId());
-        filmStorage.addLikeToFilm(filmOne.getId(), anotherUser.getId());
-        filmStorage.addLikeToFilm(filmTwo.getId(), anotherUser.getId());
+        filmStorage.addMarkToFilm(filmOne.getId(), user.getId(), 10);
+        filmStorage.addMarkToFilm(filmOne.getId(), anotherUser.getId(), 10);
+        filmStorage.addMarkToFilm(filmTwo.getId(), anotherUser.getId(), 10);
 
-        Map<Long, Set<Long>> filmRecommendations = filmStorage.getUsersAndFilmLikes();
+        Map<Long, Set<FilmMark>> filmRecommendations = filmStorage.findUserIdFilmMarks();
 
         assertThat(filmRecommendations.get(1L))
                 .isNotNull()
                 .isNotEmpty()
-                .containsExactly(filmOne.getId());
+                .usingRecursiveComparison()
+                .isEqualTo(Set.of(new FilmMark(user.getId(), filmOne.getId(), 10)));
 
         assertThat(filmRecommendations.get(2L))
                 .isNotNull()
                 .isNotEmpty()
-                .containsExactly(filmOne.getId(), filmTwo.getId());
+                .usingRecursiveComparison()
+                .isEqualTo(Set.of(
+                        new FilmMark(anotherUser.getId(), filmOne.getId(), 10),
+                        new FilmMark(anotherUser.getId(), filmTwo.getId(), 10))
+                );
     }
 
     @Test
@@ -397,7 +402,7 @@ class UserDbStorageTest {
         userStorage.add(anotherUser);
         filmStorage.add(filmOne);
 
-        Map<Long, Set<Long>> filmRecommendations = filmStorage.getUsersAndFilmLikes();
+        Map<Long, Set<FilmMark>> filmRecommendations = filmStorage.findUserIdFilmMarks();
 
         assertThat(filmRecommendations)
                 .isNotNull()
@@ -410,7 +415,7 @@ class UserDbStorageTest {
         userStorage.add(user);
         userStorage.add(anotherUser);
         filmStorage.add(filmOne);
-        filmService.likeFilm(filmOne.getId(), user.getId());
+        filmService.addMarkToFilm(filmOne.getId(), user.getId(), 10);
         userService.addFriend(user.getId(), anotherUser.getId());
 
         Feed feedLike = Feed.builder()
